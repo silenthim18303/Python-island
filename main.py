@@ -18,6 +18,8 @@
 
 import tkinter as tk
 import time
+import subprocess
+import re
 import win32gui
 import win32con
 import win32api
@@ -61,6 +63,11 @@ class DynamicIslandClock:
         self.animation_speed = 3  # 动画速度
         self.hide_delay = 1200  # 隐藏延迟（毫秒）
         self.hover_timer = None  # 悬停计时器
+        
+        # WiFi相关
+        self.last_wifi_status = False  # 上次WiFi连接状态
+        self.last_wifi_ssid = ""  # 上次WiFi SSID
+        self.wifi_notification_timer = None  # WiFi通知计时器
 
         # 计算屏幕居中位置
         self.screen_width = self.root.winfo_screenwidth()
@@ -84,6 +91,9 @@ class DynamicIslandClock:
 
         # 核心：每30毫秒检查鼠标距离 → 自动展开/缩回
         self.root.after(30, self.check_mouse_distance)
+        
+        # 检查WiFi状态
+        self.root.after(1000, self.check_wifi_status)
 
     def set_pos(self, y):
         """
@@ -169,7 +179,7 @@ class DynamicIslandClock:
         self.canvas.pack(fill="both", expand=True)
         # 绘制圆角矩形背景
         self.canvas.create_rounded_rectangle(5, 5, self.window_width - 5, self.window_height - 5,
-                                             radius=40, fill="#1E1E2E", outline="#383850", width=2)
+                                             radius=55, fill="#1E1E2E", outline="#383850", width=2)
 
     def create_clock_widgets(self):
         """
@@ -261,6 +271,88 @@ class DynamicIslandClock:
         self.current_y = y
         # 设置新位置
         self.set_pos(y)
+    
+    def get_wifi_info(self):
+        """
+        获取WiFi连接信息
+        
+        Returns:
+            tuple: (is_connected, ssid)
+        """
+        try:
+            # 执行netsh命令获取WiFi接口信息
+            result = subprocess.run(['netsh', 'wlan', 'show', 'interfaces'], 
+                                  capture_output=True, text=False)
+            # 尝试使用不同编码解码
+            try:
+                output = result.stdout.decode('utf-8')
+            except UnicodeDecodeError:
+                try:
+                    output = result.stdout.decode('gbk')
+                except UnicodeDecodeError:
+                    output = result.stdout.decode('latin-1')
+            
+            # 检查是否连接到WiFi
+            is_connected = '状态' in output and '已连接' in output
+            
+            # 提取SSID
+            ssid_match = re.search(r'SSID\s*:\s*(.+)', output)
+            ssid = ssid_match.group(1).strip() if ssid_match else ""
+            
+            return is_connected, ssid
+        except Exception as e:
+            print(f"Error getting WiFi info: {e}")
+            return False, ""
+    
+    def check_wifi_status(self):
+        """
+        检查WiFi连接状态
+        """
+        # 获取当前WiFi状态
+        is_connected, ssid = self.get_wifi_info()
+        
+        # 检查状态变化
+        if is_connected and not self.last_wifi_status:
+            # 从断开到连接，显示通知
+            self.show_wifi_notification(ssid)
+        
+        # 更新状态
+        self.last_wifi_status = is_connected
+        self.last_wifi_ssid = ssid
+        
+        # 继续检查
+        self.root.after(5000, self.check_wifi_status)  # 每5秒检查一次
+    
+    def show_wifi_notification(self, ssid):
+        """
+        显示WiFi连接通知
+        
+        Args:
+            ssid: WiFi的SSID
+        """
+        # 取消之前的通知计时器
+        if self.wifi_notification_timer:
+            self.root.after_cancel(self.wifi_notification_timer)
+        
+        # 展开窗口
+        self.expand()
+        
+        # 保存原始标签文本和字体
+        original_time_text = self.time_label.cget("text")
+        original_time_font = self.time_label.cget("font")
+        original_date_text = self.date_label.cget("text")
+        original_date_font = self.date_label.cget("font")
+        
+        # 更新标签显示WiFi连接信息，并设置字体大小
+        self.time_label.config(text="已连接到WiFi", font=("Microsoft YaHei UI", 16, "bold"))
+        self.date_label.config(text=ssid, font=("Arial", 12))
+        
+        # 3秒后恢复显示时间和字体
+        def restore_clock():
+            self.time_label.config(text=original_time_text, font=original_time_font)
+            self.date_label.config(text=original_date_text, font=original_date_font)
+        
+        self.wifi_notification_timer = self.root.after(3000, restore_clock)
 
 
 def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
