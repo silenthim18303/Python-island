@@ -1,391 +1,337 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-灵动岛风格时钟应用
-
-该应用模拟苹果iOS的灵动岛设计，实现了一个悬停时展开、离开时收缩的时钟窗口。
-主要功能：
-1. 显示当前时间和日期
-2. 鼠标悬停时自动展开，离开时自动收缩
-3. 支持鼠标拖动窗口
-4. 半透明效果和圆角设计
-
-依赖：
-- tkinter: 用于创建GUI界面
-- time: 用于获取当前时间
-- win32gui, win32con, win32api: 用于Windows窗口样式设置
-"""
-
-import tkinter as tk
-import time
-import subprocess
-import re
+# 导入必要的库
+# webview: 创建GUI窗口
+# win32gui, win32api, win32con: Windows API接口，用于操作窗口
+# json: 用于处理JSON数据
+# threading: 用于创建多线程
+# time: 用于处理时间相关操作
+import webview
 import win32gui
-import win32con
 import win32api
+import win32con
+import json
+import threading
+import time
+import socket
+
+# 全局变量
+# HWND: 窗口句柄，用于标识和操作窗口
+# CONFIG: 配置参数字典，存储窗口相关设置
+HWND = None
+CONFIG = {
+    "window_width": 280,  # 窗口宽度
+    "window_height": 90,  # 窗口高度
+    "target_y": -100,  # 初始缩回位置（只露6px）
+    "current_y": -100,  # 当前窗口Y坐标
+    "animation_speed": 3,  # 动画速度
+    "hide_delay": 1200,  # 缩回延迟（毫秒）
+    "center_x": 0,  # 窗口中心X坐标
+    "is_expanded": False,  # 窗口是否展开
+    "hover_timer": None,  # 鼠标离开后的定时器
+    "dragging": False,  # 是否正在拖动
+    "dx": 0,  # 拖动时的X偏移
+    "dy": 0,  # 拖动时的Y偏移
+    "wifi_connected": False,  # WiFi连接状态
+    "wifi_ssid": "",  # 当前连接的WiFi名称
+    "wifi_timer": None  # WiFi提示后的自动收缩定时器
+}
 
 
-class DynamicIslandClock:
+def get_screen_center_x(width):
     """
-    灵动岛时钟类
-    实现了一个具有动画效果的时钟窗口，模拟iOS灵动岛的交互方式
+    获取屏幕水平居中的X坐标
+
+    参数:
+        width: 窗口宽度
+
+    返回:
+        屏幕水平居中的X坐标
     """
+    # win32api.GetSystemMetrics(0) 获取屏幕宽度
+    # 计算方法：(屏幕宽度 - 窗口宽度) // 2
+    return (win32api.GetSystemMetrics(0) - width) // 2
 
-    def __init__(self):
-        """
-        初始化灵动岛时钟
-        设置窗口属性、动画参数和初始状态
-        """
-        # 创建主窗口
-        self.root = tk.Tk()
-        self.root.title("灵动岛时钟")
-        # 禁止窗口大小调整
-        self.root.resizable(False, False)
-        # 移除窗口边框
-        self.root.overrideredirect(True)
 
-        # 设置窗口大小
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
-        self.window_width = round(self.screen_width * 0.12)
-        self.window_height = round(self.screen_height * 0.08)
-        self.root.geometry(f"{self.window_width}x{self.window_height}")
+def set_window_pos(x, y):
+    """
+    设置窗口位置
 
-        # 设置窗口属性：置顶、透明度、透明色
-        self.root.attributes("-topmost", True)
-        self.root.attributes("-alpha", 0.55)
-        self.root.attributes("-transparentcolor", "#000000")
+    参数:
+        x: 窗口左上角X坐标
+        y: 窗口左上角Y坐标
+    """
+    # 只有当窗口句柄存在时才设置位置
+    if HWND:
+        # win32gui.SetWindowPos 用于设置窗口位置和大小
+        # 参数说明：
+        # 1. 窗口句柄
+        # 2. 窗口Z序（HWND_TOPMOST表示置顶）
+        # 3-4. 窗口左上角坐标
+        # 5-6. 窗口宽度和高度
+        # 7. 附加标志（SWP_NOZORDER：保持Z序不变，SWP_NOACTIVATE：不激活窗口）
+        win32gui.SetWindowPos(
+            HWND,
+            win32con.HWND_TOPMOST,
+            x, y,
+            CONFIG["window_width"], CONFIG["window_height"],
+            win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE
+        )
 
-        # 动画参数
-        self.is_expanded = False  # 是否展开状态
-        self.target_y = -self.window_height  # 初始缩在上面，露6px
-        self.current_y = self.target_y  # 当前Y坐标
-        self.animation_speed = 3  # 动画速度
-        self.hide_delay = 1200  # 隐藏延迟（毫秒）
-        self.hover_timer = None  # 悬停计时器
-        
-        # WiFi相关
-        self.last_wifi_status = False  # 上次WiFi连接状态
-        self.last_wifi_ssid = ""  # 上次WiFi SSID
-        self.wifi_notification_timer = None  # WiFi通知计时器
 
-        # 计算屏幕居中位置
-        self.screen_width = self.root.winfo_screenwidth()
-        self.center_x = (self.screen_width - self.window_width) // 2
-        # 设置初始位置
-        self.set_pos(self.current_y)
+def expand_window():
+    """
+    展开窗口动画
+    实现窗口从顶部逐渐滑出的效果
+    """
+    # 当窗口还未完全展开时（current_y < 0）
+    if CONFIG["current_y"] < 0:
+        # 增加current_y值，使窗口向下移动
+        CONFIG["current_y"] += CONFIG["animation_speed"]
+        # 确保窗口不会超出屏幕顶部
+        if CONFIG["current_y"] > 0:
+            CONFIG["current_y"] = 0
+        # 更新窗口位置
+        set_window_pos(CONFIG["center_x"], int(CONFIG["current_y"]))
+        # 12毫秒后再次调用本函数，实现动画效果
+        threading.Timer(0.012, expand_window).start()
+    else:
+        # 窗口完全展开后，设置is_expanded为True
+        CONFIG["is_expanded"] = True
 
-        # 拖动相关变量
-        self.dragging = False
-        # 绑定鼠标事件
-        self.root.bind("<Button-1>", self.start_drag)
-        self.root.bind("<B1-Motion>", self.do_drag)
 
-        # 初始化界面
-        self.setup_style()
-        self.create_clock_widgets()
-        # 设置窗口扩展样式
-        self.root.after(100, self.set_window_ex_style)
-        # 开始更新时钟
-        self.update_clock()
+def shrink_window():
+    """
+    缩回窗口动画
+    实现窗口逐渐滑入顶部的效果
+    """
+    # 当窗口还未完全缩回时（current_y > target_y）
+    if CONFIG["current_y"] > CONFIG["target_y"]:
+        # 减小current_y值，使窗口向上移动
+        CONFIG["current_y"] -= CONFIG["animation_speed"]
+        # 确保窗口不会超出目标位置
+        if CONFIG["current_y"] < CONFIG["target_y"]:
+            CONFIG["current_y"] = CONFIG["target_y"]
+        # 更新窗口位置
+        set_window_pos(CONFIG["center_x"], int(CONFIG["current_y"]))
+        # 12毫秒后再次调用本函数，实现动画效果
+        threading.Timer(0.012, shrink_window).start()
+    else:
+        # 窗口完全缩回后，设置is_expanded为False
+        CONFIG["is_expanded"] = False
 
-        # 核心：每30毫秒检查鼠标距离 → 自动展开/缩回
-        self.root.after(30, self.check_mouse_distance)
-        
-        # 检查WiFi状态
-        self.root.after(1000, self.check_wifi_status)
 
-    def set_pos(self, y):
-        """
-        设置窗口位置
+def check_mouse_distance():
+    """
+    检查鼠标位置，控制窗口展开/缩回
+    当鼠标靠近窗口时展开，远离时延迟缩回
+    """
+    # 无限循环，持续检测鼠标位置
+    while True:
+        # 如果窗口句柄不存在，等待30毫秒后继续
+        if not HWND:
+            time.sleep(0.03)
+            continue
 
-        Args:
-            y: 窗口的Y坐标
-        """
-        self.root.geometry(f"{self.window_width}x{self.window_height}+{self.center_x}+{int(y)}")
-
-    def expand(self):
-        """
-        展开窗口动画
-        逐渐将窗口从收缩状态移动到完全展开状态
-        """
-        if self.current_y < 0:
-            self.current_y += self.animation_speed
-            # 确保不超过0（完全展开）
-            if self.current_y > 0:
-                self.current_y = 0
-            # 更新位置
-            self.set_pos(self.current_y)
-            # 继续动画
-            self.root.after(12, self.expand)
-        else:
-            # 动画结束，标记为展开状态
-            self.is_expanded = True
-
-    def shrink(self):
-        """
-        收缩窗口动画
-        逐渐将窗口从展开状态移动到收缩状态
-        """
-        if self.current_y > self.target_y:
-            self.current_y -= self.animation_speed
-            # 确保不小于目标位置（完全收缩）
-            if self.current_y < self.target_y:
-                self.current_y = self.target_y
-            # 更新位置
-            self.set_pos(self.current_y)
-            # 继续动画
-            self.root.after(8, self.shrink)
-        else:
-            # 动画结束，标记为收缩状态
-            self.is_expanded = False
-
-    def check_mouse_distance(self):
-        """
-        检查鼠标与窗口的距离
-        根据鼠标位置自动展开或收缩窗口
-        """
         # 获取当前鼠标位置
         mx, my = win32api.GetCursorPos()
 
-        # 判断鼠标是否在窗口附近
+        # 判断鼠标是否在窗口上方区域
+        # 条件：鼠标X坐标在窗口范围内，且Y坐标小于80（窗口上方区域）
         near = (
-                self.center_x < mx < self.center_x + self.window_width
-                and my < 5  # 鼠标Y坐标小于80
+                CONFIG["center_x"] < mx < CONFIG["center_x"] + CONFIG["window_width"]
+                and my < 1
         )
 
         if near:
-            # 鼠标在附近，取消隐藏计时器并展开窗口
-            if self.hover_timer:
-                self.root.after_cancel(self.hover_timer)
-                self.hover_timer = None
-            self.expand()
+            # 鼠标靠近窗口
+            # 如果有缩回定时器，取消它
+            if CONFIG["hover_timer"]:
+                CONFIG["hover_timer"].cancel()
+                CONFIG["hover_timer"] = None
+            # 如果窗口未展开，执行展开动画
+            if not CONFIG["is_expanded"]:
+                expand_window()
         else:
-            # 鼠标不在附近，如果窗口是展开状态且没有隐藏计时器，则设置隐藏计时器
-            if self.is_expanded and not self.hover_timer:
-                self.hover_timer = self.root.after(self.hide_delay, self.shrink)
+            # 鼠标远离窗口
+            # 如果窗口已展开且没有缩回定时器，创建一个延迟缩回定时器
+            if CONFIG["is_expanded"] and not CONFIG["hover_timer"]:
+                # 创建一个定时器，延迟hide_delay毫秒后执行缩回动画
+                CONFIG["hover_timer"] = threading.Timer(CONFIG["hide_delay"] / 1000, shrink_window)
+                CONFIG["hover_timer"].start()
 
-        # 每100毫秒检查一次
-        self.root.after(100, self.check_mouse_distance)
+        # 每30毫秒检查一次鼠标位置
+        time.sleep(0.03)
 
-    def setup_style(self):
-        """
-        设置窗口样式
-        创建画布并绘制圆角矩形背景
-        """
-        # 创建画布
-        self.canvas = tk.Canvas(self.root, width=self.window_width, height=self.window_height,
-                                bg="#000000", highlightthickness=0)
-        self.canvas.pack(fill="both", expand=True)
-        # 绘制圆角矩形背景
-        self.canvas.create_rounded_rectangle(5, 5, self.window_width - 5, self.window_height - 5,
-                                             radius=55, fill="#1E1E2E", outline="#383850", width=2)
 
-    def create_clock_widgets(self):
-        """
-        创建时钟组件
-        添加时间和日期标签
-        """
-        # 创建时间标签
-        self.time_label = tk.Label(self.canvas, text="", font=("Microsoft YaHei UI", 24, "bold"),
-                                   bg="#1E1E2E", fg="white")
-        self.time_label.place(relx=0.5, rely=0.38, anchor="center")
+def set_window_style(hwnd):
+    """
+    设置Windows窗口样式
+    实现无边框、置顶、透明、禁止拖动等效果
 
-        # 创建日期标签
-        self.date_label = tk.Label(self.canvas, text="", font=("Arial", 10),
-                                   bg="#1E1E2E", fg="#cccccc")
-        self.date_label.place(relx=0.5, rely=0.68, anchor="center")
+    参数:
+        hwnd: 窗口句柄
+    """
+    # 1. 去掉窗口边框
+    # 获取当前窗口样式
+    style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+    # 移除标题栏、边框和系统菜单
+    style &= ~(win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_SYSMENU)
+    # 应用新样式
+    win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
 
-    def update_clock(self):
-        """
-        更新时钟显示
-        每秒更新一次时间和日期
-        """
-        # 获取当前时间
-        t = time.strftime("%H:%M:%S")
-        # 获取当前日期
-        d = time.strftime("%Y-%m-%d ")
-        # 星期几映射字典
-        w = {
-            "Monday": "周一", "Tuesday": "周二", "Wednesday": "周三",
-            "Thursday": "周四", "Friday": "周五", "Saturday": "周六", "Sunday": "周日"
-        }[time.strftime("%A")]  # 根据英文星期获取中文星期
-        # 更新时间标签
-        self.time_label.config(text=t)
-        # 更新日期标签
-        self.date_label.config(text=d + w)
-        # 每秒更新一次
-        self.root.after(1000, self.update_clock)
+    # 2. 设置扩展样式
+    # 获取当前扩展样式
+    ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+    # 添加分层窗口、工具窗口和透明样式
+    ex_style |= win32con.WS_EX_LAYERED | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_TRANSPARENT
+    # 禁用窗口的文件拖放功能
+    ex_style &= ~win32con.WS_EX_ACCEPTFILES
+    # 应用新扩展样式
+    win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex_style)
 
-    def set_window_ex_style(self):
-        """
-        设置窗口扩展样式
-        使窗口具有分层、工具窗口和透明效果
-        """
+    # 3. 强制固定窗口位置
+    # 设置窗口位置和大小，同时禁止移动和调整大小
+    win32gui.SetWindowPos(
+        hwnd,
+        win32con.HWND_TOPMOST,
+        CONFIG["center_x"], 0,
+        CONFIG["window_width"], CONFIG["window_height"],
+        win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE
+    )
+
+    # 4. 禁用窗口的鼠标拖动响应
+    # 发送WM_SETFOCUS消息，设置焦点
+    win32api.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+    # 发送WM_NCHITTEST消息，禁用鼠标拖动
+    win32api.SendMessage(hwnd, win32con.WM_NCHITTEST, 0, 0)
+
+
+def on_window_created(window):
+    """
+    窗口创建后的回调函数
+    初始化窗口位置、样式等
+
+    参数:
+        window: webview窗口对象
+    """
+    # 声明全局变量HWND
+    global HWND
+
+    # 延迟100ms获取句柄，解决webview窗口创建延迟问题
+    time.sleep(0.1)
+
+    # 通过窗口标题查找窗口句柄
+    HWND = win32gui.FindWindow(None, "灵动岛时钟")
+
+    if HWND:
+        # 自动获取当前屏幕宽度，适配不同分辨率
+        screen_width = win32api.GetSystemMetrics(0)  # 获取当前屏幕宽度
+        # 计算窗口中心X坐标：(屏幕宽度 - 窗口宽度) // 2
+        CONFIG["center_x"] = (screen_width - CONFIG["window_width"]) // 2  # 基于实际屏幕宽度计算
+        target_y = 0  # 顶端Y坐标固定为0
+
+        # 强制设置窗口位置（顶端中心）
+        win32gui.SetWindowPos(
+            HWND,
+            win32con.HWND_TOPMOST,
+            CONFIG["center_x"], target_y,
+            CONFIG["window_width"], CONFIG["window_height"],
+            win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE
+        )
+
+        # 设置窗口样式
+        set_window_style(HWND)
+
+        # 创建并启动鼠标检测线程，用于实现窗口展开/缩回的动画效果
+        # daemon=True表示该线程为守护线程，主程序退出时自动退出
+        mouse_thread = threading.Thread(target=check_mouse_distance, daemon=True)
+        mouse_thread.start()
+
+        # 创建并启动WiFi检测线程，用于检测WiFi连接状态
+        wifi_thread = threading.Thread(target=check_wifi_connection, args=(window,), daemon=True)
+        wifi_thread.start()
+
+
+# 前端HTML文件路径
+HTML_FILE = "island.html"
+
+
+def check_wifi_connection(window):
+    """
+    检查WiFi连接状态
+    当检测到WiFi连接时，展开窗口并显示连接提示
+
+    参数:
+        window: webview窗口对象
+    """
+    while True:
+        # 检测网络连接
+        is_connected = False
+        ssid = ""
+
         try:
-            # 查找窗口句柄
-            hwnd = win32gui.FindWindow(None, "灵动岛时钟")
-            if hwnd:
-                # 获取窗口扩展样式
-                ex = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
-                # 设置新的扩展样式
-                win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
-                                       ex | win32con.WS_EX_LAYERED | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_TRANSPARENT)
-                # 设置分层窗口属性
-                win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(0, 0, 0), 255, win32con.LWA_COLORKEY)
-        except:
-            # 忽略异常
-            pass
+            # 尝试连接到114DNS服务器，超时2秒
+            socket.create_connection(("114.114.114.114", 53), timeout=2)
+            is_connected = True
 
-    def start_drag(self, event):
-        """
-        开始拖动窗口
-
-        Args:
-            event: 鼠标事件对象
-        """
-        # 记录鼠标点击位置
-        self.dx = event.x
-        self.dy = event.y
-        # 标记为拖动状态
-        self.dragging = True
-        # 取消隐藏计时器
-        if self.hover_timer:
-            self.root.after_cancel(self.hover_timer)
-            self.hover_timer = None
-        # 展开窗口
-        self.expand()
-
-    def do_drag(self, event):
-        """
-        拖动窗口
-
-        Args:
-            event: 鼠标事件对象
-        """
-        # 计算新位置
-        x = self.root.winfo_pointerx() - self.dx
-        y = self.root.winfo_pointery() - self.dy
-        # 更新中心X坐标和当前Y坐标
-        self.center_x = x
-        self.current_y = y
-        # 设置新位置
-        self.set_pos(y)
-    
-    def get_wifi_info(self):
-        """
-        获取WiFi连接信息
-        
-        Returns:
-            tuple: (is_connected, ssid)
-        """
-        try:
-            # 执行netsh命令获取WiFi接口信息
-            result = subprocess.run(['netsh', 'wlan', 'show', 'interfaces'], 
-                                  capture_output=True, text=False)
-            # 尝试使用不同编码解码
+            # 尝试获取WiFi名称（仅Windows系统）
             try:
-                output = result.stdout.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    output = result.stdout.decode('gbk')
-                except UnicodeDecodeError:
-                    output = result.stdout.decode('latin-1')
-            
-            # 检查是否连接到WiFi
-            is_connected = '状态' in output and '已连接' in output
-            
-            # 提取SSID
-            ssid_match = re.search(r'SSID\s*:\s*(.+)', output)
-            ssid = ssid_match.group(1).strip() if ssid_match else ""
-            
-            return is_connected, ssid
-        except Exception as e:
-            print(f"Error getting WiFi info: {e}")
-            return False, ""
-    
-    def check_wifi_status(self):
-        """
-        检查WiFi连接状态
-        """
-        # 获取当前WiFi状态
-        is_connected, ssid = self.get_wifi_info()
-        
-        # 检查状态变化
-        if is_connected and not self.last_wifi_status:
-            # 从断开到连接，显示通知
-            self.show_wifi_notification(ssid)
-        
-        # 更新状态
-        self.last_wifi_status = is_connected
-        self.last_wifi_ssid = ssid
-        
-        # 继续检查
-        self.root.after(5000, self.check_wifi_status)  # 每5秒检查一次
-    
-    def show_wifi_notification(self, ssid):
-        """
-        显示WiFi连接通知
-        
-        Args:
-            ssid: WiFi的SSID
-        """
-        # 取消之前的通知计时器
-        if self.wifi_notification_timer:
-            self.root.after_cancel(self.wifi_notification_timer)
-        
-        # 展开窗口
-        self.expand()
-        
-        # 保存原始标签文本和字体
-        original_time_text = self.time_label.cget("text")
-        original_time_font = self.time_label.cget("font")
-        original_date_text = self.date_label.cget("text")
-        original_date_font = self.date_label.cget("font")
-        
-        # 更新标签显示WiFi连接信息，并设置字体大小
-        self.time_label.config(text="已连接到WiFi", font=("Microsoft YaHei UI", 16, "bold"))
-        self.date_label.config(text=ssid, font=("Arial", 12))
-        
-        # 3秒后恢复显示时间和字体
-        def restore_clock():
-            self.time_label.config(text=original_time_text, font=original_time_font)
-            self.date_label.config(text=original_date_text, font=original_date_font)
-        
-        self.wifi_notification_timer = self.root.after(3000, restore_clock)
+                import subprocess
+                result = subprocess.check_output(["netsh", "wlan", "show", "interfaces"],
+                                                 shell=True, universal_newlines=True)
+                for line in result.split('\n'):
+                    if "SSID" in line and "BSSID" not in line:
+                        ssid = line.split(":")[1].strip()
+                        break
+            except:
+                ssid = "WiFi"
 
+        except:
+            is_connected = False
 
-def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
-    """
-    在Canvas上创建圆角矩形
+        # 如果WiFi状态发生变化
+        if is_connected != CONFIG["wifi_connected"]:
+            CONFIG["wifi_connected"] = is_connected
+            if is_connected:
+                # 连接成功，展开窗口并显示提示
+                if not CONFIG["is_expanded"]:
+                    expand_window()
+                # 发送WiFi连接事件到前端
+                if window and hasattr(window, 'evaluate_js'):
+                    window.evaluate_js(f"showWifiNotification('{ssid}')")
+                # 3秒后自动收缩窗口
+                def auto_shrink():
+                    if CONFIG["is_expanded"]:
+                        shrink_window()
 
-    Args:
-        x1, y1: 左上角坐标
-        x2, y2: 右下角坐标
-        radius: 圆角半径
-        **kwargs: 其他参数
+                # 取消之前的定时器（如果有）
+                if CONFIG["wifi_timer"]:
+                    CONFIG["wifi_timer"].cancel()
+                # 创建新的定时器，3秒后收缩窗口
+                CONFIG["wifi_timer"] = threading.Timer(3, auto_shrink)
+                CONFIG["wifi_timer"].start()
 
-    Returns:
-        圆角矩形的ID
-    """
-    # 计算圆角矩形的顶点坐标
-    points = [x1 + radius, y1, x1 + radius, y1, x2 - radius, y1, x2 - radius, y1, x2, y1,
-              x2, y1 + radius, x2, y1 + radius, x2, y2 - radius, x2, y2 - radius, x2, y2,
-              x2 - radius, y2, x2 - radius, y2, x1 + radius, y2, x1 + radius, y2, x1, y2,
-              x1, y2 - radius, x1, y2 - radius, x1, y1 + radius, x1, y1 + radius, x1, y1]
-    # 创建多边形并返回ID
-    return self.create_polygon(points, **kwargs, smooth=True)
-
-
-# 为Canvas类添加create_rounded_rectangle方法
-tk.Canvas.create_rounded_rectangle = create_rounded_rectangle
-
+        # 每3秒检查一次
+        time.sleep(3)
+# 主函数
 if __name__ == "__main__":
-    """
-    主函数
-    创建并运行灵动岛时钟应用
-    """
-    # 创建应用实例
-    app = DynamicIslandClock()
-    # 启动主循环
-    app.root.mainloop()
+    # 创建webview窗口
+    # 参数说明：
+    # title: 窗口标题
+    # html: 窗口内容（HTML代码）
+    # width: 窗口宽度
+    # height: 窗口高度
+    # resizable: 是否可调整大小
+    # frameless: 是否无边框
+    # transparent: 是否透明背景
+    window = webview.create_window(
+        title="灵动岛时钟",
+        url=HTML_FILE,
+        width=CONFIG["window_width"],
+        height=CONFIG["window_height"],
+        resizable=False,
+        frameless=True,  # 无边框
+        transparent=True  # 透明背景
+    )
+
+    # 启动webview，窗口创建后执行on_window_created函数进行初始化
+    webview.start(on_window_created, window)
