@@ -23,10 +23,10 @@
         
         /* 灵动岛容器样式 */
         .island {
-            width: calc(100% - 10px);  /* 宽度为窗口宽度减去10px */
-            height: calc(100% - 10px);  /* 高度为窗口高度减去10px */
+            width: 100%;  /* 使用完整的窗口宽度 */
+            height: 90%;  /* 使用完整的窗口高度 */
             background: rgba(0,0,0,0.5);  /* 背景颜色 */
-            border-radius: 40px;  /* 圆角边框 */
+            border-radius: 45px;  /* 圆角边框，与窗口高度90px的一半匹配 */
             border: none;  /* 移除边框 */
             display: flex;  /* 使用Flex布局 */
             flex-direction: column;  /* 垂直方向排列 */
@@ -92,6 +92,49 @@
             text-align: center;
         }
         
+        /* 蓝牙提示窗口样式 */
+        .bluetooth-notification-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 90px;
+            background: rgba(0,0,0,1);
+            border-radius: 40px;
+            border: none;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: "Microsoft YaHei UI", Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+            transition: all 0.3s ease;
+            padding: 0 20px;
+        }
+        
+        .bluetooth-notification-window.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        /* 蓝牙图标样式 */
+        .bluetooth-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #0078d7;
+        }
+        
+        /* 蓝牙消息样式 */
+        .bluetooth-message {
+            text-align: center;
+        }
+        
         /* 全局样式设置 */
         html, body {
             margin: 0;
@@ -119,6 +162,14 @@
     <div class="wifi-notification-window" id="wifiNotification">
         <div class="wifi-icon"><img src="icon/wifi.png" alt="WiFi" width="42" height="30"></div>
         <div class="wifi-message"></div>
+    </div>
+    
+    <!-- 蓝牙连接提示窗口 -->
+    <div class="bluetooth-notification-window" id="bluetoothNotification">
+        <div class="bluetooth-icon">
+                <img src="icon/blueteeth.png" alt="WiFi" width="42" height="42">
+        </div>
+        <div class="bluetooth-message"></div>
     </div>
 
     <script>
@@ -148,16 +199,41 @@
         }
 
         // 显示WiFi连接提示窗口
-        function showWifiNotification(ssid) {
+        function showWifiNotification(message) {
             const notification = document.getElementById('wifiNotification');
             const messageElement = notification.querySelector('.wifi-message');
-            messageElement.textContent = `已连接到 WiFi: ${ssid}`;
+            
+            if (message === 'WiFi已断开') {
+                messageElement.innerHTML = `<span style="color: #ff6b6b;">${message}</span>`;
+            } else {
+                messageElement.innerHTML = `<span style="color: aquamarine;">已连接到 WiFi:</span> ${message}`;
+            }
+            
             notification.classList.add('show');
             
-            // 3秒后隐藏提示窗口
+            // 1.5秒后隐藏提示窗口
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3500);
+            }, 2800);
+        }
+        
+        // 显示蓝牙连接提示窗口
+        function showBluetoothNotification(message) {
+            const notification = document.getElementById('bluetoothNotification');
+            const messageElement = notification.querySelector('.bluetooth-message');
+            
+            if (message === '蓝牙已断开') {
+                messageElement.innerHTML = `<span style="color: #ff6b6b;">蓝牙:</span> ${message}`;
+            } else {
+                messageElement.innerHTML = `<span style="color: #0078d7;">蓝牙:</span> ${message}`;
+            }
+            
+            notification.classList.add('show');
+            
+            // 1.5秒后隐藏提示窗口
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2800);
         }
 
         // 初始化时钟显示
@@ -169,6 +245,11 @@
         if (window.pywebview) {
             window.pywebview.api.onWifiConnected = function(ssid) {
                 showWifiNotification(ssid);
+            };
+            
+            // 监听Python端发送的蓝牙连接事件
+            window.pywebview.api.onBluetoothConnected = function(deviceName) {
+                showBluetoothNotification(deviceName);
             };
         }
 
