@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>灵动岛时钟</title>
+    <style>
+        /* 重置所有元素的默认样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 设置body样式 */
+        body {
+            background: transparent;  /* 背景透明 */
+            display: flex;  /* 使用Flex布局 */
+            flex-direction: column;  /* 垂直方向排列 */
+            align-items: center;  /* 水平居中 */
+            justify-content: center;  /* 垂直居中 */
+            font-family: "Microsoft YaHei UI", Arial, sans-serif;  /* 设置字体 */
+        }
+
+        /* 灵动岛容器样式 */
+        .island {
+            width: 100%;  /* 使用完整的窗口宽度 */
+            height: 90%;  /* 使用完整的窗口高度 */
+            background: rgba(0,0,0,0.5);  /* 背景颜色 */
+            border-radius: 45px;  /* 圆角边框，与窗口高度90px的一半匹配 */
+            border: none;  /* 移除边框 */
+            display: flex;  /* 使用Flex布局 */
+            flex-direction: column;  /* 垂直方向排列 */
+            align-items: center;  /* 水平居中 */
+            justify-content: center;  /* 垂直居中 */
+            color: white;  /* 文字颜色 */
+            pointer-events: none;  /* 禁用容器的鼠标事件 */
+            user-select: none;  /* 禁用容器内文本选中 */
+        }
+
+        /* 时间显示样式 */
+        .time {
+            font-size: 24px;  /* 字体大小 */
+            font-weight: bold;  /* 字体加粗 */
+            margin-bottom: 4px;  /* 底部边距 */
+        }
+
+        /* 日期显示样式 */
+        .date {
+            font-size: 10px;  /* 字体大小 */
+            color: #cccccc;  /* 文字颜色 */
+        }
+
+        /* WiFi提示窗口样式 */
+        .wifi-notification-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 90px;
+            background: rgba(0,0,0,1);
+            border-radius: 40px;
+            border: none;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: "Microsoft YaHei UI", Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+            transition: all 0.3s ease;
+            padding: 0 20px;
+        }
+
+        .wifi-notification-window.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* WiFi图标样式 */
+        .wifi-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        /* WiFi消息样式 */
+        .wifi-message {
+            text-align: center;
+        }
+
+        /* 蓝牙提示窗口样式 */
+        .bluetooth-notification-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 90px;
+            background: rgba(0,0,0,1);
+            border-radius: 40px;
+            border: none;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: "Microsoft YaHei UI", Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+            transition: all 0.3s ease;
+            padding: 0 20px;
+        }
+
+        .bluetooth-notification-window.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* 蓝牙图标样式 */
+        .bluetooth-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #0078d7;
+        }
+
+        /* 蓝牙消息样式 */
+        .bluetooth-message {
+            text-align: center;
+        }
+
+        /* 全局样式设置 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;  /* 隐藏滚动条 */
+            width: 100%;  /* 确保页面宽度和窗口一致 */
+            height: 100%;  /* 确保页面高度和窗口一致 */
+            background: transparent;  /* 背景透明 */
+            pointer-events: none;  /* 禁用所有鼠标事件 */
+            user-select: none;  /* 禁用文本选中 */
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 灵动岛容器 -->
+    <div class="island">
+        <!-- 时间显示区域 -->
+        <div class="time" id="time"></div>
+        <!-- 日期显示区域 -->
+        <div class="date" id="date"></div>
+    </div>
+
+    <!-- WiFi连接提示窗口 -->
+    <div class="wifi-notification-window" id="wifiNotification">
+        <div class="wifi-icon"><img src="icon/wifi.png" alt="WiFi" width="42" height="30"></div>
+        <div class="wifi-message"></div>
+    </div>
+
+    <!-- 蓝牙连接提示窗口 -->
+    <div class="bluetooth-notification-window" id="bluetoothNotification">
+        <div class="bluetooth-icon">
+                <img src="icon/blueteeth.png" alt="WiFi" width="42" height="42">
+        </div>
+        <div class="bluetooth-message"></div>
+    </div>
+
+    <script>
+        // 星期几中文映射对象
+        const weekMap = {
+            'Monday': '周一', 'Tuesday': '周二', 'Wednesday': '周三',
+            'Thursday': '周四', 'Friday': '周五', 'Saturday': '周六', 'Sunday': '周日'
+        };
+
+        // 更新时钟函数
+        function updateClock() {
+            // 获取当前时间
+            const now = new Date();
+
+            // 获取时分秒字符串（格式：HH:MM:SS）
+            const timeStr = now.toTimeString().split(' ')[0];
+
+            // 构建日期字符串（格式：YYYY-MM-DD）
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} `;
+
+            // 获取星期几的中文表示
+            const weekStr = weekMap[now.toLocaleDateString('en-US', { weekday: 'long' })];
+
+            // 更新页面上的时间和日期显示
+            document.getElementById('time').textContent = timeStr;
+            document.getElementById('date').textContent = dateStr + weekStr;
+        }
+
+        // 显示WiFi连接提示窗口
+        function showWifiNotification(message) {
+            const notification = document.getElementById('wifiNotification');
+            const messageElement = notification.querySelector('.wifi-message');
+
+            if (message === 'WiFi已断开') {
+                messageElement.innerHTML = `<span style="color: #ff6b6b;">${message}</span>`;
+            } else {
+                messageElement.innerHTML = `<span style="color: aquamarine;">已连接到 WiFi:</span> ${message}`;
+            }
+
+            notification.classList.add('show');
+
+            // 1.5秒后隐藏提示窗口
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2800);
+        }
+
+        // 显示蓝牙连接提示窗口
+        function showBluetoothNotification(message) {
+            const notification = document.getElementById('bluetoothNotification');
+            const messageElement = notification.querySelector('.bluetooth-message');
+
+            if (message === '蓝牙已断开') {
+                messageElement.innerHTML = `<span style="color: #ff6b6b;">蓝牙:</span> ${message}`;
+            } else {
+                messageElement.innerHTML = `<span style="color: #0078d7;">蓝牙:</span> ${message}`;
+            }
+
+            notification.classList.add('show');
+
+            // 1.5秒后隐藏提示窗口
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2800);
+        }
+
+        // 初始化时钟显示
+        updateClock();
+        // 设置定时器，每秒更新一次时钟
+        setInterval(updateClock, 1000);
+
+        // 监听Python端发送的WiFi连接事件
+        if (window.pywebview) {
+            window.pywebview.api.onWifiConnected = function(ssid) {
+                showWifiNotification(ssid);
+            };
+
+            // 监听Python端发送的蓝牙连接事件
+            window.pywebview.api.onBluetoothConnected = function(deviceName) {
+                showBluetoothNotification(deviceName);
+            };
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# PyIsland 项目依赖
+# 核心依赖
+pywebview
+pywin32
+bleak
+
+# 打包工具
+pyinstaller
