@@ -74,11 +74,29 @@ PS:Path> island
 
 ---
 
+## 二 资源占用
+
+### 2.1 测试环境说明
+
+**系统**: Windows 11 家庭中文版
+**CPU**: I7-12800
+**RAM**: 16 GB
+
+### 2.2 运行时占用
+
+**内存**: 在运行一小时后, 内存占用在`20744 K`左右浮动, 最高在`24000 K`以下
+
+**启动用时**: 不到 3 秒
+
+<img src="./assets/cost.png" alt="占用截图" height="36" width="929"/>
+
+---
+
 以下章节由 AI 生成
 
-## 二 设计架构
+## 三 设计架构
 
-### 2.1 整体架构概览
+### 3.1 整体架构概览
 
 本程序采用**模块化设计**与**事件驱动架构**, 主要包含以下核心模块:
 
@@ -94,7 +112,7 @@ PyIsland/
 └── Monitor.py        # 异步监控模块(网络/蓝牙)
 ```
 
-### 2.2 模块说明
+### 3.2 模块说明
 
 | 模块                | 职责            | 关键类/组件                                      |
 |-------------------|---------------|---------------------------------------------|
@@ -106,7 +124,7 @@ PyIsland/
 | **Monitor**       | 后台硬件/网络状态监控   | `AsyncMonitorThread`(继承`QThread`+`asyncio`) |
 | **main/instance** | 程序入口与守护化      | `island`(后台启动)、`_island_instance`(主进程)      |
 
-### 2.3 事件驱动模型
+### 3.3 事件驱动模型
 
 程序基于**事件总线**进行模块间通信，实现了松耦合设计:
 
@@ -124,14 +142,14 @@ event_manager.publish(EventCode.NETWORK_RESTORE)
 self._handle_notification(event_data) -> show_notification()
 ```
 
-### 2.4 配置管理
+### 3.4 配置管理
 
 - **单例模式**: `ConfigManager` 确保全局唯一配置实例
 - **配置文件**: 存储在 `~/.island.config` (JSON格式)
 - **默认配置**: 内置默认值，自动创建/补全缺失配置项
 - **动态属性**: 配置项直接作为类属性访问(`CONFIG_MANAGER.ISLAND_INIT_WIDTH`)
 
-### 2.5 动画系统
+### 3.5 动画系统
 
 基于PyQt5的属性动画框架实现流畅过渡:
 
@@ -141,7 +159,7 @@ self._handle_notification(event_data) -> show_notification()
 - **透明度动画**: 控制内容标签的淡入淡出
 - **缓动曲线**: 使用 `QEasingCurve.OutBack` 实现弹性效果
 
-### 2.6 监控系统
+### 3.6 监控系统
 
 - **异步监控线程**: 继承 `QThread` 并集成 `asyncio` 事件循环
 - **网络监控**: 通过异步DNS查询检测网络连通性
