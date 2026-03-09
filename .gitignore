@@ -1,2 +1,6 @@
-/island.*
 .idea
+build
+dist
+src/PyIsland.egg-info
+
+instance.spec

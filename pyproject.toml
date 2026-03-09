@@ -1,32 +1,26 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "stv_AdHelper"
-version = "0.0.2"
+name = "PyIsland"
+version = "0.0.1"
 authors = [
+    { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"},
     { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"}
 ]
-description = "Auto send Ad to your game's chat room."
+description = "Dynamic Island on Windows, written in Python"
 readme = "./readme.md"
-license = "GPL-3"
+license = "GPL-3.0-only"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "pyqt5",
-    "pyperclip",
-    "pyautogui",
-    "stv_utils"
+    "pyqt5"
 ]
-urls = { "Homepage" = "https://github.com/StarWindv/Ad-Helper" }
+urls = { "Homepage" = "https://github.com/StarWindv/PyIsland" }
 
 [project.scripts]
-sadui = "stv_AdHelper.main_ui:main"
-sad = "stv_AdHelper.main:main"
-
-
-[tool.setuptools]
-license-files = []
+_island_instance = "PyIsland.instance:main"
+island = "PyIsland.main:main"
