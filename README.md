@@ -1,5 +1,8 @@
 ### 项目简介
 仿苹果灵动岛的桌面小组件，基于 PyQt5 在 Windows 上运行，集成音量/亮度控制、屏幕录制、音乐播放信息、日历、电池与系统状态显示，手势截屏已移除，仅保留可选的手势调试脚本。
+<img width="220" height="42" alt="image" src="https://github.com/user-attachments/assets/e3a9dd96-8f9f-4ad9-96c0-3a0ca5e4f741" />
+
+<img width="1650" height="989" alt="image" src="https://github.com/user-attachments/assets/2ac496fc-351e-4848-abe9-49aabf510744" />
 
 ### 核心功能
 - **灵动岛主界面**：悬浮窗口可展开/收起，显示时间、通知、音乐信息、音量/亮度、电池、电量、日历、录制按钮等（部分功能按依赖可用性自动降级）。
