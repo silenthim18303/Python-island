@@ -14,7 +14,7 @@
 - **GUI**：PyQt5（动画、快捷键、窗口拖拽与展开/收起动画）。
 - **多媒体**：mss、opencv-python、Pillow（录屏/图像处理）；pycaw/comtypes、win32api/win32con（音量）；wmi/pywin32（亮度）。
 - **系统信息**：psutil（电池/进程），win32gui/win32process（窗口信息）。
-- **手势**：可选，仅用于独立调试脚本（`mediapipe`、`pyautogui`，默认不安装）。
+- **手势**：可选，仅用于独立调试脚本（`mediapipe`、`pyautogui`，默认不安装）。--------------（正在调试中）
 
 ### 环境要求
 - Windows 10/11，Python 3.9–3.11（32/64 位均可）。
