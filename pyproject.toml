@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "PyIsland"
 version = "0.0.1"
 authors = [
-    { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"},
     { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"}
 ]
 description = "Dynamic Island on Windows, written in Python"

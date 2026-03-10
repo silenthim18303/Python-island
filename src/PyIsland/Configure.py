@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from threading import Lock
 
-# noinspection PyUnresolvedReferences
 
+# noinspection PyUnresolvedReferences
 class ConfigManager:
     _instance = None
     _lock = Lock()
