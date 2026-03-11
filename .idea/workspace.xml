@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="20039620-ab81-4bea-bcdd-20043e3a58cc" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/PyislandWeb.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/island.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;silenthim18303&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/silenthim18303/Python-island.git&quot;,
+    &quot;accountId&quot;: &quot;12c20663-cb18-4028-a0e9-828c547d7e16&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3AfJsrg101rmqidIvRNBx73lUY5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;JavaScript 调试.island.html.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.island.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/PyislandWeb/icon&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\PyislandWeb\icon" />
+      <recent name="E:\PyislandWeb" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\PyislandWeb" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9c94529fcfe0-JavaScript-PY-252.26199.168" />
+        <option value="bundled-python-sdk-b3d66beaba9a-c6efb3732140-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.26199.168" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="20039620-ab81-4bea-bcdd-20043e3a58cc" name="更改" comment="" />
+      <created>1772977900491</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1772977900491</updated>
+      <workItem from="1772977901551" duration="4566000" />
+      <workItem from="1772982573640" duration="1435000" />
+      <workItem from="1773033275603" duration="1393000" />
+      <workItem from="1773035803720" duration="23000" />
+      <workItem from="1773039605194" duration="1321000" />
+      <workItem from="1773057846385" duration="1037000" />
+      <workItem from="1773110666130" duration="2841000" />
+      <workItem from="1773141470075" duration="649000" />
+      <workItem from="1773144215843" duration="9519000" />
+      <workItem from="1773204862333" duration="6671000" />
+      <workItem from="1773227479586" duration="11000" />
+      <workItem from="1773227501943" duration="8288000" />
+      <workItem from="1773236811936" duration="158000" />
+      <workItem from="1773237066961" duration="215000" />
+      <workItem from="1773237292464" duration="328000" />
+    </task>
+    <task id="LOCAL-00001" summary="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）">
+      <option name="closed" value="true" />
+      <created>1773035059413</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1773035059413</updated>
+    </task>
+    <task id="LOCAL-00002" summary="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）">
+      <option name="closed" value="true" />
+      <created>1773035109032</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1773035109032</updated>
+    </task>
+    <task id="LOCAL-00003" summary="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）">
+      <option name="closed" value="true" />
+      <created>1773035237269</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1773035237269</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
+    <option name="LAST_COMMIT_MESSAGE" value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PyislandWeb$main.coverage" NAME="main 覆盖结果" MODIFIED="1773237534379" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$island.coverage" NAME="island 覆盖结果" MODIFIED="1773233506546" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$utils.coverage" NAME="utils 覆盖结果" MODIFIED="1773235334251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+  </component>
+</project>

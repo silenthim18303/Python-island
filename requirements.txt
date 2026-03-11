@@ -1,0 +1,9 @@
+# 项目依赖
+PySide6
+# 亮度控制
+# 安装命令: pip install screen-brightness-control
+screen-brightness-control
+# 音量控制
+# 安装命令: pip install pycaw comtypes
+# pycaw
+# comtypes
