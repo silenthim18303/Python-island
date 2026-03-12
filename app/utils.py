@@ -1,7 +1,15 @@
-import json
+import re
 import subprocess
 import socket
+import webbrowser
+from typing import List, Optional
 
+# 尝试导入剪贴板相关库
+try:
+    from PySide6.QtGui import QGuiApplication
+    clipboard_available = True
+except ImportError:
+    clipboard_available = False
 
 # 尝试导入亮度控制库
 try:
@@ -364,3 +372,67 @@ def _safe_delete_gdi_bitmap(bitmap) -> None:
     except Exception:
         # TODO 添加错误提示
         pass
+
+
+def get_clipboard_text() -> Optional[str]:
+    """获取剪贴板文本内容。"""
+    if not clipboard_available:
+        return None
+    try:
+        clipboard = QGuiApplication.clipboard()
+        return clipboard.text()
+    except Exception:
+        return None
+
+
+def extract_urls(text: str) -> List[str]:
+    """从文本中提取所有 URL。"""
+    if not text:
+        return []
+
+    # URL 正则表达式
+    url_pattern = re.compile(
+        r'https?://'
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'
+        r'localhost|'
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+        r'(?::\d+)?'
+        r'(?:/?|[/?]\S+)$',
+        re.IGNORECASE
+    )
+
+    # 简化版 URL 匹配
+    simple_url_pattern = re.compile(
+        r'https?://[^\s<>"{}|\\^`\[\]]+',
+        re.IGNORECASE
+    )
+
+    urls = simple_url_pattern.findall(text)
+    # 去重并保持顺序
+    seen = set()
+    unique_urls = []
+    for url in urls:
+        url = url.rstrip('.,;:)')  # 移除末尾的标点符号
+        if url not in seen:
+            seen.add(url)
+            unique_urls.append(url)
+
+    return unique_urls
+
+
+def open_url(url: str) -> bool:
+    """使用默认浏览器打开 URL。"""
+    try:
+        webbrowser.open(url)
+        return True
+    except Exception:
+        return False
+
+
+def open_urls(urls: List[str]) -> int:
+    """批量打开 URL，返回成功打开的数量。"""
+    count = 0
+    for url in urls:
+        if open_url(url):
+            count += 1
+    return count
