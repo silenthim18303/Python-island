@@ -2,6 +2,7 @@ import json
 import subprocess
 import socket
 
+
 # 尝试导入亮度控制库
 try:
     import screen_brightness_control as sbc
@@ -25,6 +26,7 @@ try:
     import win32con
     import win32com.client
     import pythoncom
+    import win32gui , win32ui
 
     windows_api_available = True
     volume_initialized = False
@@ -306,3 +308,59 @@ def get_all_status():
     battery_info = (charge, status)
 
     return wifi_info, bluetooth_devices, battery_info
+
+def get_screen_shot(path : str) -> None:
+    try:
+        vx = win32api.GetSystemMetrics(win32con.SM_XVIRTUALSCREEN)
+        vy = win32api.GetSystemMetrics(win32con.SM_YVIRTUALSCREEN)
+        vw = win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN)
+        vh = win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN)
+
+        if vw <= 0 or vh <= 0:
+            # TODO 添加错误提示
+            pass
+        
+        hwnd = 0
+        hwndDC = win32gui.GetWindowDC(hwnd)
+        mfcDC = win32ui.CreateDCFromHandle(hwndDC)
+        saveDC = mfcDC.CreateCompatibleDC()
+
+        saveBitMap = win32ui.CreateBitmap()
+        saveBitMap.CreateCompatibleBitmap(mfcDC, vw, vh)
+        saveDC.SelectObject(saveBitMap)
+
+        saveDC.BitBlt((0, 0), (vw, vh), mfcDC, (vx, vy), win32con.SRCCOPY)
+
+        saveBitMap.SaveBitmapFile(saveDC, path)
+
+        saveDC.DeleteDC()
+        _safe_delete_gdi_bitmap(saveBitMap)
+        mfcDC.DeleteDC()
+        win32gui.ReleaseDC(hwnd, hwndDC)
+
+    except Exception as e:
+        # TODO 添加错误提示
+        pass
+    
+def _safe_delete_gdi_bitmap(bitmap) -> None:
+    if bitmap is None:
+        return
+
+    try:
+        delete_obj = getattr(bitmap, "DeleteObject", None)
+        if callable(delete_obj):
+            delete_obj()
+            return
+    except Exception:
+        # TODO 添加错误提示
+        pass
+
+    try:
+        get_handle = getattr(bitmap, "GetHandle", None)
+        if callable(get_handle):
+            hbitmap = get_handle()
+            if hbitmap:
+                win32gui.DeleteObject(hbitmap)
+    except Exception:
+        # TODO 添加错误提示
+        pass
