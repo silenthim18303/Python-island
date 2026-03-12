@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 
 from PySide6.QtCore import (
+    QEvent,
     QThread,
     QEasingCurve,
     QPropertyAnimation,
@@ -207,9 +208,8 @@ class ModernIsland(QWidget):
         self._clipboard_timer.timeout.connect(self._check_clipboard)
         self._clipboard_timer.start(1500)  # 每1.5秒检查一次剪贴板
 
-
-
-        # 加载初始值（异步）
+        # URL 对话框跟踪
+        self._url_dialog = None        # 加载初始值（异步）
         self._start_initial_values_load()
         # 初始化亮度值
         self.current_brightness = 50
@@ -457,6 +457,13 @@ class ModernIsland(QWidget):
             if hasattr(self, '_notification_timer'):
                 delattr(self, '_notification_timer')
 
+    def eventFilter(self, obj, event):
+        """事件过滤器，用于处理对话框关闭事件。"""
+        if event.type() == QEvent.Close and obj == self._url_dialog:
+            self._url_dialog = None
+            return True
+        return super().eventFilter(obj, event)
+
     def _check_clipboard(self):
         """检查剪贴板是否有新的 URL。"""
         current_text = get_clipboard_text()
@@ -488,6 +495,11 @@ class ModernIsland(QWidget):
 
     def _show_single_url_dialog(self, url: str):
         """显示单个 URL 的选择对话框。"""
+        # 关闭已存在的对话框
+        if self._url_dialog is not None:
+            self._url_dialog.close()
+            self._url_dialog = None
+
         dialog = QFrame(self)
         dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         dialog.setObjectName("UrlDialog")
@@ -528,6 +540,15 @@ class ModernIsland(QWidget):
         dialog_pos = self.mapToGlobal(self.rect().bottomLeft())
         dialog.move(dialog_pos.x() - 50, dialog_pos.y() + 10)
         dialog.show()
+
+        # 保存对话框引用
+        self._url_dialog = dialog
+
+        # 5秒后自动关闭
+        auto_close_timer = QTimer(self)
+        auto_close_timer.setSingleShot(True)
+        auto_close_timer.timeout.connect(dialog.close)
+        auto_close_timer.start(5000)
 
     def _open_and_close(self, url: str, dialog):
         """打开 URL 并关闭对话框。"""
@@ -580,6 +601,15 @@ class ModernIsland(QWidget):
         dialog_pos = self.mapToGlobal(self.rect().bottomLeft())
         dialog.move(dialog_pos.x() - 50, dialog_pos.y() + 10)
         dialog.show()
+
+        # 保存对话框引用
+        self._url_dialog = dialog
+
+        # 5秒后自动关闭
+        auto_close_timer = QTimer(self)
+        auto_close_timer.setSingleShot(True)
+        auto_close_timer.timeout.connect(dialog.close)
+        auto_close_timer.start(5000)
 
     def _open_selected_urls(self, dialog):
         """打开选中的 URL。"""

@@ -103,6 +103,7 @@ QSlider#CapsuleSlider::groove:horizontal:hover {
     font-size: 12px;
     font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
     padding: 5px;
+    min-height: 20px;
 }
 
 QCheckBox {
