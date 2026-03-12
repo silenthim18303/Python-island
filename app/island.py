@@ -17,20 +17,24 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QFrame,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QSlider,
     QVBoxLayout,
     QWidget,
 )
 
 from app.utils import (
+    extract_urls,
     get_all_status,
+    get_clipboard_text,
     get_system_brightness,
-    get_system_volume,
+    open_url,
+    open_urls,
     set_brightness,
-    set_volume,
 )
 
 
@@ -196,6 +200,12 @@ class ModernIsland(QWidget):
         self.debounce_timer.setSingleShot(True)
         self.debounce_timer.timeout.connect(self._start_brightness_apply)
         self.current_brightness = 50
+
+        # 剪贴板监听相关
+        self._last_clipboard_text = ""
+        self._clipboard_timer = QTimer(self)
+        self._clipboard_timer.timeout.connect(self._check_clipboard)
+        self._clipboard_timer.start(1500)  # 每1.5秒检查一次剪贴板
 
 
 
@@ -446,6 +456,141 @@ class ModernIsland(QWidget):
                 delattr(self, '_original_time_text')
             if hasattr(self, '_notification_timer'):
                 delattr(self, '_notification_timer')
+
+    def _check_clipboard(self):
+        """检查剪贴板是否有新的 URL。"""
+        current_text = get_clipboard_text()
+        if not current_text or current_text == self._last_clipboard_text:
+            return
+
+        self._last_clipboard_text = current_text
+
+        # 提取 URL
+        urls = extract_urls(current_text)
+        if not urls:
+            return
+
+        # 显示通知让用户选择
+        self._show_url_notification(urls)
+
+    def _show_url_notification(self, urls: list):
+        """显示 URL 通知让用户选择是否打开。"""
+        if len(urls) == 1:
+            url = urls[0]
+            # 不直接显示URL，只显示提示
+            self.show_notification_on_time("检测到链接", "🔗")
+
+            # 延迟后显示选择对话框
+            QTimer.singleShot(1500, lambda: self._show_single_url_dialog(urls[0]))
+        else:
+            # 多个 URL，显示选择对话框
+            self._show_url_selection_dialog(urls)
+
+    def _show_single_url_dialog(self, url: str):
+        """显示单个 URL 的选择对话框。"""
+        dialog = QFrame(self)
+        dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
+        dialog.setObjectName("UrlDialog")
+        dialog.setFixedSize(320, 120)
+
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+
+        # 标题
+        title = QLabel("检测到链接")
+        title.setObjectName("DialogTitle")
+        layout.addWidget(title)
+
+        # URL 显示
+        url_label = QLabel(url[:50] + "..." if len(url) > 50 else url)
+        url_label.setObjectName("UrlLabel")
+        url_label.setWordWrap(True)
+        layout.addWidget(url_label)
+
+        # 按钮区域
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        cancel_btn = QPushButton("忽略")
+        cancel_btn.setObjectName("DialogButton")
+        cancel_btn.clicked.connect(dialog.close)
+
+        open_btn = QPushButton("打开链接")
+        open_btn.setObjectName("DialogButton")
+        open_btn.clicked.connect(lambda: self._open_and_close(url, dialog))
+
+        btn_layout.addWidget(cancel_btn)
+        btn_layout.addWidget(open_btn)
+        layout.addLayout(btn_layout)
+
+        # 显示在灵动岛下方
+        dialog_pos = self.mapToGlobal(self.rect().bottomLeft())
+        dialog.move(dialog_pos.x() - 50, dialog_pos.y() + 10)
+        dialog.show()
+
+    def _open_and_close(self, url: str, dialog):
+        """打开 URL 并关闭对话框。"""
+        open_url(url)
+        dialog.close()
+
+    def _show_url_selection_dialog(self, urls: list):
+        """显示 URL 选择对话框。"""
+        # 创建对话框
+        dialog = QFrame(self)
+        dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
+        dialog.setObjectName("UrlDialog")
+        dialog.setFixedSize(320, min(400, 80 + len(urls) * 50))
+
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+
+        # 标题
+        title = QLabel(f"检测到 {len(urls)} 个链接")
+        title.setObjectName("DialogTitle")
+        layout.addWidget(title)
+
+        # URL 列表
+        self._url_checkboxes = []
+        for url in urls:
+            checkbox = QCheckBox(url[:60] + "..." if len(url) > 60 else url)
+            checkbox.setChecked(True)
+            checkbox._url = url
+            self._url_checkboxes.append(checkbox)
+            layout.addWidget(checkbox)
+
+        # 按钮区域
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        cancel_btn = QPushButton("取消")
+        cancel_btn.setObjectName("DialogButton")
+        cancel_btn.clicked.connect(dialog.close)
+
+        open_btn = QPushButton("打开选中")
+        open_btn.setObjectName("DialogButton")
+        open_btn.clicked.connect(lambda: self._open_selected_urls(dialog))
+
+        btn_layout.addWidget(cancel_btn)
+        btn_layout.addWidget(open_btn)
+        layout.addLayout(btn_layout)
+
+        # 显示在灵动岛下方
+        dialog_pos = self.mapToGlobal(self.rect().bottomLeft())
+        dialog.move(dialog_pos.x() - 50, dialog_pos.y() + 10)
+        dialog.show()
+
+    def _open_selected_urls(self, dialog):
+        """打开选中的 URL。"""
+        for checkbox in self._url_checkboxes:
+            if checkbox.isChecked():
+                open_url(checkbox._url)
+        dialog.close()
+
+    def _open_all_urls(self, urls: list):
+        """打开所有 URL。"""
+        open_urls(urls)
 
     def load_qss(self):
         """加载QSS样式表。"""
