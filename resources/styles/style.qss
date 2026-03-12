@@ -9,8 +9,8 @@
 /* 时间文字样式 */
 /* 可修改项：color（文字颜色）、font-size（字体大小）、font-weight（字重） */
 #TimeLabel {
-    color: #FFFFFF; /* 白色文字 */
-    font-family: "SF Pro Display", "Segoe UI", sans-serif; /* 字体，优先使用SF Pro Display，其次是Segoe UI */
+    color: #FFFFFF; /* 纯白色文字 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体，优先使用微软雅黑 */
     font-size: 15px; /* 15px字体大小 */
     font-weight: bold; /* 粗体 */
 }
@@ -18,17 +18,18 @@
 /* 图标样式 */
 /* 可修改项：color（图标颜色）、font-size（图标大小） */
 #IconLabel {
-    color: #888888; /* 灰色图标 */
+    color: #FFFFFF; /* 纯白色图标 */
     font-size: 18px; /* 18px图标大小 */
-    font-family: "Segoe UI Symbol"; /* 确保能显示图标字符 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体，优先使用微软雅黑 */
 }
 
 /* 数值百分比样式 */
 /* 可修改项：color（文字颜色）、font-size（字体大小） */
 #ValueLabel {
-    color: #666666; /* 深灰色文字 */
+    color: #FFFFFF; /* 纯白色文字 */
     font-size: 12px; /* 12px字体大小 */
-    font-family: "Consolas", monospace; /* 等宽字体防止数值变动时抖动 */
+    font-family: "微软雅黑", "Microsoft YaHei", monospace; /* 字体，优先使用微软雅黑 */
+    font-weight: bold; /* 粗体 */
 }
 
 /* 现代滑动条定制 */
@@ -78,7 +79,8 @@ QSlider#CapsuleSlider::groove:horizontal:hover {
 /* 状态栏标签样式 */
 /* 可修改项：color（文字颜色）、font-size（字体大小） */
 #StatusLabel {
-    color: #888888; /* 灰色文字 */
+    color: #FFFFFF; /* 纯白色文字 */
     font-size: 12px; /* 12px字体大小 */
-    font-family: "SF Pro Display", "Segoe UI", sans-serif; /* 与时间标签保持一致的字体 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体，优先使用微软雅黑 */
+    font-weight: bold; /* 粗体 */
 }

@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="20039620-ab81-4bea-bcdd-20043e3a58cc" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/PyislandWeb.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/island.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/island.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/island.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/styles/style.qss" beforeDir="false" afterPath="$PROJECT_DIR$/resources/styles/style.qss" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,31 +50,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;JavaScript 调试.island.html.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.island.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/PyislandWeb/icon&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "JavaScript 调试.island.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.island.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.utils.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "pyislandPyside6",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "E:/PyislandWeb/resources/icons",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\PyislandWeb\resources\icons" />
       <recent name="E:\PyislandWeb\icon" />
       <recent name="E:\PyislandWeb" />
     </key>
@@ -111,6 +113,9 @@
       <workItem from="1773236811936" duration="158000" />
       <workItem from="1773237066961" duration="215000" />
       <workItem from="1773237292464" duration="328000" />
+      <workItem from="1773237640887" duration="1187000" />
+      <workItem from="1773239324952" duration="11000" />
+      <workItem from="1773293315846" duration="5969000" />
     </task>
     <task id="LOCAL-00001" summary="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）">
       <option name="closed" value="true" />
@@ -146,9 +151,20 @@
     <MESSAGE value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
     <option name="LAST_COMMIT_MESSAGE" value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PyislandWeb$main.coverage" NAME="main 覆盖结果" MODIFIED="1773237534379" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PyislandWeb$island.coverage" NAME="island 覆盖结果" MODIFIED="1773233506546" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PyislandWeb$utils.coverage" NAME="utils 覆盖结果" MODIFIED="1773235334251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$main.coverage" NAME="main 覆盖结果" MODIFIED="1773299647964" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$island.coverage" NAME="island 覆盖结果" MODIFIED="1773299333179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$utils.coverage" NAME="utils 覆盖结果" MODIFIED="1773297171812" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
   </component>
 </project>
