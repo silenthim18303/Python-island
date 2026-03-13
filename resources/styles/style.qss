@@ -15,6 +15,14 @@
     font-weight: bold; /* 粗体 */
 }
 
+/* 日期+时间文字样式 */
+#DateLabel {
+    color: #FFFFFF; /* 纯白色文字 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+
 /* 图标样式 */
 /* 可修改项：color（图标颜色）、font-size（图标大小） */
 #IconLabel {

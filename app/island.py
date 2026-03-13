@@ -10,6 +10,7 @@ from PySide6.QtCore import (
     QThread,
     QEasingCurve,
     QPropertyAnimation,
+    QPoint,
     QRect,
     Qt,
     QTimer,
@@ -98,6 +99,14 @@ class ModernIsland(QWidget):
         self.time_label.setObjectName("TimeLabel")
         self.time_label.setAlignment(Qt.AlignCenter)
         self.time_label.setFixedHeight(40)
+
+        # 1.5 展开态内容：日期+时间（与时间标签重叠）
+        self.date_label = QLabel("")
+        self.date_label.setObjectName("DateLabel")
+        self.date_label.setAlignment(Qt.AlignCenter)
+        self.date_label.setFixedHeight(40)
+        self.date_label.hide()
+        self.date_label.setParent(self.container)
 
         # 2. 展开态内容：控制组
         self.controls = QWidget()
@@ -399,12 +408,14 @@ class ModernIsland(QWidget):
             self.ani.stop()
             self.ani.deleteLater()
 
-        self.ani = QPropertyAnimation(self, b"geometry")
-
         current_pos = self.pos()
 
         if not self.is_expanded:
-            # 展开动画
+            # 展开动画 - 立即隐藏时间，动画结束后显示日期+时间
+            self.time_label.hide()
+            self.date_label.hide()
+
+            self.ani = QPropertyAnimation(self, b"geometry")
             self.ani.setDuration(200)
             self.ani.setEasingCurve(QEasingCurve.InOutCubic)
 
@@ -416,13 +427,25 @@ class ModernIsland(QWidget):
             self.ani.setStartValue(start)
             self.ani.setEndValue(end)
 
+            # 动画结束后显示日期+时间
+            self.ani.finished.connect(lambda: (
+                self.date_label.setGeometry(self.time_label.geometry()),
+                self.date_label.show(),
+                self.update_time_display()
+            ))
+
             # 切换显示内容
-            self.time_label.hide()
             self.controls.show()
             self.container.setFixedSize(360, 160)
 
+            self.ani.start()
+
         else:
-            # 折叠动画
+            # 折叠动画 - 立即隐藏日期，动画结束后显示时间
+            self.date_label.hide()
+            self.time_label.hide()
+
+            self.ani = QPropertyAnimation(self, b"geometry")
             self.ani.setDuration(350)
             self.ani.setEasingCurve(QEasingCurve.InOutCubic)
 
@@ -437,16 +460,24 @@ class ModernIsland(QWidget):
             # 切换显示内容
             self.controls.hide()
 
-            # 动画结束后显示时间和调整容器大小
-            self.ani.finished.connect(lambda: (self.time_label.show(), self.container.setFixedSize(180, 40)))
+            # 动画结束后显示时间并调整容器大小
+            self.ani.finished.connect(lambda: (self.time_label.show(), self.update_time_display(), self.container.setFixedSize(180, 40)))
 
-        self.ani.start()
+            self.ani.start()
+
         self.is_expanded = not self.is_expanded
 
     def update_time(self):
         """更新时间显示。"""
+        self.update_time_display()
+
+    def update_time_display(self):
+        """根据展开/收起状态更新时间或日期显示。"""
         current_time = datetime.now().strftime("%H:%M")
+        current_date = datetime.now().strftime("%m/%d")
+
         self.time_label.setText(current_time)
+        self.date_label.setText(f"{current_date} {current_time}")
 
     def show_notification_on_time(self, message, icon="📶"):
         """在灵动岛的时间位置显示通知，然后过几秒再恢复时间显示。"""
