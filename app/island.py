@@ -434,10 +434,9 @@ class ModernIsland(QWidget):
 
             # 切换显示内容
             self.controls.hide()
-            self.time_label.show()
 
-            # 动画结束后调整容器大小
-            self.ani.finished.connect(lambda: self.container.setFixedSize(180, 40))
+            # 动画结束后显示时间和调整容器大小
+            self.ani.finished.connect(lambda: (self.time_label.show(), self.container.setFixedSize(180, 40)))
 
         self.ani.start()
         self.is_expanded = not self.is_expanded
