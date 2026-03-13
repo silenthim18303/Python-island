@@ -400,7 +400,7 @@ class ModernIsland(QWidget):
             self.ani.deleteLater()
 
         self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(200)
+        self.ani.setDuration(350)
         self.ani.setEasingCurve(QEasingCurve.InOutCubic)
 
         current_pos = self.pos()
