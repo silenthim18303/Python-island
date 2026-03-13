@@ -17,17 +17,39 @@ Pyisland是一个基于PySide6开发的现代化灵动岛控制中心，提供�
 ```
 PyislandWeb/
 ├── app/
-│   ├── __init__.py
-│   ├── island.py          # 核心功能实现
-│   └── utils.py          # 工具函数和系统API调用
+│   ├── __init__.py           # 包初始化
+│   ├── island.py             # 主窗口，整合所有模块
+│   ├── utils.py              # 工具函数（向后兼容）
+│   ├── core/                 # 核心功能模块
+│   │   ├── __init__.py
+│   │   ├── worker.py         # 后台工作线程
+│   │   └── config.py         # 配置常量
+│   ├── ui/                   # UI组件模块
+│   │   ├── __init__.py
+│   │   ├── controls.py       # 控制面板组件
+│   │   ├── status_bar.py     # 状态栏组件
+│   │   └── url_dialog.py     # URL检测对话框
+│   ├── services/             # 服务模块
+│   │   ├── __init__.py
+│   │   ├── clipboard.py      # 剪贴板服务
+│   │   ├── system_status.py  # 系统状态服务
+│   │   └── brightness.py     # 亮度控制服务
+│   └── animations/           # 动画效果模块
+│       ├── __init__.py
+│       └── effects.py        # 展开/收起动画
 ├── resources/
-│   ├── icons/            # 图标资源
-│   │   ├── light.png     # 亮度图标
-│   │   └── volume.png    # 音量图标
+│   ├── icons/                # 图标资源
+│   │   ├── controls/         # 控制相关图标
+│   │   │   ├── light.png     # 亮度图标
+│   │   │   └── volume.png    # 音量图标
+│   │   └── system/           # 系统状态图标
+│   │       ├── battery.png    # 电池图标
+│   │       ├── bluetooth.png  # 蓝牙图标
+│   │       └── internet.png   # 网络图标
 │   └── styles/
-│       └── style.qss     # QSS样式文件
-├── main.py               # 应用入口
-└── README.md             # 项目说明文档
+│       └── style.qss         # QSS样式文件
+├── main.py                   # 应用入口
+└── README.md                 # 项目说明文档
 ```
 
 ## 安装和运行
@@ -63,31 +85,27 @@ python main.py
 
 #### 调整防抖时间
 
-在 `app/island.py` 文件中修改：
+在 `app/core/config.py` 文件中修改：
 
 ```python
-# 防抖计时器
-self.debounce_timer = QTimer(self)
-self.debounce_timer.setSingleShot(True)
-self.debounce_timer.setInterval(300)  # 防抖时间，单位毫秒
+DEBOUNCE_DELAY = 180  # 防抖时间，单位毫秒
 ```
 
 #### 调整状态栏更新频率
 
-在 `app/island.py` 文件中修改：
+在 `app/core/config.py` 文件中修改：
 
 ```python
-# 状态栏信息更新定时器
-self.status_timer = QTimer(self)
-self.status_timer.timeout.connect(self.update_status)
-self.status_timer.start(5000)  # 更新频率，单位毫秒
+STATUS_UPDATE_INTERVAL = 5000  # 更新频率，单位毫秒
 ```
 
 #### 添加新功能
 
-1. 在 `app/utils.py` 中添加新的系统API调用函数
-2. 在 `app/island.py` 中添加新的UI组件和事件处理
-3. 在 `resources/styles/style.qss` 中添加相应的样式
+1. 在 `app/services/` 目录下创建新的服务类
+2. 在 `app/ui/` 目录下创建新的UI组件
+3. 在 `app/core/config.py` 中添加配置常量
+4. 在 `app/island.py` 中整合新模块
+5. 在 `resources/styles/style.qss` 中添加相应的样式
 
 ### 3. 图标替换
 

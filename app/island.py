@@ -1,293 +1,201 @@
-"""
-现代化灵动岛 - Windows上的动态岛式小部件。
+"""现代化灵动岛主窗口模块
+
+实现灵动岛的主窗口，整合各个功能模块，提供完整的用户界面。
 """
 
-import os
 from datetime import datetime
 
-from PySide6.QtCore import (
-    QEvent,
-    QThread,
-    QEasingCurve,
-    QPropertyAnimation,
-    QPoint,
-    QRect,
-    Qt,
-    QTimer,
-    Signal,
-)
-from PySide6.QtGui import QPixmap, QPainter, QRegion, QPainterPath
+from PySide6.QtCore import QEvent, Qt, QTimer, QRect
 from PySide6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QFrame,
-    QHBoxLayout,
-    QLayout,
-    QLabel,
-    QPushButton,
-    QScrollArea,
-    QSizePolicy,
-    QSlider,
-    QSpacerItem,
-    QStackedWidget,
-    QVBoxLayout,
-    QWidget,
+    QApplication, QFrame, QHBoxLayout, QLabel,
+    QStackedWidget, QVBoxLayout, QWidget,
 )
 
-from app.utils import (
-    extract_urls,
-    get_all_status,
-    get_clipboard_text,
-    get_system_brightness,
-    open_url,
-    open_urls,
-    set_brightness,
-)
-
-
-class WorkerThread(QThread):
-    """后台工作线程，用于执行耗时操作。"""
-
-    finished_signal = Signal(object)
-    error_signal = Signal(str)
-
-    def __init__(self, task_func, *args, **kwargs):
-        super().__init__()
-        self.task_func = task_func
-        self.args = args
-        self.kwargs = kwargs
-
-    def run(self):
-        try:
-            result = self.task_func(*self.args, **self.kwargs)
-            self.finished_signal.emit(result)
-        except Exception as e:
-            self.error_signal.emit(str(e))
+from app.core.config import *
+from app.core.worker import WorkerThread
+from app.ui.controls import ControlRowFactory
+from app.ui.status_bar import StatusBar
+from app.ui.url_dialog import UrlDialog
+from app.services.clipboard import ClipboardService
+from app.services.system_status import SystemStatusService
+from app.services.brightness import BrightnessService
+from app.animations.effects import AnimationManager, RoundedMaskHelper
 
 
 class ModernIsland(QWidget):
-    """带展开式控制面板的现代化灵动岛小部件。"""
+    """带展开式控制面板的现代化灵动岛小部件。
+
+    整合各个功能模块，提供时间显示、亮度控制、系统状态显示、
+    剪贴板URL检测等功能。
+
+    Attributes:
+        is_expanded: 是否处于展开状态
+        animation_manager: 动画管理器
+        clipboard_service: 剪贴板服务
+        status_service: 系统状态服务
+        brightness_service: 亮度控制服务
+    """
 
     def __init__(self):
+        """初始化灵动岛窗口。"""
         super().__init__()
+        self._init_window()
+        self._init_services()
+        self._init_ui()
+        self._init_timers()
+        self._load_styles()
+
+    def _init_window(self):
+        """初始化窗口属性。"""
         self.setWindowFlags(
             Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
         )
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_ShowWithoutActivating, False)
 
-        # 状态与尺寸
         self.is_expanded = False
         self.screen_w = QApplication.primaryScreen().size().width()
         self.screen_h = QApplication.primaryScreen().size().height()
-        self.max_expand_h = self.screen_h // 3  # 最大展开高度为屏幕的1/3
-        # 多 URL 页面：scroll 与按钮区的垂直间距（按钮下移）
-        self.multi_url_btn_top_spacing = 35
-        self.col_rect = QRect((self.screen_w - 180) // 2, 20, 180, 40)
-        self.exp_rect = QRect((self.screen_w - 360) // 2, 20, 360, 160)
+        self.max_expand_h = self.screen_h // MAX_EXPAND_HEIGHT_RATIO
+
+        self.col_rect = QRect(
+            (self.screen_w - COLLAPSED_WIDTH) // 2, 20,
+            COLLAPSED_WIDTH, COLLAPSED_HEIGHT
+        )
+        self.exp_rect = QRect(
+            (self.screen_w - EXPANDED_WIDTH) // 2, 20,
+            EXPANDED_WIDTH, EXPANDED_HEIGHT
+        )
         self.setGeometry(self.col_rect)
 
-        # 拖动相关变量
         self.dragging = False
         self.drag_start_pos = None
         self.window_start_pos = None
 
-        # 监听焦点变化
-        QApplication.instance().focusChanged.connect(self.on_focus_changed)
+        QApplication.instance().focusChanged.connect(self._on_focus_changed)
 
-        # 主容器
+    def _init_services(self):
+        """初始化服务。"""
+        self.animation_manager = AnimationManager(self)
+        self.clipboard_service = ClipboardService()
+        self.status_service = SystemStatusService()
+        self.brightness_service = BrightnessService()
+
+        self._previous_wifi_status = None
+        self._previous_bluetooth_status = None
+        self._first_status_check = True
+        self.current_brightness = 50
+
+    def _init_ui(self):
+        """初始化UI组件。"""
         self.container = QFrame(self)
         self.container.setObjectName("IslandContainer")
-        self.container.setFixedSize(180, 40)
+        self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
 
         self.layout = QVBoxLayout(self.container)
         self.layout.setContentsMargins(15, 0, 15, 0)
 
-        # 1. 折叠态内容：时间
+        self._icon_cache = ControlRowFactory.preload_icons(ALL_ICONS)
+
+        self._init_time_labels()
+        self._init_status_bar()
+        self._init_controls()
+
+        self.layout.addWidget(self.time_label)
+        self.layout.addWidget(self.controls)
+
+        self._update_rounded_mask()
+
+    def _init_time_labels(self):
+        """初始化时间标签。"""
         self.time_label = QLabel("")
         self.time_label.setObjectName("TimeLabel")
         self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setFixedHeight(40)
+        self.time_label.setFixedHeight(TIME_LABEL_HEIGHT)
 
-        # 1.5 展开态内容：日期+时间（与时间标签重叠）
         self.date_label = QLabel("")
         self.date_label.setObjectName("DateLabel")
         self.date_label.setAlignment(Qt.AlignCenter)
-        self.date_label.setFixedHeight(40)
+        self.date_label.setFixedHeight(TIME_LABEL_HEIGHT)
         self.date_label.hide()
         self.date_label.setParent(self.container)
 
-        # 2. 展开态内容：使用 StackedWidget 管理多个页面
+    def _init_controls(self):
+        """初始化控制面板。"""
         self.controls = QStackedWidget()
         self.controls.hide()
 
-        # 页面0: 控制面板
+        self._init_ctrl_page()
+        self._init_url_pages()
+
+        self.controls.setFixedHeight(CONTROLS_HEIGHT)
+
+    def _init_ctrl_page(self):
+        """初始化控制面板页面。"""
         self.ctrl_page = QWidget()
         self.ctrl_layout = QVBoxLayout(self.ctrl_page)
         self.ctrl_layout.setContentsMargins(5, 20, 5, 10)
         self.ctrl_layout.setSpacing(15)
 
-        # 页面1: 单URL提示页面
-        self.url_single_page = QWidget()
-        self.url_single_layout = QVBoxLayout(self.url_single_page)
-        self.url_single_layout.setContentsMargins(10, 15, 10, 15)
-        self.url_single_layout.setSpacing(10)
-
-        # 页面2: 多URL提示页面
-        self.url_multi_page = QWidget()
-        self.url_multi_layout = QVBoxLayout(self.url_multi_page)
-        self.url_multi_layout.setContentsMargins(10, 10, 10, 10)
-        self.url_multi_layout.setSpacing(8)
-
-        # 将页面添加到 stacked widget
-        self.controls.addWidget(self.ctrl_page)
-        self.controls.addWidget(self.url_single_page)
-        self.controls.addWidget(self.url_multi_page)
-
-        # 创建亮度控制行
-        # 先初始化图标缓存
-        self._icon_cache = {}
-        self._preload_icons()
-
         self.bright_row, self.bright_slider, self.bright_val = \
-            self.create_ctrl_row("resources/icons/light.png", "亮度")
+            ControlRowFactory.create(self._icon_cache, ICON_LIGHT, "亮度")
 
-        # 绑定事件
         self.bright_slider.valueChanged.connect(
-            lambda v: self.update_val(self.bright_val, v, "bright")
+            lambda v: self._update_brightness_value(v)
         )
-
-        # 3. 状态栏
-        self.status_bar = QWidget()
-        self.status_layout = QHBoxLayout(self.status_bar)
-        self.status_layout.setContentsMargins(10, 5, 10, 5)
-        self.status_layout.setSpacing(15)
-
-        # WiFi信息
-        self.wifi_icon = QLabel()
-        self.wifi_icon.setObjectName("IconLabel")
-        if "resources/icons/internet.png" in self._icon_cache:
-            self.wifi_icon.setPixmap(self._icon_cache["resources/icons/internet.png"])
-        else:
-            self.wifi_icon.setText("📶")
-
-        self.wifi_label = QLabel("未连接")
-        self.wifi_label.setObjectName("StatusLabel")
-
-        # 蓝牙信息
-        self.bluetooth_icon = QLabel()
-        self.bluetooth_icon.setObjectName("IconLabel")
-        if "resources/icons/bluetooth.png" in self._icon_cache:
-            self.bluetooth_icon.setPixmap(self._icon_cache["resources/icons/bluetooth.png"])
-        else:
-            self.bluetooth_icon.setText("🔵")
-
-        self.bluetooth_label = QLabel("未连接")
-        self.bluetooth_label.setObjectName("StatusLabel")
-
-        # 电池信息
-        self.battery_icon = QLabel()
-        self.battery_icon.setObjectName("IconLabel")
-        if "resources/icons/battery.png" in self._icon_cache:
-            self.battery_icon.setPixmap(self._icon_cache["resources/icons/battery.png"])
-        else:
-            self.battery_icon.setText("🔋")
-
-        self.battery_label = QLabel("未知")
-        self.battery_label.setObjectName("StatusLabel")
-
-        # 创建WiFi组合
-        wifi_layout = QHBoxLayout()
-        wifi_layout.setSpacing(5)
-        wifi_layout.addWidget(self.wifi_icon)
-        wifi_layout.addWidget(self.wifi_label)
-
-        # 创建蓝牙组合
-        bluetooth_layout = QHBoxLayout()
-        bluetooth_layout.setSpacing(5)
-        bluetooth_layout.addWidget(self.bluetooth_icon)
-        bluetooth_layout.addWidget(self.bluetooth_label)
-
-        # 创建电池组合
-        battery_layout = QHBoxLayout()
-        battery_layout.setSpacing(5)
-        battery_layout.addWidget(self.battery_icon)
-        battery_layout.addWidget(self.battery_label)
-
-        self.status_layout.addLayout(wifi_layout)
-        self.status_layout.addLayout(bluetooth_layout)
-        self.status_layout.addLayout(battery_layout)
 
         self.ctrl_layout.addLayout(self.bright_row)
         self.ctrl_layout.addWidget(self.status_bar)
 
-        # 设置 stacked widget 高度
-        # 注意：controls 的高度需要随展开高度动态变化，否则多 URL 页面会被压缩导致按钮与 scroll 重叠
-        self.controls.setFixedHeight(120)
+        self.controls.addWidget(self.ctrl_page)
 
-        # 添加到主布局
-        self.layout.addWidget(self.time_label)
-        self.layout.addWidget(self.controls)
+    def _init_url_pages(self):
+        """初始化URL页面。"""
+        self.url_single_page = UrlDialog()
+        self.url_multi_page = UrlDialog()
 
-        # 时间更新定时器
+        self.controls.addWidget(self.url_single_page)
+        self.controls.addWidget(self.url_multi_page)
+
+    def _init_status_bar(self):
+        """初始化状态栏。"""
+        self.status_bar = StatusBar(self._icon_cache, self)
+
+    def _init_timers(self):
+        """初始化定时器。"""
         self.time_timer = QTimer(self)
-        self.time_timer.timeout.connect(self.update_time)
-        self.time_timer.start(1000)
-        self.update_time()
+        self.time_timer.timeout.connect(self._update_time)
+        self.time_timer.start(TIME_UPDATE_INTERVAL)
+        self._update_time()
 
-        # 状态栏信息更新定时器
         self.status_timer = QTimer(self)
         self.status_timer.timeout.connect(self._start_status_update)
-        self.status_timer.start(5000)
-        
-        # 初始化状态记录
-        self._previous_wifi_status = None
-        self._previous_bluetooth_status = None
-        self._first_status_check = True
-        
-        self._start_status_update()
+        self.status_timer.start(STATUS_UPDATE_INTERVAL)
 
-        # 亮度调节防抖计时器
         self.debounce_timer = QTimer(self)
         self.debounce_timer.setSingleShot(True)
         self.debounce_timer.timeout.connect(self._start_brightness_apply)
-        self.current_brightness = 50
 
-        # 剪贴板监听相关
-        self._last_clipboard_text = ""
-        self._clipboard_first_check = True  # 标记是否是第一次检查
         self._clipboard_timer = QTimer(self)
         self._clipboard_timer.timeout.connect(self._check_clipboard)
-        self._clipboard_timer.start(1500)  # 每1.5秒检查一次剪贴板
+        self._clipboard_timer.start(CLIPBOARD_CHECK_INTERVAL)
 
-        # URL 对话框跟踪
-        self._url_dialog = None        # 加载初始值（异步）
-        self._url_checkboxes = {}      # 多URL页面的checkbox对应关系
+        self._start_status_update()
         self._start_initial_values_load()
-        # 初始化亮度值
-        self.current_brightness = 50
 
-        self.load_qss()
-
-        # 初始化圆角遮罩
-        self._update_rounded_mask()
-
-    def _preload_icons(self):
-        """预加载图标以提高性能。"""
-        icon_files = ["resources/icons/light.png", "resources/icons/volume.png",
-                     "resources/icons/internet.png", "resources/icons/bluetooth.png",
-                     "resources/icons/battery.png"]
-        for path in icon_files:
-            if os.path.exists(path):
-                pixmap = QPixmap(path)
-                self._icon_cache[path] = pixmap.scaled(
-                    20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation
-                )
+    def _load_styles(self):
+        """加载样式表。"""
+        try:
+            with open(STYLES_PATH, "r", encoding="utf-8") as f:
+                self.setStyleSheet(f.read())
+        except Exception:
+            pass
 
     def _start_initial_values_load(self):
         """异步加载初始值。"""
-        # 创建线程获取亮度
-        self._brightness_thread = WorkerThread(get_system_brightness)
+        self._brightness_thread = WorkerThread(
+            BrightnessService.get_brightness
+        )
         self._brightness_thread.finished_signal.connect(
             self._on_brightness_loaded
         )
@@ -301,124 +209,81 @@ class ModernIsland(QWidget):
             self.bright_val.setText(f"{brightness}%")
             self.current_brightness = brightness
 
-
-
     def _start_status_update(self):
         """启动异步状态更新。"""
         if hasattr(self, '_status_thread') and self._status_thread.isRunning():
             return
-        self._status_thread = WorkerThread(get_all_status)
+        self._status_thread = WorkerThread(SystemStatusService.get_all_status)
         self._status_thread.finished_signal.connect(self._on_status_updated)
         self._status_thread.error_signal.connect(self._on_status_error)
         self._status_thread.start()
-    
+
     def _on_status_error(self, error):
         """状态更新错误回调。"""
         print(f"状态更新失败: {error}")
-        # 可以在这里添加错误处理逻辑，例如显示错误通知
 
     def _on_status_updated(self, result):
         """状态更新完成回调。"""
         wifi_info, bluetooth_devices, battery_info = result
 
         ssid, signal, dns_connected = wifi_info
-        if ssid and ssid != "未连接":
-            self.wifi_label.setText(f"{ssid} ({signal})")
-        else:
-            self.wifi_label.setText("未连接")
+        self.status_bar.update_wifi(ssid, signal)
 
         if bluetooth_devices:
             device_name, status = bluetooth_devices[0]
-            self.bluetooth_label.setText(f"{device_name} ({status})")
+            self.status_bar.update_bluetooth(device_name, status)
         else:
-            self.bluetooth_label.setText("未连接")
+            self.status_bar.update_bluetooth()
 
         charge, status = battery_info
-        if charge:
-            self.battery_label.setText(f"{charge}% ({status})")
-        else:
-            self.battery_label.setText("未知")
+        self.status_bar.update_battery(charge, status)
 
-        # 过滤初次监听
         if self._first_status_check:
             self._previous_wifi_status = (ssid, dns_connected)
             self._previous_bluetooth_status = bluetooth_devices
             self._first_status_check = False
             return
 
-        # 检查状态变化
+        self._check_status_changes(ssid, dns_connected, bluetooth_devices)
+
+    def _check_status_changes(self, ssid, dns_connected, bluetooth_devices):
+        """检查状态变化。"""
         current_wifi_status = (ssid, dns_connected)
         current_bluetooth_status = bluetooth_devices
 
         wifi_connected = ssid and ssid != "未连接" and dns_connected
-        prev_wifi_connected = self._previous_wifi_status and self._previous_wifi_status[0] and self._previous_wifi_status[0] != "未连接" and self._previous_wifi_status[1]
+        prev_wifi_connected = (
+            self._previous_wifi_status and
+            self._previous_wifi_status[0] and
+            self._previous_wifi_status[0] != "未连接" and
+            self._previous_wifi_status[1]
+        )
 
-        bluetooth_connected = bluetooth_devices and bluetooth_devices[0][1] in ["已开启", "Connected", "已连接"]
-        prev_bluetooth_connected = self._previous_bluetooth_status and self._previous_bluetooth_status[0][1] in ["已开启", "Connected", "已连接"]
+        bluetooth_connected = (
+            bluetooth_devices and
+            bluetooth_devices[0][1] in ["已开启", "Connected", "已连接"]
+        )
+        prev_bluetooth_connected = (
+            self._previous_bluetooth_status and
+            self._previous_bluetooth_status[0][1] in ["已开启", "Connected", "已连接"]
+        )
 
-        # 优先处理WiFi状态变化
         if wifi_connected != prev_wifi_connected:
-            if wifi_connected:
-                self._show_connection_animation("WiFi已连接", "📶")
-            else:
-                self._show_connection_animation("WiFi已断开", "📶")
+            message = "WiFi已连接" if wifi_connected else "WiFi已断开"
+            self._show_connection_animation(message, "📶")
         elif bluetooth_connected != prev_bluetooth_connected:
-            if bluetooth_connected:
-                self._show_connection_animation("蓝牙已连接", "🔵")
-            else:
-                self._show_connection_animation("蓝牙已断开", "🔵")
+            message = "蓝牙已连接" if bluetooth_connected else "蓝牙已断开"
+            self._show_connection_animation(message, "🔵")
 
-        # 更新状态记录
         self._previous_wifi_status = current_wifi_status
         self._previous_bluetooth_status = current_bluetooth_status
 
-    def create_ctrl_row(self, icon_path, label_text):
-        """创建包含图标、标签、滑动条和数值控件的行。"""
-        row = QHBoxLayout()
-        row.setSpacing(12)
-
-        # 图标（使用缓存或备用符号）
-        icon = QLabel()
-        icon.setObjectName("IconLabel")
-
-        if icon_path in self._icon_cache:
-            icon.setPixmap(self._icon_cache[icon_path])
-        elif label_text == "亮度":
-            icon.setText("\u0f0a0")
-        else:
-            icon.setText("\u0f05a")
-
-        # 标签文本
-        label = QLabel(label_text)
-        label.setObjectName("ValueLabel")
-        label.setFixedWidth(30)
-
-        # 现代滑动条
-        slider = QSlider(Qt.Horizontal)
-        slider.setRange(0, 100)
-        slider.setFixedHeight(32)
-        slider.setObjectName("CapsuleSlider")
-        slider.setFixedWidth(180)
-
-        # 百分比数值
-        val_label = QLabel("50%")
-        val_label.setFixedWidth(40)
-        val_label.setObjectName("ValueLabel")
-
-        row.addWidget(icon)
-        row.addWidget(label)
-        row.addWidget(slider)
-        row.addWidget(val_label)
-
-        return row, slider, val_label
-
-    def update_val(self, label, value, val_type):
-        """更新数值标签并触发防抖应用。"""
-        label.setText(f"{value}%")
-        if val_type == "bright":
-            self.current_brightness = value
-            self.debounce_timer.stop()
-            self.debounce_timer.start(180)
+    def _update_brightness_value(self, value):
+        """更新亮度值。"""
+        self.bright_val.setText(f"{value}%")
+        self.current_brightness = value
+        self.debounce_timer.stop()
+        self.debounce_timer.start(DEBOUNCE_DELAY)
 
     def _start_brightness_apply(self):
         """异步应用亮度。"""
@@ -426,11 +291,230 @@ class ModernIsland(QWidget):
                 self._brightness_apply_thread.isRunning():
             return
         self._brightness_apply_thread = WorkerThread(
-            set_brightness, self.current_brightness
+            BrightnessService.set_brightness, self.current_brightness
         )
         self._brightness_apply_thread.start()
 
+    def _update_time(self):
+        """更新时间显示。"""
+        self._update_time_display()
 
+    def _update_time_display(self):
+        """根据展开/收起状态更新时间或日期显示。"""
+        current_time = datetime.now().strftime("%H:%M")
+        current_date = datetime.now().strftime("%m/%d")
+
+        self.time_label.setText(current_time)
+        self.date_label.setText(f"{current_date} {current_time}")
+
+        if self.is_expanded:
+            temp_label = QLabel(f"{current_date} {current_time}")
+            temp_label.setObjectName("DateLabel")
+            temp_label.setStyleSheet(self.date_label.styleSheet())
+            temp_label.setFont(self.date_label.font())
+            temp_label.adjustSize()
+            width = temp_label.width()
+            x = (EXPANDED_WIDTH - width) // 2
+            self.date_label.setFixedWidth(width)
+            self.date_label.move(x, 0)
+
+    def _check_clipboard(self):
+        """检查剪贴板是否有新的URL。"""
+        has_new, urls = self.clipboard_service.check_for_new_urls()
+        if has_new:
+            self._show_url_notification(urls)
+
+    def _show_url_notification(self, urls: list):
+        """显示URL通知。"""
+        if len(urls) == 1:
+            self.controls.setCurrentWidget(self.url_single_page)
+            self.url_single_page.build_single_url_page(
+                urls[0],
+                self._open_url_and_close,
+                self._close_url_page
+            )
+            target_height = EXPANDED_HEIGHT
+        else:
+            self.controls.setCurrentWidget(self.url_multi_page)
+            target_height = self.url_multi_page.build_multi_url_page(
+                urls,
+                self._open_selected_and_close,
+                self._close_url_page
+            )
+            target_height = min(target_height, self.max_expand_h)
+
+        self._expand_to_url_page(target_height)
+
+        if hasattr(self, '_url_auto_close_timer') and \
+                self._url_auto_close_timer.isActive():
+            self._url_auto_close_timer.stop()
+
+        self._url_auto_close_timer = QTimer(self)
+        self._url_auto_close_timer.setSingleShot(True)
+        self._url_auto_close_timer.timeout.connect(self._close_url_page)
+        self._url_auto_close_timer.start(URL_AUTO_CLOSE_DELAY)
+
+    def _expand_to_url_page(self, target_height: int = EXPANDED_HEIGHT):
+        """展开灵动岛到URL页面。"""
+        if self.is_expanded:
+            current_h = self.geometry().height()
+            if current_h != target_height:
+                self._animate_height_change(current_h, target_height)
+            return
+
+        self._do_expand_and_show_url(target_height)
+
+    def _animate_height_change(self, from_h: int, to_h: int):
+        """动态调整高度的动画。"""
+        current_pos = self.pos()
+        current_w = self.geometry().width()
+
+        def on_value_changed(value):
+            self.container.setFixedSize(current_w, value.height())
+            self._set_controls_height(value.height())
+            self._update_rounded_mask()
+
+        def on_finished():
+            self.container.setFixedSize(current_w, to_h)
+            self._set_controls_height(to_h)
+
+        self.animation_manager.create_height_animation(
+            from_h, to_h, on_value_changed, on_finished
+        ).start()
+
+    def _set_controls_height(self, container_h: int):
+        """根据容器高度同步设置controls高度。"""
+        controls_h = max(0, int(container_h) - TIME_LABEL_HEIGHT)
+        self.controls.setFixedHeight(controls_h)
+
+    def _do_expand_and_show_url(self, target_height: int = EXPANDED_HEIGHT):
+        """执行展开动画并显示链接页面。"""
+        current_pos = self.geometry().topLeft()
+        current_w = self.rect().width()
+        current_h = self.rect().height()
+        center_x = current_pos.x() + current_w // 2
+
+        self.time_label.hide()
+        self.date_label.show()
+        self._update_time_display()
+
+        def on_value_changed(value):
+            if value.width() > 50:
+                self.controls.show()
+            self.container.setFixedSize(
+                value.width(),
+                TIME_LABEL_HEIGHT + (target_height - TIME_LABEL_HEIGHT) * (value.width() / EXPANDED_WIDTH)
+            )
+            self._set_controls_height(
+                TIME_LABEL_HEIGHT + (target_height - TIME_LABEL_HEIGHT) * (value.width() / EXPANDED_WIDTH)
+            )
+            self._update_rounded_mask()
+
+        def on_finished():
+            self.controls.show()
+            self.container.setFixedSize(EXPANDED_WIDTH, target_height)
+            self._set_controls_height(target_height)
+
+        self.animation_manager.create_url_expand_animation(
+            target_height, on_value_changed, on_finished
+        ).start()
+        self.is_expanded = True
+
+    def _close_url_page(self):
+        """关闭链接页面。"""
+        self.controls.setCurrentWidget(self.ctrl_page)
+        self.controls.setFixedHeight(CONTROLS_HEIGHT)
+        if self.is_expanded:
+            self.toggle_island()
+
+    def _open_url_and_close(self, url: str):
+        """打开URL并收起灵动岛。"""
+        ClipboardService.open_url(url)
+        self._close_url_page()
+
+    def _open_selected_and_close(self):
+        """打开选中的URL并收起灵动岛。"""
+        selected_urls = self.url_multi_page.get_selected_urls()
+        if selected_urls:
+            ClipboardService.open_urls(selected_urls)
+        self._close_url_page()
+
+    def _show_connection_animation(self, message, icon="📶"):
+        """显示连接状态变化的动画提示。"""
+        self.time_timer.stop()
+
+        if not self.is_expanded:
+            self._do_expand_and_show_connection(message, icon)
+        else:
+            self._update_connection_display(message, icon)
+
+        if hasattr(self, '_connection_auto_close_timer') and \
+                self._connection_auto_close_timer.isActive():
+            self._connection_auto_close_timer.stop()
+
+        self._connection_auto_close_timer = QTimer(self)
+        self._connection_auto_close_timer.setSingleShot(True)
+        self._connection_auto_close_timer.timeout.connect(
+            self._close_connection_page
+        )
+        self._connection_auto_close_timer.start(CONNECTION_AUTO_CLOSE_DELAY)
+
+    def _do_expand_and_show_connection(self, message, icon="📶"):
+        """执行展开动画并显示连接状态。"""
+        current_pos = self.geometry().topLeft()
+        current_w = self.rect().width()
+        current_h = self.rect().height()
+        center_x = current_pos.x() + current_w // 2
+
+        self.time_label.hide()
+        self.date_label.hide()
+
+        def on_value_changed(value):
+            if value.width() > 50:
+                self.controls.show()
+            self.container.setFixedSize(value.width(), EXPANDED_HEIGHT)
+            self._set_controls_height(EXPANDED_HEIGHT)
+            self._update_rounded_mask()
+
+        def on_finished():
+            self.controls.show()
+            self.container.setFixedSize(EXPANDED_WIDTH, EXPANDED_HEIGHT)
+            self._set_controls_height(EXPANDED_HEIGHT)
+            self._update_connection_display(message, icon)
+
+        self.animation_manager.create_url_expand_animation(
+            EXPANDED_HEIGHT, on_value_changed, on_finished
+        ).start()
+        self.is_expanded = True
+
+    def _update_connection_display(self, message, icon="📶"):
+        """更新连接状态显示。"""
+        self.controls.setCurrentWidget(self.ctrl_page)
+        self.time_label.hide()
+        self.date_label.setText(f"{icon} {message}")
+        self.date_label.show()
+
+        temp_label = QLabel(f"{icon} {message}")
+        temp_label.setObjectName("DateLabel")
+        temp_label.setStyleSheet(self.date_label.styleSheet())
+        temp_label.setFont(self.date_label.font())
+        temp_label.adjustSize()
+        width = temp_label.width()
+        x = (EXPANDED_WIDTH - width) // 2
+        self.date_label.setFixedWidth(width)
+        self.date_label.move(x, 0)
+
+    def _close_connection_page(self):
+        """关闭连接状态页面。"""
+        if self.is_expanded:
+            self.toggle_island()
+
+        self.time_timer.start(TIME_UPDATE_INTERVAL)
+        self._update_time()
+
+    def _update_rounded_mask(self):
+        """动态更新窗口的圆角遮罩。"""
+        RoundedMaskHelper.update_mask(self)
 
     def mousePressEvent(self, event):
         """处理鼠标按下事件用于拖动。"""
@@ -446,14 +530,14 @@ class ModernIsland(QWidget):
             self.move(self.window_start_pos + delta)
 
     def mouseReleaseEvent(self, event):
-        """处理鼠标释放事件 - 点击时切换，结束时停止拖动。"""
+        """处理鼠标释放事件。"""
         if event.button() == Qt.LeftButton:
             if self.dragging and \
                     (event.globalPos() - self.drag_start_pos).manhattanLength() < 5:
                 self.toggle_island()
             self.dragging = False
 
-    def on_focus_changed(self, old_widget, new_widget):
+    def _on_focus_changed(self, old_widget, new_widget):
         """失去焦点时自动收缩。"""
         if self.is_expanded:
             current_widget = new_widget
@@ -464,574 +548,74 @@ class ModernIsland(QWidget):
             self.toggle_island()
 
     def toggle_island(self):
-        """在展开和折叠状态之间切换"""
-        # 清理旧动画
-        if hasattr(self, 'ani') and self.ani:
-            self.ani.stop()
-            self.ani.deleteLater()
-
+        """在展开和折叠状态之间切换。"""
         current_pos = self.pos()
 
         if not self.is_expanded:
-            # 立即标记为展开状态，防止重复触发
-            self.is_expanded = True
-
-            # 展开动画 - 立即隐藏时间，动画结束后显示日期+时间
-            self.time_label.hide()
-            self.date_label.hide()
-
-            self.ani = QPropertyAnimation(self, b"geometry")
-            self.ani.setDuration(200)
-            self.ani.setEasingCurve(QEasingCurve.InOutCubic)
-
-            start = self.geometry()
-            end = QRect(
-                current_pos.x() + self.rect().width() / 2 - 180 , current_pos.y(),
-                360, 160
-            )
-            self.ani.setStartValue(start)
-            self.ani.setEndValue(end)
-
-            # 动画过程中更新圆角遮罩
-            self.ani.valueChanged.connect(self._update_rounded_mask)
-
-            # 动画结束后显示日期+时间（居中显示）
-            self.ani.finished.connect(lambda: (
-                self.date_label.show(),
-                self.update_time_display()
-            ))
-
-            # 切换显示内容
-            self.controls.show()
-            self.container.setFixedSize(360, 160)
-
-            self.ani.start()
-
+            self._do_expand(current_pos)
         else:
-            # 立即标记为折叠状态
-            self.is_expanded = False
+            self._do_collapse(current_pos)
 
-            # 折叠动画 - 立即隐藏日期，动画结束后显示时间
-            self.date_label.hide()
-            self.time_label.hide()
-
-            self.ani = QPropertyAnimation(self, b"geometry")
-            self.ani.setDuration(350)
-            self.ani.setEasingCurve(QEasingCurve.InOutCubic)
-
-            start = self.geometry()
-            end = QRect(
-                current_pos.x() + self.rect().width() / 2 - 90, current_pos.y(),
-                180, 40
-            )
-            self.ani.setStartValue(start)
-            self.ani.setEndValue(end)
-
-            # 动画过程中更新圆角遮罩
-            self.ani.valueChanged.connect(self._update_rounded_mask)
-
-            # 切换显示内容 - 先切回控制面板页面
-            self.controls.setCurrentWidget(self.ctrl_page)
-            self.controls.hide()
-
-            # 动画结束后显示时间并调整容器大小
-            self.ani.finished.connect(lambda: (
-                self.time_label.show(),
-                self.update_time_display(),
-                self.container.setFixedSize(180, 40)
-            ))
-
-            self.ani.start()
-
-    def update_time(self):
-        """更新时间显示。"""
-        self.update_time_display()
-
-    def update_time_display(self):
-        """根据展开/收起状态更新时间或日期显示。"""
-        current_time = datetime.now().strftime("%H:%M")
-        current_date = datetime.now().strftime("%m/%d")
-
-        self.time_label.setText(current_time)
-        self.date_label.setText(f"{current_date} {current_time}")
-
-        # 如果已展开，日期标签居中显示
-        if self.is_expanded:
-            # 创建临时标签获取宽度
-            temp_label = QLabel(f"{current_date} {current_time}")
-            temp_label.setObjectName("DateLabel")
-            temp_label.setStyleSheet(self.date_label.styleSheet())
-            temp_label.setFont(self.date_label.font())
-            temp_label.adjustSize()
-            width = temp_label.width()
-            x = (360 - width) // 2
-            self.date_label.setFixedWidth(width)
-            self.date_label.move(x, 0)
-
-    def show_notification_on_time(self, message, icon="📶"):
-        """在灵动岛的时间位置显示通知，然后过几秒再恢复时间显示。"""
-        # 保存当前时间文本，用于稍后恢复
-        if hasattr(self, 'time_label'):
-            self._original_time_text = self.time_label.text()
-            
-            # 暂停时钟更新定时器
-            if hasattr(self, 'time_timer'):
-                self.time_timer.stop()
-            
-            # 显示通知内容
-            self.time_label.setText(f"{icon} {message}")
-            
-            # 设置定时器，2秒后恢复时间显示
-            self._notification_timer = QTimer(self)
-            self._notification_timer.setSingleShot(True)
-            self._notification_timer.timeout.connect(self._restore_time_display)
-            self._notification_timer.start(2000)  # 2秒后恢复
-    
-    def _restore_time_display(self):
-        """恢复时间显示。"""
-        if hasattr(self, 'time_label') and hasattr(self, '_original_time_text'):
-            # 恢复时间显示
-            self.update_time()  # 直接更新到当前时间
-            # 恢复时钟更新定时器
-            if hasattr(self, 'time_timer'):
-                self.time_timer.start(1000)
-            # 清理临时属性
-            if hasattr(self, '_original_time_text'):
-                delattr(self, '_original_time_text')
-            if hasattr(self, '_notification_timer'):
-                delattr(self, '_notification_timer')
-
-    def eventFilter(self, obj, event):
-        """事件过滤器，用于处理对话框关闭事件。"""
-        if event.type() == QEvent.Close and obj == self._url_dialog:
-            self._url_dialog = None
-            return True
-        return super().eventFilter(obj, event)
-
-    def _check_clipboard(self):
-        """检查剪贴板是否有新的 URL。"""
-        current_text = get_clipboard_text()
-        if not current_text:
-            return
-
-        # 第一次检查时，只记录当前剪贴板内容，不处理
-        if self._clipboard_first_check:
-            self._last_clipboard_text = current_text
-            self._clipboard_first_check = False
-            return
-
-        # 提取 URL
-        urls = extract_urls(current_text)
-        if not urls:
-            # 无 URL 时重置剪贴板记录，允许重复检测非 URL 内容
-            self._last_clipboard_text = current_text
-            return
-
-        # 有 URL 时，检查是否与上次检测到的 URL 相同
-        if current_text == self._last_clipboard_text:
-            return
-
-        self._last_clipboard_text = current_text
-
-        # 显示通知让用户选择
-        self._show_url_notification(urls)
-
-    def _show_url_notification(self, urls: list):
-        """显示 URL 通知在灵动岛内部。"""
-        if len(urls) == 1:
-            # 单个 URL - 切换到单URL页面
-            self.controls.setCurrentWidget(self.url_single_page)
-            self._build_single_url_page(urls[0])
-            target_height = 160
-        else:
-            # 多个 URL - 切换到多URL页面
-            self.controls.setCurrentWidget(self.url_multi_page)
-            # 由页面构建函数返回目标高度（包含 scroll/按钮间距等），避免高度压缩导致间距“看起来不变”
-            target_height = self._build_multi_url_page(urls)
-            # 限制最大高度
-            target_height = min(target_height, self.max_expand_h)
-
-        # 展开灵动岛
-        self._expand_to_url_page(target_height)
-
-        # 5秒后自动关闭
-        if hasattr(self, '_url_auto_close_timer') and self._url_auto_close_timer.isActive():
-            self._url_auto_close_timer.stop()
-
-        self._url_auto_close_timer = QTimer(self)
-        self._url_auto_close_timer.setSingleShot(True)
-        self._url_auto_close_timer.timeout.connect(self._close_url_page)
-        self._url_auto_close_timer.start(5000)
-
-    def _build_single_url_page(self, url: str):
-        """构建单个 URL 的页面。"""
-        # 清空之前的内容
-        self._clear_layout(self.url_single_layout)
-
-        # 标题
-        title = QLabel("检测到链接")
-        title.setObjectName("DialogTitle")
-        self.url_single_layout.addWidget(title)
-
-        # URL 显示
-        url_label = QLabel(url[:45] + "..." if len(url) > 45 else url)
-        url_label.setObjectName("UrlLabel")
-        url_label.setWordWrap(True)
-        self.url_single_layout.addWidget(url_label)
-
-        # 按钮区域
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
-
-        cancel_btn = QPushButton("忽略")
-        cancel_btn.setObjectName("DialogButton")
-        cancel_btn.clicked.connect(self._close_url_page)
-
-        open_btn = QPushButton("打开链接")
-        open_btn.setObjectName("DialogButton")
-        open_btn.clicked.connect(lambda: self._open_url_and_close(url))
-
-        btn_layout.addWidget(cancel_btn)
-        btn_layout.addWidget(open_btn)
-        self.url_single_layout.addLayout(btn_layout)
-
-    def _build_multi_url_page(self, urls: list):
-        """构建多个 URL 的选择页面。"""
-        # 清空之前的内容（包含 spacer / 子 layout）
-        self._clear_layout(self.url_multi_layout)
-
-        # 保存URL和checkbox的对应关系
-        self._url_checkboxes = {}
-
-        # 标题
-        title = QLabel(f"检测到 {len(urls)} 个链接")
-        title.setObjectName("DialogTitle")
-        self.url_multi_layout.addWidget(title)
-
-        # 计算高度 - 根据URL数量动态调整
-        visible_count = min(len(urls), 6)
-        item_height = 32  # 每个URL项的高度
-        scroll_height = visible_count * item_height + 10  # scroll区域高度
-
-        # 创建滚动区域 - 设置固定高度
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded if len(urls) > 6 else Qt.ScrollBarAlwaysOff)
-        scroll.setObjectName("UrlScrollArea")
-        scroll.setFixedHeight(scroll_height)
-
-        scroll_content = QWidget()
-        scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_layout.setSpacing(0)
-
-        # URL 列表（带checkbox）
-        for i, url in enumerate(urls[:visible_count]):
-            row_widget = QWidget()
-            row_layout = QHBoxLayout(row_widget)
-            row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(8)
-
-            # 复选框，默认选中
-            checkbox = QCheckBox()
-            checkbox.setChecked(True)
-            checkbox.setFixedWidth(24)
-
-            url_text = url[:35] + "..." if len(url) > 35 else url
-            url_label = QLabel(f"{i+1}. {url_text}")
-            url_label.setObjectName("UrlLabel")
-            url_label.setAlignment(Qt.AlignVCenter)
-
-            row_layout.addWidget(checkbox)
-            row_layout.addWidget(url_label)
-            scroll_layout.addWidget(row_widget)
-
-            # 保存对应关系
-            self._url_checkboxes[checkbox] = url
-
-        if len(urls) > visible_count:
-            more_label = QLabel(f"...还有 {len(urls) - visible_count} 个")
-            more_label.setObjectName("StatusLabel")
-            more_label.setMinimumHeight(item_height)
-            more_label.setAlignment(Qt.AlignVCenter)
-            scroll_layout.addWidget(more_label)
-
-        scroll.setWidget(scroll_content)
-        self.url_multi_layout.addWidget(scroll)
-
-        # scroll 与按钮之间固定间距（按钮下移）
-        self.url_multi_layout.addSpacing(self.multi_url_btn_top_spacing)
-
-        # 按钮区域
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
-
-        ignore_btn = QPushButton("忽略")
-        ignore_btn.setObjectName("DialogButton")
-        ignore_btn.clicked.connect(self._close_url_page)
-
-        open_selected_btn = QPushButton("打开选中")
-        open_selected_btn.setObjectName("DialogButton")
-        open_selected_btn.clicked.connect(self._open_selected_and_close)
-
-        btn_layout.addWidget(ignore_btn)
-        btn_layout.addWidget(open_selected_btn)
-        self.url_multi_layout.addLayout(btn_layout)
-
-        # 返回目标高度
-        # 标题30 + scroll高度 + 间距 + 按钮50 + margin
-        target_height = 30 + scroll_height + self.multi_url_btn_top_spacing + 50 + 20
-        return target_height
-
-    def _clear_layout(self, layout: QLayout):
-        """递归清空 layout，确保 spacer/layout 也被移除。"""
-        while layout.count():
-            item = layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-                continue
-            if item.layout():
-                self._clear_layout(item.layout())
-                continue
-
-    def _expand_to_url_page(self, target_height: int = 160):
-        """展开灵动岛。"""
-        # 如果已经展开，直接切换页面并调整高度
-        if self.is_expanded:
-            # 如果高度需要变化，添加一个高度动画
-            current_h = self.geometry().height()
-            if current_h != target_height:
-                self._animate_height_change(current_h, target_height)
-            return
-
-        # 未展开，先展开
-        self._do_expand_and_show_url(target_height)
-
-    def _animate_height_change(self, from_h: int, to_h: int):
-        """动态调整高度的动画。"""
-        current_pos = self.pos()
-        current_w = self.geometry().width()
-
-        self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(150)
-        self.ani.setEasingCurve(QEasingCurve.OutCubic)
-
-        start = QRect(current_pos.x(), current_pos.y(), current_w, from_h)
-        end = QRect(current_pos.x(), current_pos.y(), current_w, to_h)
-        self.ani.setStartValue(start)
-        self.ani.setEndValue(end)
-
-        # 动画进行中同步更新容器与 controls 高度和圆角遮罩
-        self.ani.valueChanged.connect(lambda value: (
-            self.container.setFixedSize(current_w, value.height()),
-            self._set_controls_height(value.height()),
-            self._update_rounded_mask()
-        ))
-
-        self.ani.finished.connect(lambda: (
-            self.container.setFixedSize(current_w, to_h),
-            self._set_controls_height(to_h)
-        ))
-        self.ani.start()
-
-    def _set_controls_height(self, container_h: int):
-        """根据容器高度同步设置 controls 高度（避免内容被压缩）。"""
-        # 40px 为顶部时间/日期区域高度
-        controls_h = max(0, int(container_h) - 40)
-        self.controls.setFixedHeight(controls_h)
-
-    def _do_expand_and_show_url(self, target_height: int = 160):
-        """执行展开动画并显示链接页面。"""
-        # 获取当前位置和中心点
-        current_pos = self.geometry().topLeft()
-        current_w = self.rect().width()
-        current_h = self.rect().height()
-        center_x = current_pos.x() + current_w // 2
-
-        # 隐藏时间，显示日期
-        self.time_label.hide()
-        self.date_label.show()
-        self.update_time_display()
-
-        # 创建展开动画 - 从中心向两边展开
-        self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(250)
-        self.ani.setEasingCurve(QEasingCurve.OutCubic)
-
-        # 起始：从中心点，宽度为0，高度为当前高度
-        start = QRect(
-            center_x, current_pos.y(),
-            0, current_h
-        )
-        # 结束：目标位置居中
-        end = QRect(
-            center_x - 180, current_pos.y(),
-            360, target_height
-        )
-        self.ani.setStartValue(start)
-        self.ani.setEndValue(end)
-
-        # 动画进行中动态调整和圆角遮罩
-        self.ani.valueChanged.connect(lambda value: (
-            self.controls.show() if value.width() > 50 else None,
-            self.container.setFixedSize(value.width(), 40 + (target_height - 40) * (value.width() / 360)),
-            self._set_controls_height(40 + (target_height - 40) * (value.width() / 360)),
-            self._update_rounded_mask()
-        ))
-
-        # 动画结束后确保尺寸正确
-        self.ani.finished.connect(lambda: (
-            self.controls.show(),
-            self.container.setFixedSize(360, target_height),
-            self._set_controls_height(target_height)
-        ))
-
-        self.ani.start()
+    def _do_expand(self, current_pos):
+        """执行展开动画。"""
         self.is_expanded = True
 
-    def _close_url_page(self):
-        """关闭链接页面，收起灵动岛。"""
-        # 切换回控制面板页面
-        self.controls.setCurrentWidget(self.ctrl_page)
-        # 重置 controls 高度为控制面板的默认高度
-        self.controls.setFixedHeight(120)
-        # 收起灵动岛
-        if self.is_expanded:
-            self.toggle_island()
-
-    def _open_url_and_close(self, url: str):
-        """打开 URL 并收起灵动岛。"""
-        open_url(url)
-        self._close_url_page()
-
-    def _open_selected_and_close(self):
-        """打开选中的 URL 并收起灵动岛。"""
-        selected_urls = []
-        for checkbox, url in self._url_checkboxes.items():
-            if checkbox.isChecked():
-                selected_urls.append(url)
-        if selected_urls:
-            open_urls(selected_urls)
-        self._close_url_page()
-
-    def _open_all_and_close(self, urls: list):
-        """打开所有 URL 并收起灵动岛。"""
-        open_urls(urls)
-        self._close_url_page()
-
-    def _show_connection_animation(self, message, icon="📶"):
-        """显示连接状态变化的动画提示。"""
-        # 暂停时间更新定时器
-        self.time_timer.stop()
-        
-        # 展开灵动岛
-        if not self.is_expanded:
-            self._do_expand_and_show_connection(message, icon)
-        else:
-            # 如果已经展开，直接更新显示
-            self._update_connection_display(message, icon)
-
-        # 3秒后自动收起
-        if hasattr(self, '_connection_auto_close_timer') and self._connection_auto_close_timer.isActive():
-            self._connection_auto_close_timer.stop()
-
-        self._connection_auto_close_timer = QTimer(self)
-        self._connection_auto_close_timer.setSingleShot(True)
-        self._connection_auto_close_timer.timeout.connect(self._close_connection_page)
-        self._connection_auto_close_timer.start(1000)
-
-    def _do_expand_and_show_connection(self, message, icon="📶"):
-        """执行展开动画并显示连接状态。"""
-        # 获取当前位置和中心点
-        current_pos = self.geometry().topLeft()
-        current_w = self.rect().width()
-        current_h = self.rect().height()
-        center_x = current_pos.x() + current_w // 2
-
-        # 隐藏时间，显示日期
         self.time_label.hide()
         self.date_label.hide()
 
-        # 创建展开动画 - 从中心向两边展开
-        self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(250)
-        self.ani.setEasingCurve(QEasingCurve.OutCubic)
-
-        # 起始：从中心点，宽度为0，高度为当前高度
-        start = QRect(
-            center_x, current_pos.y(),
-            0, current_h
-        )
-        # 结束：目标位置居中
+        start = self.geometry()
         end = QRect(
-            center_x - 180, current_pos.y(),
-            360, 160
+            current_pos.x() + self.rect().width() / 2 - 180,
+            current_pos.y(),
+            EXPANDED_WIDTH, EXPANDED_HEIGHT
         )
-        self.ani.setStartValue(start)
-        self.ani.setEndValue(end)
 
-        # 动画进行中动态调整和圆角遮罩
-        self.ani.valueChanged.connect(lambda value: (
-            self.controls.show() if value.width() > 50 else None,
-            self.container.setFixedSize(value.width(), 160),
-            self._set_controls_height(160),
+        def on_value_changed(value):
             self._update_rounded_mask()
-        ))
 
-        # 动画结束后确保尺寸正确并显示连接状态
-        self.ani.finished.connect(lambda: (
-            self.controls.show(),
-            self.container.setFixedSize(360, 160),
-            self._set_controls_height(160),
-            self._update_connection_display(message, icon)
-        ))
+        def on_finished():
+            self.date_label.show()
+            self._update_time_display()
 
-        self.ani.start()
-        self.is_expanded = True
+        self.animation_manager.create_expand_animation(
+            start, end, on_value_changed, on_finished
+        ).start()
 
-    def _update_connection_display(self, message, icon="📶"):
-        """更新连接状态显示。"""
-        # 切换到控制面板页面
-        self.controls.setCurrentWidget(self.ctrl_page)
-        # 更新时间标签显示连接状态
+        self.controls.show()
+        self.container.setFixedSize(EXPANDED_WIDTH, EXPANDED_HEIGHT)
+
+    def _do_collapse(self, current_pos):
+        """执行收起动画。"""
+        self.is_expanded = False
+
+        self.date_label.hide()
         self.time_label.hide()
-        self.date_label.setText(f"{icon} {message}")
-        self.date_label.show()
-        
-        # 居中显示
-        temp_label = QLabel(f"{icon} {message}")
-        temp_label.setObjectName("DateLabel")
-        temp_label.setStyleSheet(self.date_label.styleSheet())
-        temp_label.setFont(self.date_label.font())
-        temp_label.adjustSize()
-        width = temp_label.width()
-        x = (360 - width) // 2
-        self.date_label.setFixedWidth(width)
-        self.date_label.move(x, 0)
 
-    def _close_connection_page(self):
-        """关闭连接状态页面，收起灵动岛。"""
-        # 收起灵动岛
-        if self.is_expanded:
-            self.toggle_island()
-        
-        # 恢复时间更新定时器
-        self.time_timer.start(1000)
-        # 更新时间显示
-        self.update_time()
+        start = self.geometry()
+        end = QRect(
+            current_pos.x() + self.rect().width() / 2 - 90,
+            current_pos.y(),
+            COLLAPSED_WIDTH, COLLAPSED_HEIGHT
+        )
 
-    def load_qss(self):
-        """加载QSS样式表。"""
-        with open("resources/styles/style.qss", "r", encoding="utf-8") as f:
-            self.setStyleSheet(f.read())
+        def on_value_changed(value):
+            self._update_rounded_mask()
 
-    def _update_rounded_mask(self):
-        """动态更新窗口的圆角遮罩，保持圆角效果。"""
-        rect = self.rect()
-        radius = min(rect.width(), rect.height()) // 2
-        radius = max(10, min(radius, 20))
-        path = QPainterPath()
-        path.addRoundedRect(rect, radius, radius)
-        region = QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(region)
+        def on_finished():
+            self.time_label.show()
+            self._update_time_display()
+            self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
+
+        self.animation_manager.create_collapse_animation(
+            start, end, on_value_changed, on_finished
+        ).start()
+
+        self.controls.setCurrentWidget(self.ctrl_page)
+        self.controls.hide()
+
+    def eventFilter(self, obj, event):
+        """事件过滤器。"""
+        if event.type() == QEvent.Close and obj == getattr(self, '_url_dialog', None):
+            self._url_dialog = None
+            return True
+        return super().eventFilter(obj, event)
