@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="20039620-ab81-4bea-bcdd-20043e3a58cc" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/island.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/island.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/styles/style.qss" beforeDir="false" afterPath="$PROJECT_DIR$/resources/styles/style.qss" afterDir="false" />
-    </list>
+    <list default="true" id="20039620-ab81-4bea-bcdd-20043e3a58cc" name="更改" comment="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -57,6 +48,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.island.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.test.executor": "Run",
     "Python.utils.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -69,7 +61,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "vcs.Git",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -115,7 +107,21 @@
       <workItem from="1773237292464" duration="328000" />
       <workItem from="1773237640887" duration="1187000" />
       <workItem from="1773239324952" duration="11000" />
-      <workItem from="1773293315846" duration="5969000" />
+      <workItem from="1773293315846" duration="8489000" />
+      <workItem from="1773307622265" duration="908000" />
+      <workItem from="1773309281228" duration="2875000" />
+      <workItem from="1773323381836" duration="14000" />
+      <workItem from="1773383935013" duration="1856000" />
+      <workItem from="1773390568352" duration="15000" />
+      <workItem from="1773393166432" duration="455000" />
+      <workItem from="1773393634226" duration="26000" />
+      <workItem from="1773393717401" duration="606000" />
+      <workItem from="1773394414996" duration="2700000" />
+      <workItem from="1773397133961" duration="19000" />
+      <workItem from="1773397229385" duration="456000" />
+      <workItem from="1773397741004" duration="11000" />
+      <workItem from="1773397925442" duration="1721000" />
+      <workItem from="1773399703850" duration="2105000" />
     </task>
     <task id="LOCAL-00001" summary="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）">
       <option name="closed" value="true" />
@@ -141,15 +147,92 @@
       <option name="project" value="LOCAL" />
       <updated>1773035237269</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常">
+      <option name="closed" value="true" />
+      <created>1773299986259</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1773299986259</updated>
+    </task>
+    <task id="LOCAL-00005" summary="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常">
+      <option name="closed" value="true" />
+      <created>1773300160356</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1773300160356</updated>
+    </task>
+    <task id="LOCAL-00006" summary="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常">
+      <option name="closed" value="true" />
+      <created>1773300177976</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1773300177976</updated>
+    </task>
+    <task id="LOCAL-00007" summary="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常">
+      <option name="closed" value="true" />
+      <created>1773300197798</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1773300197798</updated>
+    </task>
+    <task id="LOCAL-00008" summary="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常">
+      <option name="closed" value="true" />
+      <created>1773300229007</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1773300229007</updated>
+    </task>
+    <task id="LOCAL-00009" summary="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭">
+      <option name="closed" value="true" />
+      <created>1773401530354</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1773401530354</updated>
+    </task>
+    <task id="LOCAL-00010" summary="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭">
+      <option name="closed" value="true" />
+      <created>1773401785288</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1773401785288</updated>
+    </task>
+    <task id="LOCAL-00011" summary="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭">
+      <option name="closed" value="true" />
+      <created>1773401806670</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1773401806670</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
-    <option name="LAST_COMMIT_MESSAGE" value="V1.5版本，重新使用了Webview编写，占用从150M（PyQt版本）下降到60MB，同时启动时间大幅度下降，并且添加了任务栏托盘，不需要时可右键退出，同时优化了动画逻辑，触发动画的范围大幅度缩小，防止误触，在展开前固定显示时间&#10;此程序有较多的逻辑行为由AI进行修改（人话：技术太菜了，写不出来了）如遇BUG，请及时报告&#10;&#10;(当运行此程序时如果窗口变白，不透明，不显示等若干问题，请退出后重新启动，一般两到三次就会正常）" />
+    <MESSAGE value="删除了音量调节功能，因为系统自带的更好用，同时优化了软件动画，相较于之前更流畅，同时修复了wifi，蓝牙，电池三种状态的显示异常" />
+    <MESSAGE value="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改了wifi，蓝牙提示，将提示消息集成在了主岛上面，连接后，小岛将直接展开显示，1秒后关闭" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -159,12 +242,18 @@
           <line>1</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/island.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PyislandWeb$main.coverage" NAME="main 覆盖结果" MODIFIED="1773299647964" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PyislandWeb$island.coverage" NAME="island 覆盖结果" MODIFIED="1773299333179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$main.coverage" NAME="main 覆盖结果" MODIFIED="1773401331940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$island.coverage" NAME="island 覆盖结果" MODIFIED="1773399604056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
     <SUITE FILE_PATH="coverage/PyislandWeb$utils.coverage" NAME="utils 覆盖结果" MODIFIED="1773297171812" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+    <SUITE FILE_PATH="coverage/PyislandWeb$test.coverage" NAME="test 覆盖结果" MODIFIED="1773312675623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
