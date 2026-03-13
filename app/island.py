@@ -389,33 +389,45 @@ class ModernIsland(QWidget):
             self.toggle_island()
 
     def toggle_island(self):
-        """在展开和折叠状态之间切换。"""
+        """在展开和折叠状态之间切换，使用更丝滑的动画。"""
+        # 清理旧动画
+        if hasattr(self, 'ani') and self.ani:
+            self.ani.stop()
+            self.ani.deleteLater()
+
         self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(450)
-        self.ani.setEasingCurve(QEasingCurve.OutQuart)
+        self.ani.setDuration(200)
+        self.ani.setEasingCurve(QEasingCurve.InOutCubic)
 
         current_pos = self.pos()
 
         if not self.is_expanded:
+            # 展开动画
             new_rect = QRect(
                 current_pos.x(), current_pos.y(),
                 self.exp_rect.width(), self.exp_rect.height()
             )
+            self.ani.setStartValue(self.geometry())
             self.ani.setEndValue(new_rect)
+
+            # 切换显示内容
             self.time_label.hide()
             self.controls.show()
+            self.container.setFixedSize(self.exp_rect.width(), self.exp_rect.height())
+
         else:
+            # 折叠动画
             new_rect = QRect(
                 current_pos.x(), current_pos.y(),
                 self.col_rect.width(), self.col_rect.height()
             )
+            self.ani.setStartValue(self.geometry())
             self.ani.setEndValue(new_rect)
-            self.controls.hide()
-            self.time_label.show()
 
-        self.ani.valueChanged.connect(
-            lambda g: self.container.setFixedSize(g.width(), g.height())
-        )
+            # 先隐藏controls，设置正确大小
+            self.controls.hide()
+            self.container.setFixedSize(self.col_rect.width(), self.col_rect.height())
+
         self.ani.start()
         self.is_expanded = not self.is_expanded
 

@@ -36,44 +36,40 @@
 /* 滑动条轨道样式 */
 /* 可修改项：height（轨道高度）、background（轨道背景色）、border-radius（轨道圆角） */
 QSlider#CapsuleSlider::groove:horizontal {
-    height: 6px; /* 轨道高度，可调整粗细 */
-    background: #2A2A2D; /* 轨道背景色 */
-    border-radius: 3px; /* 轨道圆角，建议为高度的一半 */
-    margin: 6px 0; /* 上下边距，调整滑动条在垂直方向的位置 */
+    border: none;
+    height: 8px;
+    background: #2A2A2D;
+    border-radius: 4px;
 }
 
 /* 滑动条已填充部分样式 */
 /* 可修改项：background（填充颜色或渐变）、border-radius（填充部分圆角） */
 QSlider#CapsuleSlider::sub-page:horizontal {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #007AFF, stop:1 #0056B3); /* 蓝色渐变填充 */
-    border-radius: 3px; /* 填充部分圆角，建议与轨道一致 */
-}
-
-/* 滑动条滑块样式（当前隐藏） */
-/* 可修改项：width/height（滑块大小）、background（滑块背景）、border-radius（滑块圆角） */
-QSlider#CapsuleSlider::handle:horizontal {
-    width: 0px; /* 滑块宽度，0表示隐藏 */
-    height: 0px; /* 滑块高度，0表示隐藏 */
-    background: transparent; /* 滑块背景，transparent表示透明 */
-    border: none; /* 滑块边框，none表示无 */
-    margin: 0; /* 滑块边距 */
-}
-
-/* 滑动条滑块悬停样式（当前隐藏） */
-/* 与滑块样式保持一致，确保悬停时也隐藏 */
-QSlider#CapsuleSlider::handle:horizontal:hover {
-    width: 0px;
-    height: 0px;
-    background: transparent;
+                stop:0 #007AFF, stop:1 #0056B3);
+    border-radius: 4px;
     border: none;
-    margin: 0;
+}
+
+/* 滑动条滑块样式（胶囊形状） */
+QSlider#CapsuleSlider::handle:horizontal {
+    width: 20px;
+    height: 20px;
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.5,
+                stop:0 #FFFFFF, stop:1 #E0E0E0);
+    border-radius: 10px;
+    margin: -6px 0;
+}
+
+/* 滑动条滑块悬停样式 */
+QSlider#CapsuleSlider::handle:horizontal:hover {
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.5,
+                stop:0 #FFFFFF, stop:1 #FFFFFF);
 }
 
 /* 鼠标悬停时轨道的效果 */
-/* 可修改项：background（悬停时的轨道背景色） */
 QSlider#CapsuleSlider::groove:horizontal:hover {
-    background: #353538; /* 悬停时的轨道背景色，比默认稍亮 */
+    background: #353538;
 }
 
 /* 状态栏标签样式 */
