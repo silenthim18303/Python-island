@@ -33,7 +33,8 @@ PyislandWeb/
 │   │   ├── __init__.py
 │   │   ├── clipboard.py      # 剪贴板服务
 │   │   ├── system_status.py  # 系统状态服务
-│   │   └── brightness.py     # 亮度控制服务
+│   │   ├──  brightness.py     # 亮度控制服务
+│   │   └── tray.py           # 托盘服务
 │   └── animations/           # 动画效果模块
 │       ├── __init__.py
 │       └── effects.py        # 展开/收起动画
