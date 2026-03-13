@@ -1,24 +1,35 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 import ctypes
-import platform
 import sys
+import argparse
 
-
-from PyIsland.Display.Island import DynamicIslandWindow
+from .Display.Island import DynamicIslandWindow
 
 from PyQt5.QtWidgets import QApplication
 
-def main():
 
-    if platform.system() == "Windows":
-        # noinspection PyUnresolvedReferences
-        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+def parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--debug", action="store_true")
+    return parser.parse_args()
+
+
+def main():
+    # noinspection PyUnresolvedReferences
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    window = DynamicIslandWindow()
+    window = DynamicIslandWindow(debug=parse().debug)
     window.show()
 
     sys.exit(app.exec_())
 
-main()
+
+if __name__ == "__main__":
+    main()

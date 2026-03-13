@@ -1,5 +1,10 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 from threading import Lock
-from .EventDefine import EventCode, EVENT_TEMPLATES
+from PyIsland.EventBus.EventDefine import EventCode, EVENT_TEMPLATES
 from collections import deque
 from PyQt5.QtCore import QTimer
 

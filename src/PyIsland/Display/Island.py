@@ -1,16 +1,12 @@
-from PyIsland.Configure import CONFIG_MANAGER
-from PyIsland.EventBus.Bus import EventManager
-from PyIsland.EventBus.EventDefine import EventCode
-from PyIsland.EventBus.Monitor import AsyncMonitorThread
-from PyIsland.Display.Container import CapsuleWidget
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
 
 import ctypes
-import time
 import platform
+import time
 
-from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLabel, QSystemTrayIcon, QMenu, QAction, QStyle
-)
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import (
     Qt, QThread, QTimer, QPropertyAnimation, QEasingCurve, QRect, pyqtProperty
@@ -18,11 +14,57 @@ from PyQt5.QtCore import (
 from PyQt5.QtGui import (
     QFont, QColor, QPainter, QBrush, QFontMetrics
 )
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QLabel, QSystemTrayIcon, QMenu, QAction, QStyle
+)
+
+from .Container import CapsuleWidget
+from ..Configure import CONFIG_MANAGER
+from ..Debugger.server import Debugger
+from ..EventBus.Bus import EventManager
+from ..EventBus.EventDefine import EventCode
+from ..EventBus.Monitor import AsyncMonitorThread
 
 
 # noinspection PyAttributeOutsideInit, PyUnresolvedReferences
-class DynamicIslandWindow(QWidget):
-    def __init__(self):
+class _OverrideWidget(QWidget):
+    def mousePressEvent(self, event):
+        if self.is_click_through or self.is_locked:
+            return
+        if event.button() == Qt.LeftButton:
+            self.drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self.is_click_through or self.is_locked:
+            return
+        if event.buttons() == Qt.LeftButton and self.drag_pos:
+            self.move(event.globalPos() - self.drag_pos)
+            event.accept()
+
+    def enterEvent(self, event):
+        self.event_manager.publish(EventCode.MOUSE_HOVER)
+
+    def leaveEvent(self, event):
+        self.event_manager.publish(EventCode.MOUSE_LEAVE)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(QBrush(QColor(0, 0, 0, 0)))
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(self.rect())
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.capsule.setGeometry(self.rect())
+        self.content_label.setGeometry(self.rect())
+        self.interactive_zone.setGeometry(0, 0, self.width(), 40)
+
+
+# noinspection PyAttributeOutsideInit, PyUnresolvedReferences
+class _DynamicIslandWindow(_OverrideWidget):
+    def __init__(self, debug: bool = False):
         super().__init__()
         self.drag_pos = None
         self.is_locked = False
@@ -37,24 +79,26 @@ class DynamicIslandWindow(QWidget):
         self._subscribe_events()
 
         self.init_ui()
-        self.init_tray()
+
         self.center_top()
         self.init_time_update()
         self.init_monitors()
+        if debug: self.debug_server()
         self.init_animations()
 
     def _subscribe_events(self):
         notification_events = [
             EventCode.NETWORK_RESTORE,
-            EventCode.BLUETOOTH_CONNECT,
-            EventCode.TEST_NETWORK,
-            EventCode.TEST_BLUETOOTH
+            EventCode.BLUETOOTH_CONNECT
         ]
         for event_code in notification_events:
             self.event_manager.subscribe(event_code, self._handle_notification)
-
         self.event_manager.subscribe(EventCode.MOUSE_HOVER, self._handle_mouse_hover)
         self.event_manager.subscribe(EventCode.MOUSE_LEAVE, self._handle_mouse_leave)
+        self.event_manager.subscribe(
+            EventCode.SUICIDE,
+            lambda *_, **__: QApplication.quit() # if only "QApplication.quit": `TypeError: quit(): too many arguments`
+        )
 
     def init_ui(self):
         self.base_flags = Qt.FramelessWindowHint | Qt.Tool
@@ -112,57 +156,6 @@ class DynamicIslandWindow(QWidget):
         metrics = QFontMetrics(font)
         return metrics.horizontalAdvance(text)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.capsule.setGeometry(self.rect())
-        self.content_label.setGeometry(self.rect())
-        self.interactive_zone.setGeometry(0, 0, self.width(), 40)
-
-    def init_tray(self):
-        self.tray_icon = QSystemTrayIcon(self)
-        icon = self.style().standardIcon(QStyle.SP_ComputerIcon)
-        self.tray_icon.setIcon(icon)
-        self.tray_icon.setToolTip("动态岛")
-
-        self.tray_menu = QMenu()
-
-        self.action_topmost = QAction("置顶窗口 (关)", self)
-        self.action_topmost.setCheckable(True)
-        self.action_topmost.triggered.connect(self.toggle_topmost)
-        self.tray_menu.addAction(self.action_topmost)
-
-        self.action_click_through = QAction("点击穿透 (关)", self)
-        self.action_click_through.setCheckable(True)
-        self.action_click_through.triggered.connect(self.toggle_click_through)
-        self.tray_menu.addAction(self.action_click_through)
-
-        self.action_lock = QAction("位置锁定 (关)", self)
-        self.action_lock.setCheckable(True)
-        self.action_lock.triggered.connect(self.toggle_lock)
-        self.tray_menu.addAction(self.action_lock)
-
-        self.tray_menu.addSeparator()
-
-        self.action_test_network = QAction("测试网络通知", self)
-        self.action_test_network.triggered.connect(
-            lambda: self.event_manager.publish(EventCode.TEST_NETWORK)
-        )
-        self.tray_menu.addAction(self.action_test_network)
-
-        self.action_test_bluetooth = QAction("测试蓝牙通知", self)
-        self.action_test_bluetooth.triggered.connect(
-            lambda: self.event_manager.publish(EventCode.TEST_BLUETOOTH)
-        )
-        self.tray_menu.addAction(self.action_test_bluetooth)
-
-        self.tray_menu.addSeparator()
-        action_quit = QAction("退出程序", self)
-        action_quit.triggered.connect(QApplication.quit)
-        self.tray_menu.addAction(action_quit)
-
-        self.tray_icon.setContextMenu(self.tray_menu)
-        self.tray_icon.show()
-
     def init_time_update(self):
         self.time_timer = QTimer(self)
         self.time_timer.timeout.connect(self.update_time)
@@ -172,6 +165,10 @@ class DynamicIslandWindow(QWidget):
     def init_monitors(self):
         self.async_monitor_thread = AsyncMonitorThread()
         self.async_monitor_thread.start()
+
+    def debug_server(self):
+        self.debug_thread = Debugger()
+        self.debug_thread.start()
 
     def init_animations(self):
         self.size_animation = QPropertyAnimation(self, b"geometry")
@@ -200,6 +197,7 @@ class DynamicIslandWindow(QWidget):
         font.setPointSize(size)
         self.content_label.setFont(font)
 
+    # Required
     content_font_size = pyqtProperty(int, get_content_font_size, set_content_font_size)
 
     def center_top(self):
@@ -277,7 +275,6 @@ class DynamicIslandWindow(QWidget):
                 self.content_label.setStyleSheet(f"""
                     QLabel {{
                         color: white;
-                        font-family: "Microsoft YaHei", sans-serif;
                         font-weight: 600;
                         background: transparent;
                     }}
@@ -412,29 +409,62 @@ class DynamicIslandWindow(QWidget):
         self.is_locked = checked
         self.action_lock.setText(f"位置锁定 ({'开' if checked else '关'})")
 
-    def mousePressEvent(self, event):
-        if self.is_click_through or self.is_locked:
-            return
-        if event.button() == Qt.LeftButton:
-            self.drag_pos = event.globalPos() - self.frameGeometry().topLeft()
-            event.accept()
 
-    def mouseMoveEvent(self, event):
-        if self.is_click_through or self.is_locked:
-            return
-        if event.buttons() == Qt.LeftButton and self.drag_pos:
-            self.move(event.globalPos() - self.drag_pos)
-            event.accept()
+# noinspection PyAttributeOutsideInit, PyUnresolvedReferences
+class DynamicIslandWindow(_DynamicIslandWindow):
+    def __init__(self, debug: bool = False):
+        super().__init__(debug=debug)
+        self.init_tray()
 
-    def enterEvent(self, event):
-        self.event_manager.publish(EventCode.MOUSE_HOVER)
+    def init_tray(self):
+        self.tray_icon = QSystemTrayIcon(self)
+        icon = self.style().standardIcon(QStyle.SP_ComputerIcon)
+        self.tray_icon.setIcon(icon)
+        self.tray_icon.setToolTip("灵动岛")
 
-    def leaveEvent(self, event):
-        self.event_manager.publish(EventCode.MOUSE_LEAVE)
+        self.tray_menu = QMenu()
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setBrush(QBrush(QColor(0, 0, 0, 0)))
-        painter.setPen(Qt.NoPen)
-        painter.drawRect(self.rect())
+        self._topmost()
+        self._click_through()
+        self._pos_lock()
+
+        self.tray_menu.addSeparator()
+
+        self._add_event_action("测试网络连接通知", EventCode.NETWORK_RESTORE)
+        self._add_event_action("测试蓝牙连接通知", EventCode.BLUETOOTH_CONNECT)
+
+        self.tray_menu.addSeparator()
+        self._add_event_action("退出程序", EventCode.SUICIDE)
+
+        self.tray_icon.setContextMenu(self.tray_menu)
+        self.tray_icon.show()
+
+    def _topmost(self):
+        self.action_topmost = QAction("置顶窗口 (关)", self)
+        self.action_topmost.setCheckable(True)
+        self.action_topmost.triggered.connect(self.toggle_topmost)
+        self.tray_menu.addAction(self.action_topmost)
+
+    def _click_through(self):
+        self.action_click_through = QAction("点击穿透 (关)", self)
+        self.action_click_through.setCheckable(True)
+        self.action_click_through.triggered.connect(self.toggle_click_through)
+        self.tray_menu.addAction(self.action_click_through)
+
+    def _pos_lock(self):
+        self.action_lock = QAction("位置锁定 (关)", self)
+        self.action_lock.setCheckable(True)
+        self.action_lock.triggered.connect(self.toggle_lock)
+        self.tray_menu.addAction(self.action_lock)
+
+    def _add_event_action(self, name: str, event: EventCode):
+        action_name = f"action_test_{name}"
+        self.__setattr__(action_name, QAction(name, self))
+        action: QAction = self.__getattribute__(action_name)
+        action.triggered.connect(
+            lambda: self.event_manager.publish(event)
+        )
+        self.tray_menu.addAction(action)
+
+# The class inheritance here is not for extending any business functionality
+# but merely to make the logical relationships appear less chaotic

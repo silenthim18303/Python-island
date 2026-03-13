@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyIsland"
-version = "0.0.1"
+version = "0.0.2+Canary"
 authors = [
     { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"}
 ]

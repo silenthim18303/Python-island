@@ -1,33 +1,42 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 import enum
+from ..Configure import CONFIG_MANAGER
 
 
 class EventCode(enum.IntEnum):
-    NETWORK_RESTORE = 0b0001    # 1
-    BLUETOOTH_CONNECT = 0b0010  # 2
-    MOUSE_HOVER = 0b0100        # 4
-    MOUSE_LEAVE = 0b0101        # 5
-    TEST_NETWORK = 0b1000       # 8
-    TEST_BLUETOOTH = 0b1001     # 9
+    NETWORK_RESTORE = 0b0001
+    NETWORK_DISCONNECT = 0b0010
+    BLUETOOTH_CONNECT = 0b0011
+    BLUETOOTH_DISCONNECT = 0b0100
+    MOUSE_HOVER = 0b0101
+    MOUSE_LEAVE = 0b0110
+    SUICIDE = 0b1111
 
-EVENT_TEMPLATES = {
-    EventCode.NETWORK_RESTORE: {
-        "text": "已恢复网络连接",
-        "color": "#4CAF50",
-        "icon": "🟢"
-    },
-    EventCode.BLUETOOTH_CONNECT: {
-        "text": "已连接蓝牙设备",
-        "color": "#2196F3",
-        "icon": "🔵"
-    },
-    EventCode.TEST_NETWORK: {
-        "text": "已恢复网络连接",
-        "color": "#4CAF50",
-        "icon": "🟢"
-    },
-    EventCode.TEST_BLUETOOTH: {
-        "text": "已连接蓝牙设备",
-        "color": "#2196F3",
-        "icon": "🔵"
-    }
-}
+
+def _build_event_templates(reserved):
+    templates = {}
+
+    for event in EventCode:
+        event_name = event.name
+        if event_name in reserved: continue
+        parts = event_name.split('_')
+
+        category, state = parts[0], parts[1]
+        if category == "BLUETOOTH" and state == "CONNECT":
+            state = "RESTORE"
+        config = CONFIG_MANAGER.__dict__[category][state]
+        templates[event] = {
+            "text": config["text"],
+            "color": config["color"],
+            "icon": config["icon"]
+        }
+
+    return templates
+
+
+_reserved = ["MOUSE_HOVER", "MOUSE_LEAVE", "SUICIDE"]
+EVENT_TEMPLATES = _build_event_templates(reserved = _reserved)

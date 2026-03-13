@@ -1,3 +1,8 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 from PyIsland.Configure import CONFIG_MANAGER
 
 # noinspection PyUnresolvedReferences

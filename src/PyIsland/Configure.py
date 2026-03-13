@@ -1,3 +1,8 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 import json
 from pathlib import Path
 from threading import Lock
@@ -36,7 +41,31 @@ class ConfigManager:
             "CONTENT_FONT_SIZE_INIT": 14,
             "CONTENT_FONT_SIZE_EXPAND": 26,
             "NOTIFICATION_FONT_SIZE": 18,
-            "CAPSULE_PADDING": 20
+            "CAPSULE_PADDING": 20,
+            "NETWORK": {
+                "RESTORE": {
+                    "text" : "已恢复网络连接",
+                    "color": "#4CAF50",
+                    "icon" : "🟢"
+                },
+                "DISCONNECT": {
+                    "text" : "网络已断开",
+                    "color": "#FF0000",
+                    "icon" : "🔴"
+                }
+            },
+            "BLUETOOTH": {
+                "RESTORE": {
+                    "text" : "蓝牙已连接: $device",
+                    "color": "#2196F3",
+                    "icon": "🔵"
+                },
+                "DISCONNECT": {
+                    "text" : "蓝牙已断开: $device",
+                    "color": "#FF0000",
+                    "icon" : "🔴"
+                }
+            },
         }
 
         self._load_or_create_config()

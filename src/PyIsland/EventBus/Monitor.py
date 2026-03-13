@@ -1,9 +1,14 @@
+# Home: https://github.com/starwindv/PyIsland.git
+# Author: StarWindv
+# License: GPL-3.0
+# All rights reserved
+
 import asyncio
 import subprocess
 
-from PyIsland.Configure import CONFIG_MANAGER
-from PyIsland.EventBus.Bus import EventManager
-from PyIsland.EventBus.EventDefine import EventCode
+from ..Configure import CONFIG_MANAGER
+from .Bus import EventManager
+from .EventDefine import EventCode
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import (
     Qt, QThread, QTimer, QPropertyAnimation, QEasingCurve, QRect, pyqtProperty
@@ -12,6 +17,10 @@ from PyQt5.QtCore import (
 
 # noinspection PyAttributeOutsideInit
 class AsyncMonitorThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self.event_manager = EventManager()
+
     def run(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -22,14 +31,13 @@ class AsyncMonitorThread(QThread):
         self.loop.run_forever()
 
     async def network_monitor_coro(self):
-        event_manager = EventManager()
         was_connected = True
         interval = CONFIG_MANAGER.CHECK_INTERVAL_NET / 1000
 
         while True:
             is_connected = await self.check_dns_async()
             if not was_connected and is_connected:
-                event_manager.publish(EventCode.NETWORK_RESTORE)
+                self.publish_to(EventCode.NETWORK_RESTORE)
             was_connected = is_connected
             await asyncio.sleep(interval)
 
@@ -47,26 +55,26 @@ class AsyncMonitorThread(QThread):
             return False
 
     async def bluetooth_monitor_coro(self):
-        event_manager = EventManager()
-        last_devices = self.get_connected_devices()
+
+        last_devices = await self.get_connected_devices()
         interval = CONFIG_MANAGER.CHECK_INTERVAL_BT / 1000
 
         while True:
             await asyncio.sleep(interval)
-            current_devices = self.get_connected_devices()
+            current_devices = await self.get_connected_devices()
             new_devices = current_devices - last_devices
 
             if new_devices:
                 for dev in new_devices:
-                    event_manager.publish(
+                    self.publish_to(
                         EventCode.BLUETOOTH_CONNECT,
-                        {"text": f"已连接蓝牙设备：{dev}"}
+                        {"text": f"已连接蓝牙设备: {dev}"}
                     )
 
             last_devices = current_devices
 
     @staticmethod
-    def get_connected_devices():
+    async def get_connected_devices():
         devices = set()
         try:
             ps_command = (
@@ -96,3 +104,8 @@ class AsyncMonitorThread(QThread):
         except Exception as e:
             print(f"蓝牙检测错误: {e}")
         return devices
+
+    def publish_to(self, event: EventCode, data: dict = None):
+        self.event_manager.publish(
+            event, data
+        )
