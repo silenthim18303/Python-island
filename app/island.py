@@ -19,6 +19,7 @@ from app.ui.url_dialog import UrlDialog
 from app.services.clipboard import ClipboardService
 from app.services.system_status import SystemStatusService
 from app.services.brightness import BrightnessService
+from app.services.tray import TrayService
 from app.animations.effects import AnimationManager, RoundedMaskHelper
 
 
@@ -79,6 +80,7 @@ class ModernIsland(QWidget):
         self.animation_manager = AnimationManager(self)
         self.clipboard_service = ClipboardService()
         self.status_service = SystemStatusService()
+        self.tray_service = TrayService()
         self.brightness_service = BrightnessService()
 
         self._previous_wifi_status = None

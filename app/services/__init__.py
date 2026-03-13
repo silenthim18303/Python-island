@@ -9,5 +9,6 @@
 from app.services.clipboard import ClipboardService
 from app.services.system_status import SystemStatusService
 from app.services.brightness import BrightnessService
+from app.services.tray import TrayService
 
-__all__ = ['ClipboardService', 'SystemStatusService', 'BrightnessService']
+__all__ = ['ClipboardService', 'SystemStatusService', 'BrightnessService', 'TrayService']
