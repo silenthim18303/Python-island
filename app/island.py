@@ -10,6 +10,7 @@ from PySide6.QtCore import (
     QThread,
     QEasingCurve,
     QPropertyAnimation,
+    QPoint,
     QRect,
     Qt,
     QTimer,
@@ -97,11 +98,20 @@ class ModernIsland(QWidget):
         self.time_label = QLabel("")
         self.time_label.setObjectName("TimeLabel")
         self.time_label.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.time_label)
+        self.time_label.setFixedHeight(40)
+
+        # 1.5 展开态内容：日期+时间（与时间标签重叠）
+        self.date_label = QLabel("")
+        self.date_label.setObjectName("DateLabel")
+        self.date_label.setAlignment(Qt.AlignCenter)
+        self.date_label.setFixedHeight(40)
+        self.date_label.hide()
+        self.date_label.setParent(self.container)
 
         # 2. 展开态内容：控制组
         self.controls = QWidget()
         self.controls.hide()
+        self.controls.setFixedHeight(120)
         self.ctrl_layout = QVBoxLayout(self.controls)
         self.ctrl_layout.setContentsMargins(5, 20, 5, 10)
         self.ctrl_layout.setSpacing(15)
@@ -182,6 +192,9 @@ class ModernIsland(QWidget):
 
         self.ctrl_layout.addLayout(self.bright_row)
         self.ctrl_layout.addWidget(self.status_bar)
+
+        # 添加到主布局
+        self.layout.addWidget(self.time_label)
         self.layout.addWidget(self.controls)
 
         # 时间更新定时器
@@ -389,40 +402,98 @@ class ModernIsland(QWidget):
             self.toggle_island()
 
     def toggle_island(self):
-        """在展开和折叠状态之间切换。"""
-        self.ani = QPropertyAnimation(self, b"geometry")
-        self.ani.setDuration(450)
-        self.ani.setEasingCurve(QEasingCurve.OutQuart)
+        """在展开和折叠状态之间切换"""
+        # 清理旧动画
+        if hasattr(self, 'ani') and self.ani:
+            self.ani.stop()
+            self.ani.deleteLater()
 
         current_pos = self.pos()
 
         if not self.is_expanded:
-            new_rect = QRect(
-                current_pos.x(), current_pos.y(),
-                self.exp_rect.width(), self.exp_rect.height()
-            )
-            self.ani.setEndValue(new_rect)
+            # 展开动画 - 立即隐藏时间，动画结束后显示日期+时间
             self.time_label.hide()
-            self.controls.show()
-        else:
-            new_rect = QRect(
-                current_pos.x(), current_pos.y(),
-                self.col_rect.width(), self.col_rect.height()
-            )
-            self.ani.setEndValue(new_rect)
-            self.controls.hide()
-            self.time_label.show()
+            self.date_label.hide()
 
-        self.ani.valueChanged.connect(
-            lambda g: self.container.setFixedSize(g.width(), g.height())
-        )
-        self.ani.start()
+            self.ani = QPropertyAnimation(self, b"geometry")
+            self.ani.setDuration(200)
+            self.ani.setEasingCurve(QEasingCurve.InOutCubic)
+
+            start = self.geometry()
+            end = QRect(
+                current_pos.x(), current_pos.y(),
+                360, 160
+            )
+            self.ani.setStartValue(start)
+            self.ani.setEndValue(end)
+
+            # 动画结束后显示日期+时间（居中显示）
+            self.ani.finished.connect(lambda: (
+                self.date_label.show(),
+                self.update_time_display()
+            ))
+
+            # 切换显示内容
+            self.controls.show()
+            self.container.setFixedSize(360, 160)
+
+            self.ani.start()
+
+        else:
+            # 折叠动画 - 立即隐藏日期，动画结束后显示时间
+            self.date_label.hide()
+            self.time_label.hide()
+
+            self.ani = QPropertyAnimation(self, b"geometry")
+            self.ani.setDuration(350)
+            self.ani.setEasingCurve(QEasingCurve.InOutCubic)
+
+            start = self.geometry()
+            end = QRect(
+                current_pos.x(), current_pos.y(),
+                180, 40
+            )
+            self.ani.setStartValue(start)
+            self.ani.setEndValue(end)
+
+            # 切换显示内容
+            self.controls.hide()
+
+            # 动画结束后显示时间并调整容器大小
+            self.ani.finished.connect(lambda: (
+                self.time_label.show(),
+                self.update_time_display(),
+                self.container.setFixedSize(180, 40)
+            ))
+
+            self.ani.start()
+
         self.is_expanded = not self.is_expanded
 
     def update_time(self):
         """更新时间显示。"""
+        self.update_time_display()
+
+    def update_time_display(self):
+        """根据展开/收起状态更新时间或日期显示。"""
         current_time = datetime.now().strftime("%H:%M")
+        current_date = datetime.now().strftime("%m/%d")
+
         self.time_label.setText(current_time)
+        self.date_label.setText(f"{current_date} {current_time}")
+
+        # 如果已展开，日期标签居中显示
+        if self.is_expanded:
+            # 创建临时标签获取宽度
+            temp_label = QLabel(f"{current_date} {current_time}")
+            temp_label.setObjectName("DateLabel")
+            temp_label.setStyleSheet(self.date_label.styleSheet())
+            temp_label.setFont(self.date_label.font())
+            temp_label.adjustSize()
+            width = temp_label.width()
+            x = (360 - width) // 2
+            self.date_label.setFixedWidth(width)
+            self.date_label.move(x, 0)
 
     def show_notification_on_time(self, message, icon="📶"):
         """在灵动岛的时间位置显示通知，然后过几秒再恢复时间显示。"""
