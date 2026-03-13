@@ -390,28 +390,31 @@ def extract_urls(text: str) -> List[str]:
     if not text:
         return []
 
-    # URL 正则表达式
-    url_pattern = re.compile(
-        r'https?://'
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'
-        r'localhost|'
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
-        r'(?::\d+)?'
-        r'(?:/?|[/?]\S+)$',
-        re.IGNORECASE
-    )
-
-    # 简化版 URL 匹配
+    # 简化版 URL 匹配（带 http/https）
     simple_url_pattern = re.compile(
         r'https?://[^\s<>"{}|\\^`\[\]]+',
         re.IGNORECASE
     )
 
+    # 无 http 头的链接匹配（www.xxx.xxx 格式）
+    nohttp_url_pattern = re.compile(
+        r'\b(?:www\.)[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+(?:/[^\s<>"{}|\\^`\[\]]*)?',
+        re.IGNORECASE
+    )
+
+    # 提取带 http 的 URL
     urls = simple_url_pattern.findall(text)
+
+    # 提取无 http 的 URL
+    nohttp_urls = nohttp_url_pattern.findall(text)
+
+    # 合并所有 URL
+    all_urls = urls + nohttp_urls
+
     # 去重并保持顺序
     seen = set()
     unique_urls = []
-    for url in urls:
+    for url in all_urls:
         url = url.rstrip('.,;:)')  # 移除末尾的标点符号
         if url not in seen:
             seen.add(url)

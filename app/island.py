@@ -538,15 +538,21 @@ class ModernIsland(QWidget):
     def _check_clipboard(self):
         """检查剪贴板是否有新的 URL。"""
         current_text = get_clipboard_text()
-        if not current_text or current_text == self._last_clipboard_text:
+        if not current_text:
             return
-
-        self._last_clipboard_text = current_text
 
         # 提取 URL
         urls = extract_urls(current_text)
         if not urls:
+            # 无 URL 时重置剪贴板记录，允许重复检测非 URL 内容
+            self._last_clipboard_text = current_text
             return
+
+        # 有 URL 时，检查是否与上次检测到的 URL 相同
+        if current_text == self._last_clipboard_text:
+            return
+
+        self._last_clipboard_text = current_text
 
         # 显示通知让用户选择
         self._show_url_notification(urls)
