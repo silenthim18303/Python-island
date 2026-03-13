@@ -97,11 +97,12 @@ class ModernIsland(QWidget):
         self.time_label = QLabel("")
         self.time_label.setObjectName("TimeLabel")
         self.time_label.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.time_label)
+        self.time_label.setFixedHeight(40)
 
         # 2. 展开态内容：控制组
         self.controls = QWidget()
         self.controls.hide()
+        self.controls.setFixedHeight(120)
         self.ctrl_layout = QVBoxLayout(self.controls)
         self.ctrl_layout.setContentsMargins(5, 20, 5, 10)
         self.ctrl_layout.setSpacing(15)
@@ -182,6 +183,9 @@ class ModernIsland(QWidget):
 
         self.ctrl_layout.addLayout(self.bright_row)
         self.ctrl_layout.addWidget(self.status_bar)
+
+        # 添加到主布局
+        self.layout.addWidget(self.time_label)
         self.layout.addWidget(self.controls)
 
         # 时间更新定时器
@@ -427,6 +431,8 @@ class ModernIsland(QWidget):
             # 先隐藏controls，设置正确大小
             self.controls.hide()
             self.container.setFixedSize(self.col_rect.width(), self.col_rect.height())
+            # 折叠完成后显示时间
+            self.ani.finished.connect(lambda: self.time_label.show())
 
         self.ani.start()
         self.is_expanded = not self.is_expanded
