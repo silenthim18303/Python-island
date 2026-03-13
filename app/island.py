@@ -401,6 +401,8 @@ class ModernIsland(QWidget):
 
         self.ani = QPropertyAnimation(self, b"geometry")
 
+        current_pos = self.pos()
+
         if not self.is_expanded:
             # 展开动画
             self.ani.setDuration(200)
@@ -408,7 +410,7 @@ class ModernIsland(QWidget):
 
             start = self.geometry()
             end = QRect(
-                (self.screen_w - 360) // 2, 20,
+                current_pos.x(), current_pos.y(),
                 360, 160
             )
             self.ani.setStartValue(start)
@@ -426,7 +428,7 @@ class ModernIsland(QWidget):
 
             start = self.geometry()
             end = QRect(
-                (self.screen_w - 180) // 2, 20,
+                current_pos.x(), current_pos.y(),
                 180, 40
             )
             self.ani.setStartValue(start)
