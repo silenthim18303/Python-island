@@ -427,9 +427,8 @@ class ModernIsland(QWidget):
             self.ani.setStartValue(start)
             self.ani.setEndValue(end)
 
-            # 动画结束后显示日期+时间
+            # 动画结束后显示日期+时间（居中显示）
             self.ani.finished.connect(lambda: (
-                self.date_label.setGeometry(self.time_label.geometry()),
                 self.date_label.show(),
                 self.update_time_display()
             ))
@@ -461,7 +460,11 @@ class ModernIsland(QWidget):
             self.controls.hide()
 
             # 动画结束后显示时间并调整容器大小
-            self.ani.finished.connect(lambda: (self.time_label.show(), self.update_time_display(), self.container.setFixedSize(180, 40)))
+            self.ani.finished.connect(lambda: (
+                self.time_label.show(),
+                self.update_time_display(),
+                self.container.setFixedSize(180, 40)
+            ))
 
             self.ani.start()
 
@@ -478,6 +481,19 @@ class ModernIsland(QWidget):
 
         self.time_label.setText(current_time)
         self.date_label.setText(f"{current_date} {current_time}")
+
+        # 如果已展开，日期标签居中显示
+        if self.is_expanded:
+            # 创建临时标签获取宽度
+            temp_label = QLabel(f"{current_date} {current_time}")
+            temp_label.setObjectName("DateLabel")
+            temp_label.setStyleSheet(self.date_label.styleSheet())
+            temp_label.setFont(self.date_label.font())
+            temp_label.adjustSize()
+            width = temp_label.width()
+            x = (360 - width) // 2
+            self.date_label.setFixedWidth(width)
+            self.date_label.move(x, 0)
 
     def show_notification_on_time(self, message, icon="📶"):
         """在灵动岛的时间位置显示通知，然后过几秒再恢复时间显示。"""
