@@ -10,6 +10,6 @@
 from app.ui.controls import ControlRowFactory
 from app.ui.status_bar import StatusBar
 from app.ui.url_dialog import UrlDialog
-from app.ui.settings import SettingsDialog
+from app.ui.driver.index_setting.settings import setting_driver
 
-__all__ = ['ControlRowFactory', 'StatusBar', 'UrlDialog', 'SettingsDialog']
+__all__ = ['ControlRowFactory', 'StatusBar', 'UrlDialog', 'setting_driver']

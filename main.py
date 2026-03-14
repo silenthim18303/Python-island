@@ -10,12 +10,13 @@
 - 启动应用事件循环
 """
 import sys
+from functools import partial
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSize, Qt
 
 from app.services.tray import TrayService
-from app.ui.settings import SettingsDialog
+from app.ui.driver.index_setting.settings import setting_driver
 from app.island import ModernIsland
 
 from app.config._bqa import init_qa
@@ -29,16 +30,20 @@ def main():
     app = QApplication(sys.argv)
     
     app.setQuitOnLastWindowClosed(False)
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    # app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     
     island = ModernIsland()
     
-    settings_dialog = SettingsDialog()
+    settings_dialog = setting_driver()
     
     tray_service = TrayService()
     
     tray_service.quit_app.connect(app.quit)
-    tray_service.open_settings.connect(settings_dialog.show)
+    tray_service.open_settings.connect(lambda: (
+        settings_dialog.show(),
+        settings_dialog.resize(QSize(500, 300)),
+        settings_dialog.activateWindow()
+    ))
     
     tray_service.show()
     
