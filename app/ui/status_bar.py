@@ -5,7 +5,7 @@
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
-from app.core.config import ICON_BATTERY, ICON_BLUETOOTH, ICON_INTERNET
+from app.core.icons import IslandIcon
 
 
 class StatusBar(QWidget):
@@ -28,13 +28,13 @@ class StatusBar(QWidget):
         self.status_layout.setContentsMargins(10, 5, 10, 5)
         self.status_layout.setSpacing(15)
 
-        self.wifi_icon = self._create_icon_label(ICON_INTERNET, "📶")
+        self.wifi_icon = self._create_icon_label(IslandIcon.INTERNET, "📶")
         self.wifi_label = self._create_status_label("未连接")
 
-        self.bluetooth_icon = self._create_icon_label(ICON_BLUETOOTH, "🔵")
+        self.bluetooth_icon = self._create_icon_label(IslandIcon.BLUETOOTH, "🔵")
         self.bluetooth_label = self._create_status_label("未连接")
 
-        self.battery_icon = self._create_icon_label(ICON_BATTERY, "🔋")
+        self.battery_icon = self._create_icon_label(IslandIcon.BATTERY, "🔋")
         self.battery_label = self._create_status_label("未知")
 
         wifi_layout = self._create_status_group(self.wifi_icon, self.wifi_label)
@@ -45,23 +45,24 @@ class StatusBar(QWidget):
         self.status_layout.addLayout(bluetooth_layout)
         self.status_layout.addLayout(battery_layout)
 
-    def _create_icon_label(self, icon_path: str, fallback_text: str) -> QLabel:
+    def _create_icon_label(self, icon: IslandIcon, fallback_text: str) -> QLabel:
         """创建图标标签。
 
         Args:
-            icon_path: 图标路径
+            icon: 图标枚举
             fallback_text: 备用文本
 
         Returns:
             QLabel: 图标标签
         """
-        icon = QLabel()
-        icon.setObjectName("IconLabel")
+        label = QLabel()
+        label.setObjectName("IconLabel")
+        icon_path = icon.path()
         if icon_path in self.icon_cache:
-            icon.setPixmap(self.icon_cache[icon_path])
+            label.setPixmap(self.icon_cache[icon_path])
         else:
-            icon.setText(fallback_text)
-        return icon
+            label.setText(fallback_text)
+        return label
 
     def _create_status_label(self, text: str) -> QLabel:
         """创建状态标签。

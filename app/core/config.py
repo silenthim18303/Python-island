@@ -23,27 +23,7 @@ SLIDER_WIDTH = 180
 SLIDER_HEIGHT = 32
 
 # 资源路径配置
-ICONS_CONTROLS_PATH = "resources/icons/controls/"
-ICONS_SYSTEM_PATH = "resources/icons/system/"
 STYLES_PATH = "resources/styles/style.qss"
-
-# 图标文件路径
-ICON_LIGHT = f"{ICONS_CONTROLS_PATH}light.png"
-ICON_VOLUME = f"{ICONS_CONTROLS_PATH}volume.png"
-ICON_INTERNET = f"{ICONS_SYSTEM_PATH}internet.png"
-ICON_BLUETOOTH = f"{ICONS_SYSTEM_PATH}bluetooth.png"
-ICON_BATTERY = f"{ICONS_SYSTEM_PATH}battery.png"
-ICON_TRAY = f"{ICONS_CONTROLS_PATH}tray.png"
-
-# 所有图标列表
-ALL_ICONS = [
-    ICON_LIGHT,
-    ICON_VOLUME,
-    ICON_INTERNET,
-    ICON_BLUETOOTH,
-    ICON_BATTERY,
-    ICON_TRAY,
-]
 
 # 定时器间隔配置（毫秒）
 TIME_UPDATE_INTERVAL = 1000

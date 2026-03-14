@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
 
 from app.animations.effects import AnimationManager, RoundedMaskHelper
 from app.core.config import (
-    ALL_ICONS,
     CLIPBOARD_CHECK_INTERVAL,
     COLLAPSED_HEIGHT,
     COLLAPSED_WIDTH,
@@ -22,7 +21,6 @@ from app.core.config import (
     DEBOUNCE_DELAY,
     EXPANDED_HEIGHT,
     EXPANDED_WIDTH,
-    ICON_LIGHT,
     MAX_EXPAND_HEIGHT_RATIO,
     STATUS_UPDATE_INTERVAL,
     STYLES_PATH,
@@ -30,6 +28,7 @@ from app.core.config import (
     TIME_UPDATE_INTERVAL,
     URL_AUTO_CLOSE_DELAY,
 )
+from app.core.icons import IslandIcon
 from app.core.worker import WorkerThread
 from app.services.brightness import BrightnessService
 from app.services.clipboard import ClipboardService
@@ -114,7 +113,7 @@ class ModernIsland(QWidget):
         self.layout = QVBoxLayout(self.container)
         self.layout.setContentsMargins(15, 0, 15, 0)
 
-        self._icon_cache = ControlRowFactory.preload_icons(ALL_ICONS)
+        self._icon_cache = ControlRowFactory.preload_icons(list(IslandIcon))
 
         self._init_time_labels()
         self._init_status_bar()
@@ -157,7 +156,7 @@ class ModernIsland(QWidget):
         self.ctrl_layout.setSpacing(15)
 
         self.bright_row, self.bright_slider, self.bright_val = \
-            ControlRowFactory.create(self._icon_cache, ICON_LIGHT, "亮度")
+            ControlRowFactory.create(self._icon_cache, IslandIcon.LIGHT, "亮度")
 
         self.bright_slider.valueChanged.connect(
             lambda v: self._update_brightness_value(v)
