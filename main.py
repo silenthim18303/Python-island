@@ -10,10 +10,9 @@
 - 启动应用事件循环
 """
 import sys
-from functools import partial
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize
 
 from app.services.tray import TrayService
 from app.ui.driver.index_setting.settings import setting_driver
