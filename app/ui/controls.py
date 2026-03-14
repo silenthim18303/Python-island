@@ -4,11 +4,12 @@
 """
 
 import os
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QSlider
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QSlider
 
-from app.core.config import ICON_SIZE, SLIDER_WIDTH, SLIDER_HEIGHT
+from app.core.config import ICON_SIZE, SLIDER_HEIGHT, SLIDER_WIDTH
 
 
 class ControlRowFactory:

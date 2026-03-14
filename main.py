@@ -9,45 +9,47 @@
 - 显示灵动岛界面
 - 启动应用事件循环
 """
+
 import sys
 
-from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QSize
-
-from app.services.tray import TrayService
-from app.ui.driver.index_setting.settings import setting_driver
-from app.island import ModernIsland
+from PySide6.QtWidgets import QApplication
 
 from app.config._bqa import init_qa
+from app.island import ModernIsland
+from app.services.tray import TrayService
+from app.ui.driver.index_setting.settings import setting_driver
 
 
 def main():
     """应用主函数。"""
-    # *初始化 QA
+    # 初始化 QA
     init_qa()
-    
+
     app = QApplication(sys.argv)
-    
+
     app.setQuitOnLastWindowClosed(False)
     # app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    
+
     island = ModernIsland()
-    
+
     settings_dialog = setting_driver()
-    
+
     tray_service = TrayService()
-    
+
     tray_service.quit_app.connect(app.quit)
-    tray_service.open_settings.connect(lambda: (
-        settings_dialog.show(),
-        settings_dialog.resize(QSize(500, 300)),
-        settings_dialog.activateWindow()
-    ))
-    
+    tray_service.open_settings.connect(
+        lambda: (
+            settings_dialog.show(),
+            settings_dialog.resize(QSize(500, 300)),
+            settings_dialog.activateWindow()
+        )
+    )
+
     tray_service.show()
-    
+
     island.show()
-    
+
     sys.exit(app.exec())
 
 

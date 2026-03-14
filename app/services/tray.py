@@ -6,10 +6,9 @@
 3. 设置窗口控制
 """
 
-import os
-from PySide6.QtWidgets import QSystemTrayIcon, QMenu
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
 DEFAULT_TRAY_ICON = "resources/icons/controls/tray.png"
 
@@ -82,7 +81,7 @@ class TrayService(QObject):
         Args:
             reason: 激活原因
         """
-        if reason == QSystemTrayIcon.DoubleClick or reason == QSystemTrayIcon.Trigger:
+        if reason in (QSystemTrayIcon.DoubleClick, QSystemTrayIcon.Trigger):
             self._on_settings()
 
     def show(self):
@@ -115,8 +114,13 @@ class TrayService(QObject):
         if self._tray_icon:
             self._tray_icon.setToolTip(text)
 
-    def show_message(self, title: str, message: str, 
-                     icon=QSystemTrayIcon.Information, msecs=3000):
+    def show_message(
+        self,
+        title: str,
+        message: str,
+        icon=QSystemTrayIcon.Information,
+        msecs: int = 3000,
+    ):
         """显示托盘消息。
 
         Args:

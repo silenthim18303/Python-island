@@ -3,8 +3,8 @@
 提供获取系统状态（WiFi、蓝牙、电池）的功能。
 """
 
-import subprocess
 import socket
+import subprocess
 
 
 class SystemStatusService:
@@ -37,12 +37,15 @@ class SystemStatusService:
         try:
             result = subprocess.run(
                 ["netsh", "wlan", "show", "interfaces"],
-                capture_output=True, text=True, check=True,
-                encoding='utf-8', errors='ignore'
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
+                errors="ignore",
             )
             output = result.stdout
 
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 line = line.strip()
                 if line.startswith("SSID"):
                     ssid = line.split(":")[1].strip()
@@ -70,8 +73,10 @@ class SystemStatusService:
         try:
             result = subprocess.run(
                 ["sc", "query", "bthserv"],
-                capture_output=True, text=True,
-                encoding='utf-8', errors='ignore'
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="ignore",
             )
 
             output = result.stdout
@@ -94,41 +99,49 @@ class SystemStatusService:
         charge = ""
         status = ""
 
+        status_map = {
+            1: "放电",
+            2: "接通电源",
+            3: "完全充电",
+            4: "低",
+            5: "临界",
+            6: "充电",
+            7: "充电过高",
+            8: "未知",
+        }
+
         try:
             try:
                 import wmi
+
                 c = wmi.WMI()
                 battery = c.Win32_Battery()[0]
                 charge = battery.EstimatedChargeRemaining
                 status_code = battery.BatteryStatus
-
-                status_map = {
-                    1: "放电", 2: "接通电源", 3: "完全充电",
-                    4: "低", 5: "临界", 6: "充电",
-                    7: "充电过高", 8: "未知"
-                }
                 status = status_map.get(status_code, "未知")
             except ImportError:
                 result = subprocess.run(
-                    ["wmic", "path", "Win32_Battery", "get",
-                     "EstimatedChargeRemaining,BatteryStatus"],
-                    capture_output=True, text=True, check=True,
-                    encoding='utf-8', errors='ignore'
+                    [
+                        "wmic",
+                        "path",
+                        "Win32_Battery",
+                        "get",
+                        "EstimatedChargeRemaining,BatteryStatus",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    encoding="utf-8",
+                    errors="ignore",
                 )
                 output = result.stdout
 
-                lines = output.strip().split('\n')[1:]
+                lines = output.strip().split("\n")[1:]
                 if lines:
                     parts = lines[0].strip().split()
                     if len(parts) >= 2:
                         charge = parts[0]
                         status_code = int(parts[1])
-
-                        status_map = {
-                            1: "放电", 2: "接通电源", 3: "完全充电",
-                            4: "低", 5: "临界", 6: "充电",
-                            7: "充电过高", 8: "未知"
-                        }
                         status = status_map.get(status_code, "未知")
         except Exception:
             pass
