@@ -19,7 +19,6 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Pyisland 设置")
         self.setFixedSize(400, 300)
-        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         
         self._init_ui()
 

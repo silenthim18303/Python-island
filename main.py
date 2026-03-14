@@ -17,9 +17,14 @@ from app.services.tray import TrayService
 from app.ui.settings import SettingsDialog
 from app.island import ModernIsland
 
+from app.config._bqa import init_qa
+
 
 def main():
     """应用主函数。"""
+    # *初始化 QA
+    init_qa()
+    
     app = QApplication(sys.argv)
     
     app.setQuitOnLastWindowClosed(False)
