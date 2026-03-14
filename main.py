@@ -12,6 +12,7 @@
 import sys
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
 
 from app.services.tray import TrayService
 from app.ui.settings import SettingsDialog
@@ -28,6 +29,7 @@ def main():
     app = QApplication(sys.argv)
     
     app.setQuitOnLastWindowClosed(False)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     
     island = ModernIsland()
     
