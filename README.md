@@ -25,7 +25,8 @@ PyislandWeb/
 │   ├── core/                 # 核心功能模块
 │   │   ├── __init__.py
 │   │   ├── worker.py         # 后台工作线程
-│   │   └── config.py         # 配置常量
+│   │   ├── config.py         # 配置常量
+│   │   └── icons.py          # 图标枚举类
 │   ├── ui/                   # UI组件模块
 │   │   ├── __init__.py
 │   │   ├── controls.py       # 控制面板组件
@@ -135,6 +136,21 @@ STATUS_UPDATE_INTERVAL = 5000  # 更新频率，单位毫秒
 - 亮度图标：`controls/light.png`
 - 音量图标：`controls/volume.png`
 - 托盘图标：`controls/tray.png`
+- 电池图标：`system/battery.png`
+- 蓝牙图标：`system/bluetooth.png`
+- 网络图标：`system/internet.png`
+
+图标通过 `IslandIcon` 枚举类统一管理，参考 [qfluentwidgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets) 的 `FluentIcon` 实现方式。使用示例：
+
+```python
+from app.core.icons import IslandIcon
+
+# 获取图标路径
+icon_path = IslandIcon.LIGHT.path()
+
+# 获取 QIcon 对象
+qicon = IslandIcon.TRAY.qicon()
+```
 
 ## 模块说明
 
@@ -143,7 +159,8 @@ STATUS_UPDATE_INTERVAL = 5000  # 更新频率，单位毫秒
 | 模块 | 说明 |
 |------|------|
 | `worker.py` | 后台工作线程，执行耗时操作 |
-| `config.py` | 配置常量，包括尺寸、路径、时间间隔等 |
+| `config.py` | 配置常量，包括尺寸、时间间隔等 |
+| `icons.py` | 图标枚举类，参考FluentIcon实现，管理所有图标路径 |
 
 ### UI模块 (ui/)
 

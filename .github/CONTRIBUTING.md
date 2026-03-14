@@ -399,7 +399,18 @@ Fix #xxx （替换为实际 Issue 号，会自动关闭对应 Issue）
 
 4. **配置常量集中存放**：所有可配置的常量（如防抖时间、状态更新频率、尺寸参数）均放到 `app/core/config.py`，使用**全大写+下划线**命名（如 `DEBOUNCE_DELAY`），禁止在代码中硬编码；
 
-5. **异常捕获**：调用 Windows API、PowerShell 命令、文件操作时，必须增加 try/except 异常捕获，给出清晰的错误提示，避免程序崩溃。
+5. **图标资源统一管理**：所有图标通过 `app/core/icons.py` 中的 `IslandIcon` 枚举类管理，参考 `FluentIcon` 实现方式。使用示例：
+   ```python
+   from app.core.icons import IslandIcon
+   
+   # 获取图标路径
+   icon_path = IslandIcon.LIGHT.path()
+   
+   # 获取 QIcon 对象
+   qicon = IslandIcon.TRAY.qicon()
+   ```
+
+6. **异常捕获**：调用 Windows API、PowerShell 命令、文件操作时，必须增加 try/except 异常捕获，给出清晰的错误提示，避免程序崩溃。
 
 ### 3. 模块化开发规范
 
