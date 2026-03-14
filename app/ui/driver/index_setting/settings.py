@@ -6,6 +6,7 @@
 from qfluentwidgets import MSFluentWindow , FluentIcon
 
 from app.ui.driver.index_setting.index_setting_ui.setting_ui import setting_ui_driver
+from app.ui.driver.index_setting.index_setting_general.setting_general import setting_general_driver
 from app.ui.interfaces.index_setting.island_index_setting_ui import Ui_island_index_setting_ui
 
 
@@ -33,5 +34,7 @@ class setting_driver(MSFluentWindow , Ui_island_index_setting_ui):
         self.setMicaEffectEnabled(False)
 
     def __init_navigations(self):
+        self.island_index_setting_general_interface = setting_general_driver()
+        self.addSubInterface(self.island_index_setting_general_interface , FluentIcon.APPLICATION , '通用' , isTransparent = True)
         self.island_index_setting_ui_interface = setting_ui_driver()
-        self.addSubInterface(self.island_index_setting_ui_interface , FluentIcon.SETTING , '图形设置' , isTransparent = True)
+        self.addSubInterface(self.island_index_setting_ui_interface , FluentIcon.SETTING , '图形' , isTransparent = True)
