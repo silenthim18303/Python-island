@@ -319,14 +319,17 @@ class ModernIsland(QWidget):
 
     def _update_time_display(self):
         """根据展开/收起状态更新时间或日期显示。"""
-        current_time = datetime.now().strftime("%H:%M")
-        current_date = datetime.now().strftime("%m/%d")
+        now = datetime.now()
+        current_time = now.strftime("%H:%M")
+        current_date = now.strftime("%m/%d")
+        weekday_map = {0: "周一", 1: "周二", 2: "周三", 3: "周四", 4: "周五", 5: "周六", 6: "周日"}
+        current_weekday = weekday_map[now.weekday()]
 
         self.time_label.setText(current_time)
-        self.date_label.setText(f"{current_date} {current_time}")
+        self.date_label.setText(f"{current_date} {current_weekday} {current_time}")
 
         if self.is_expanded:
-            temp_label = QLabel(f"{current_date} {current_time}")
+            temp_label = QLabel(f"{current_date} {current_weekday} {current_time}")
             temp_label.setObjectName("DateLabel")
             temp_label.setStyleSheet(self.date_label.styleSheet())
             temp_label.setFont(self.date_label.font())
