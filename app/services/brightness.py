@@ -5,6 +5,7 @@
 
 try:
     import screen_brightness_control as sbc
+
     brightness_available = True
 except ImportError:
     brightness_available = False

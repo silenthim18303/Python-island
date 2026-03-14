@@ -3,15 +3,21 @@
 提供灵动岛的展开/收起动画效果和圆角遮罩辅助功能。
 """
 
-from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QRect
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QRect
 from PySide6.QtGui import QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget
 
 from app.core.config import (
-    EXPAND_ANIMATION_DURATION, COLLAPSE_ANIMATION_DURATION,
-    HEIGHT_CHANGE_ANIMATION_DURATION, URL_EXPAND_ANIMATION_DURATION,
-    COLLAPSED_WIDTH, COLLAPSED_HEIGHT, EXPANDED_WIDTH, EXPANDED_HEIGHT,
-    CORNER_RADIUS_MIN, CORNER_RADIUS_MAX
+    COLLAPSE_ANIMATION_DURATION,
+    COLLAPSED_HEIGHT,
+    COLLAPSED_WIDTH,
+    CORNER_RADIUS_MAX,
+    CORNER_RADIUS_MIN,
+    EXPAND_ANIMATION_DURATION,
+    EXPANDED_HEIGHT,
+    EXPANDED_WIDTH,
+    HEIGHT_CHANGE_ANIMATION_DURATION,
+    URL_EXPAND_ANIMATION_DURATION,
 )
 
 
@@ -27,8 +33,13 @@ class AnimationManager:
         self.widget = widget
         self.current_animation = None
 
-    def create_expand_animation(self, start_rect: QRect, end_rect: QRect,
-                                 on_value_changed=None, on_finished=None) -> QPropertyAnimation:
+    def create_expand_animation(
+        self,
+        start_rect: QRect,
+        end_rect: QRect,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
         """创建展开动画。
 
         Args:
@@ -56,8 +67,13 @@ class AnimationManager:
         self.current_animation = animation
         return animation
 
-    def create_collapse_animation(self, start_rect: QRect, end_rect: QRect,
-                                   on_value_changed=None, on_finished=None) -> QPropertyAnimation:
+    def create_collapse_animation(
+        self,
+        start_rect: QRect,
+        end_rect: QRect,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
         """创建收起动画。
 
         Args:
@@ -85,8 +101,13 @@ class AnimationManager:
         self.current_animation = animation
         return animation
 
-    def create_height_animation(self, from_height: int, to_height: int,
-                                 on_value_changed=None, on_finished=None) -> QPropertyAnimation:
+    def create_height_animation(
+        self,
+        from_height: int,
+        to_height: int,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
         """创建高度变化动画。
 
         Args:
@@ -120,8 +141,12 @@ class AnimationManager:
         self.current_animation = animation
         return animation
 
-    def create_url_expand_animation(self, target_height: int,
-                                     on_value_changed=None, on_finished=None) -> QPropertyAnimation:
+    def create_url_expand_animation(
+        self,
+        target_height: int,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
         """创建URL页面展开动画。
 
         Args:
@@ -140,7 +165,9 @@ class AnimationManager:
         center_x = current_pos.x() + current_w // 2
 
         start = QRect(center_x, current_pos.y(), 0, current_h)
-        end = QRect(center_x - 180, current_pos.y(), EXPANDED_WIDTH, target_height)
+        end = QRect(
+            center_x - 180, current_pos.y(), EXPANDED_WIDTH, target_height
+        )
 
         animation = QPropertyAnimation(self.widget, b"geometry")
         animation.setDuration(URL_EXPAND_ANIMATION_DURATION)
@@ -172,8 +199,11 @@ class RoundedMaskHelper:
     """圆角遮罩辅助类，用于动态更新窗口的圆角遮罩。"""
 
     @staticmethod
-    def update_mask(widget: QWidget, min_radius: int = CORNER_RADIUS_MIN,
-                    max_radius: int = CORNER_RADIUS_MAX):
+    def update_mask(
+        widget: QWidget,
+        min_radius: int = CORNER_RADIUS_MIN,
+        max_radius: int = CORNER_RADIUS_MAX,
+    ):
         """更新窗口的圆角遮罩。
 
         Args:
@@ -191,9 +221,12 @@ class RoundedMaskHelper:
         widget.setMask(region)
 
     @staticmethod
-    def calculate_radius(width: int, height: int,
-                         min_radius: int = CORNER_RADIUS_MIN,
-                         max_radius: int = CORNER_RADIUS_MAX) -> int:
+    def calculate_radius(
+        width: int,
+        height: int,
+        min_radius: int = CORNER_RADIUS_MIN,
+        max_radius: int = CORNER_RADIUS_MAX,
+    ) -> int:
         """计算合适的圆角半径。
 
         Args:

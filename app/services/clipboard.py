@@ -9,6 +9,7 @@ from typing import List, Optional
 
 try:
     from PySide6.QtGui import QGuiApplication
+
     clipboard_available = True
 except ImportError:
     clipboard_available = False
@@ -51,13 +52,14 @@ class ClipboardService:
             return []
 
         simple_url_pattern = re.compile(
-            r'https?://[^\s<>"{}|\\^`\[\]]+',
-            re.IGNORECASE
+            r"https?://[^\s<>\"{}|\\^`\[\]]+",
+            re.IGNORECASE,
         )
 
         nohttp_url_pattern = re.compile(
-            r'\b(?:www\.)[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+(?:/[^\s<>"{}|\\^`\[\]]*)?',
-            re.IGNORECASE
+            r"\b(?:www\.)[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?"
+            r"(?:\.[a-zA-Z]{2,})+(?:/[^\s<>\"{}|\\^`\[\]]*)?",
+            re.IGNORECASE,
         )
 
         urls = simple_url_pattern.findall(text)
@@ -67,7 +69,7 @@ class ClipboardService:
         seen = set()
         unique_urls = []
         for url in all_urls:
-            url = url.rstrip('.,;:)')
+            url = url.rstrip(".,;:)")
             if url not in seen:
                 seen.add(url)
                 unique_urls.append(url)

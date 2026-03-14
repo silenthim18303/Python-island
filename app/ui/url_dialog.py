@@ -3,14 +3,22 @@
 提供检测到URL时显示的对话框组件，支持单个和多个URL的显示和操作。
 """
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QPushButton, QScrollArea, QCheckBox, QLayout
-)
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
 
 from app.core.config import (
-    MAX_VISIBLE_URLS, URL_ITEM_HEIGHT, MULTI_URL_BTN_TOP_SPACING
+    MAX_VISIBLE_URLS,
+    MULTI_URL_BTN_TOP_SPACING,
+    URL_ITEM_HEIGHT,
 )
 
 

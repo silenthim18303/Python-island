@@ -3,9 +3,9 @@
 提供显示系统状态（WiFi、蓝牙、电池）的状态栏组件。
 """
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
-from app.core.config import ICON_INTERNET, ICON_BLUETOOTH, ICON_BATTERY
+from app.core.config import ICON_BATTERY, ICON_BLUETOOTH, ICON_INTERNET
 
 
 class StatusBar(QWidget):

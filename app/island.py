@@ -5,22 +5,39 @@
 
 from datetime import datetime
 
-from PySide6.QtCore import QEvent, Qt, QTimer, QRect
+from PySide6.QtCore import QEvent, QRect, Qt, QTimer
 from PySide6.QtWidgets import (
     QApplication, QFrame, QHBoxLayout, QLabel,
     QStackedWidget, QVBoxLayout, QWidget,
 )
 
-from app.core.config import *
+from app.animations.effects import AnimationManager, RoundedMaskHelper
+from app.core.config import (
+    ALL_ICONS,
+    CLIPBOARD_CHECK_INTERVAL,
+    COLLAPSED_HEIGHT,
+    COLLAPSED_WIDTH,
+    CONNECTION_AUTO_CLOSE_DELAY,
+    CONTROLS_HEIGHT,
+    DEBOUNCE_DELAY,
+    EXPANDED_HEIGHT,
+    EXPANDED_WIDTH,
+    ICON_LIGHT,
+    MAX_EXPAND_HEIGHT_RATIO,
+    STATUS_UPDATE_INTERVAL,
+    STYLES_PATH,
+    TIME_LABEL_HEIGHT,
+    TIME_UPDATE_INTERVAL,
+    URL_AUTO_CLOSE_DELAY,
+)
 from app.core.worker import WorkerThread
+from app.services.brightness import BrightnessService
+from app.services.clipboard import ClipboardService
+from app.services.system_status import SystemStatusService
+from app.services.tray import TrayService
 from app.ui.controls import ControlRowFactory
 from app.ui.status_bar import StatusBar
 from app.ui.url_dialog import UrlDialog
-from app.services.clipboard import ClipboardService
-from app.services.system_status import SystemStatusService
-from app.services.brightness import BrightnessService
-from app.services.tray import TrayService
-from app.animations.effects import AnimationManager, RoundedMaskHelper
 
 
 class ModernIsland(QWidget):
