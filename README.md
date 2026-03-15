@@ -1,6 +1,7 @@
 # Python Dynamic Island (iOS Clone for Windows)
 
 这是一个基于 Python 和 PySide6 开发的高度仿真 iOS 灵动岛项目，专为 Windows 系统设计。它不仅具备 iOS 灵动岛的经典交互与视觉美学，还集成了丰富的系统监控与控制功能。
+基于上一代更新精简调整逻辑，占用小，UI美观，功能更实用，提醒样式优化。
 
 ---
 
