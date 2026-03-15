@@ -1,0 +1,12 @@
+PySide6
+pycaw
+screen-brightness-control
+psutil
+winsdk
+pyperclip
+keyboard
+pynput
+numpy
+opencv-python
+pyautogui
+mss
