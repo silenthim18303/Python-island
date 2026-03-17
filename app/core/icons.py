@@ -6,9 +6,11 @@
 from enum import Enum
 from pathlib import Path
 
+from app.core.config import get_resource_path
 
-ICONS_CONTROLS_PATH = Path("resources/icons/controls")
-ICONS_SYSTEM_PATH = Path("resources/icons/system")
+
+ICONS_CONTROLS_PATH = Path(get_resource_path("resources/icons/controls"))
+ICONS_SYSTEM_PATH = Path(get_resource_path("resources/icons/system"))
 
 
 class IslandIconBase:

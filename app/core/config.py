@@ -7,6 +7,18 @@
 - 动画时长配置
 """
 
+import sys
+import os
+
+
+def get_resource_path(relative_path: str) -> str:
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(base_path, relative_path)
+
+
 # 窗口尺寸配置
 COLLAPSED_WIDTH = 180
 COLLAPSED_HEIGHT = 40
@@ -23,7 +35,7 @@ SLIDER_WIDTH = 180
 SLIDER_HEIGHT = 32
 
 # 资源路径配置
-STYLES_PATH = "resources/styles/style.qss"
+STYLES_PATH = get_resource_path("resources/styles/style.qss")
 
 # 定时器间隔配置（毫秒）
 TIME_UPDATE_INTERVAL = 1000

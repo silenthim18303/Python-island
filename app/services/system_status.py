@@ -42,6 +42,7 @@ class SystemStatusService:
                 check=True,
                 encoding="utf-8",
                 errors="ignore",
+                creationflags=subprocess.CREATE_NO_WINDOW,
             )
             output = result.stdout
 
@@ -77,6 +78,7 @@ class SystemStatusService:
                 text=True,
                 encoding="utf-8",
                 errors="ignore",
+                creationflags=subprocess.CREATE_NO_WINDOW,
             )
 
             output = result.stdout
@@ -133,6 +135,7 @@ class SystemStatusService:
                     check=True,
                     encoding="utf-8",
                     errors="ignore",
+                    creationflags=subprocess.CREATE_NO_WINDOW,
                 )
                 output = result.stdout
 
