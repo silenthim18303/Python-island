@@ -609,7 +609,7 @@ class ModernIsland(QWidget):
                 self._update_rounded_mask(),
                 self.container.setFixedSize(value.width(), value.height())
             ),
-            None
+            self.time_label.show
         )
         win_animation.start()
 
@@ -678,7 +678,9 @@ class ModernIsland(QWidget):
             self._update_rounded_mask()
 
         def on_finished():
+            print(f"Collapse finished. is_hovering: {self.is_hovering}, is_expanded: {self.is_expanded}")
             self.time_label.show()
+            print(f"time_label is now visible: {self.time_label.isVisible()}")
             self._update_time_display()
             self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
             self.is_hovering = False  # Reset hover state
