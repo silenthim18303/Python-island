@@ -610,9 +610,10 @@ class ModernIsland(QWidget):
         # Calculate start and end rects for the window
         start_rect = current_geo
 
-        # Center the target geometry
-        center_x = current_geo.x() + current_geo.width() // 2
-        target_x = center_x - target_w // 2
+        # 使用屏幕中心作为参考点，保证位置始终一致
+        screen_center_x = self.screen_w // 2
+        target_x = screen_center_x - target_w // 2
+        
         end_rect = QRect(target_x, current_geo.y(), target_w, target_h)
 
         # 离开时立即切换到简短时间模式
