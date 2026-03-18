@@ -25,9 +25,9 @@ COLLAPSED_HEIGHT = 40
 EXPANDED_WIDTH = 360
 EXPANDED_HEIGHT = 160
 
-# Hover dimensions
-HOVER_WIDTH = 240  # Wider than collapsed
-HOVER_HEIGHT = 60  # Taller than collapsed
+# Hover 尺寸
+HOVER_WIDTH = 300
+HOVER_HEIGHT = 60
 
 # 控件尺寸配置
 CONTROLS_HEIGHT = 120
