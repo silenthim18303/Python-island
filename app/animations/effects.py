@@ -3,7 +3,7 @@
 提供灵动岛的展开/收起动画效果和圆角遮罩辅助功能。
 """
 
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QRect
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QRect, QSize
 from PySide6.QtGui import QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget
 
@@ -174,6 +174,76 @@ class AnimationManager:
         animation.setEasingCurve(QEasingCurve.OutCubic)
         animation.setStartValue(start)
         animation.setEndValue(end)
+
+        if on_value_changed:
+            animation.valueChanged.connect(on_value_changed)
+        if on_finished:
+            animation.finished.connect(on_finished)
+
+        self.current_animation = animation
+        return animation
+
+    def create_hover_animation(
+        self,
+        start_rect: QRect,
+        end_rect: QRect,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
+        """创建悬停动画。
+
+        Args:
+            start_rect: 起始矩形
+            end_rect: 结束矩形
+            on_value_changed: 值变化回调
+            on_finished: 动画完成回调
+
+        Returns:
+            QPropertyAnimation: 动画对象
+        """
+        self._cleanup_animation()
+
+        animation = QPropertyAnimation(self.widget, b"geometry")
+        animation.setDuration(150)  # Faster duration for hover
+        animation.setEasingCurve(QEasingCurve.InOutQuad)
+        animation.setStartValue(start_rect)
+        animation.setEndValue(end_rect)
+
+        if on_value_changed:
+            animation.valueChanged.connect(on_value_changed)
+        if on_finished:
+            animation.finished.connect(on_finished)
+
+        self.current_animation = animation
+        return animation
+
+    def create_size_animation(
+        self,
+        target_object: QWidget,
+        start_size: QSize,
+        end_size: QSize,
+        on_value_changed=None,
+        on_finished=None,
+    ) -> QPropertyAnimation:
+        """创建尺寸变化动画。
+
+        Args:
+            target_object: 要应用动画的控件
+            start_size: 起始尺寸
+            end_size: 结束尺寸
+            on_value_changed: 值变化回调
+            on_finished: 动画完成回调
+
+        Returns:
+            QPropertyAnimation: 动画对象
+        """
+        self._cleanup_animation()
+
+        animation = QPropertyAnimation(target_object, b"size")
+        animation.setDuration(150)
+        animation.setEasingCurve(QEasingCurve.InOutQuad)
+        animation.setStartValue(start_size)
+        animation.setEndValue(end_size)
 
         if on_value_changed:
             animation.valueChanged.connect(on_value_changed)
