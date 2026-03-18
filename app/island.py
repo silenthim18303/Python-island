@@ -5,7 +5,7 @@
 
 from datetime import datetime
 
-from PySide6.QtCore import QEvent, QRect, Qt, QTimer
+from PySide6.QtCore import QEvent, QPropertyAnimation, QEasingCurve, QRect, QSize, Qt, QTimer
 from PySide6.QtWidgets import (
     QApplication, QFrame, QHBoxLayout, QLabel,
     QStackedWidget, QVBoxLayout, QWidget,
@@ -21,6 +21,8 @@ from app.core.config import (
     DEBOUNCE_DELAY,
     EXPANDED_HEIGHT,
     EXPANDED_WIDTH,
+    HOVER_HEIGHT,
+    HOVER_WIDTH,
     MAX_EXPAND_HEIGHT_RATIO,
     STATUS_UPDATE_INTERVAL,
     STYLES_PATH,
@@ -71,6 +73,7 @@ class ModernIsland(QWidget):
         self.setAttribute(Qt.WA_ShowWithoutActivating, False)
 
         self.is_expanded = False
+        self.is_hovering = False  # Add hover state flag
         self.screen_w = QApplication.primaryScreen().size().width()
         self.screen_h = QApplication.primaryScreen().size().height()
         self.max_expand_h = self.screen_h // MAX_EXPAND_HEIGHT_RATIO
@@ -88,6 +91,9 @@ class ModernIsland(QWidget):
         self.dragging = False
         self.drag_start_pos = None
         self.window_start_pos = None
+
+        # Enable mouse tracking for hover effects
+        self.setMouseTracking(True)
 
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
 
@@ -109,6 +115,7 @@ class ModernIsland(QWidget):
         self.container = QFrame(self)
         self.container.setObjectName("IslandContainer")
         self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
+        self.container.setMouseTracking(True)
 
         self.layout = QVBoxLayout(self.container)
         self.layout.setContentsMargins(15, 0, 15, 0)
@@ -557,6 +564,107 @@ class ModernIsland(QWidget):
                     (event.globalPos() - self.drag_start_pos).manhattanLength() < 5:
                 self.toggle_island()
             self.dragging = False
+
+    def enterEvent(self, event):
+        """处理鼠标进入事件。"""
+        super().enterEvent(event)
+        if not self.is_expanded:
+            self._start_hover_animation(True)
+
+    def leaveEvent(self, event):
+        """处理鼠标离开事件。"""
+        super().leaveEvent(event)
+        if not self.is_expanded:
+            self._start_hover_animation(False)
+
+    def _start_hover_animation(self, is_enter: bool):
+        """执行悬停动画。
+
+        Args:
+            is_enter: True 表示进入动画，False 表示离开动画
+        """
+        if is_enter == self.is_hovering:
+            return
+
+        self.is_hovering = is_enter
+
+        # Target dimensions for the window (self)
+        target_w = HOVER_WIDTH if is_enter else COLLAPSED_WIDTH
+        target_h = HOVER_HEIGHT if is_enter else COLLAPSED_HEIGHT
+
+        current_geo = self.geometry()
+
+        # Calculate start and end rects for the window
+        start_rect = current_geo
+
+        # Center the target geometry
+        center_x = current_geo.x() + current_geo.width() // 2
+        target_x = center_x - target_w // 2
+        end_rect = QRect(target_x, current_geo.y(), target_w, target_h)
+
+        # Animation for the window geometry
+        animation = self.animation_manager.create_hover_animation(
+            start_rect, end_rect,
+            lambda value: self._update_rounded_mask(),
+            None
+        )
+        animation.start()
+
+        # Also animate the container size to match
+        start_size = self.container.size()
+        end_size = QSize(target_w, target_h)
+
+        # Use a separate animation for container size to decouple visuals if needed
+        # But here we just set it directly or use a helper.
+        # Ideally we want to update container size during the window animation
+        # But since we are using AnimationManager, let's just set final size or animate it.
+        # For simplicity and effect, let's animate container too
+
+        # We need a callback to update container during the window animation
+        # But QPropertyAnimation doesn't easily sync two properties unless we use one animation with custom setter
+        # OR we just use the window animation to drive the container update
+
+        # Let's modify the valueChanged of the window animation to update container
+        # We need to access the animation object
+
+        # Actually, let's just start a parallel animation for container using the same duration/easing
+        # but simpler: just update container size at the end? No, that looks jumpy.
+
+        # Let's create a simple size animation for container
+        # But wait, create_hover_animation is specific to geometry.
+        # Let's just connect to the animation's valueChanged
+
+        # Re-connecting valueChanged to also update container
+        # We already passed a lambda to valueChanged, let's modify that lambda
+
+        # Actually, let's rewrite this cleanly.
+
+        # Correct logic:
+        # 1. Animate self.geometry() from current to target (centered)
+        # 2. Update self.container.setFixedSize() during animation
+
+        # Let's replace the previous logic completely.
+
+        # Start of new implementation
+        current_window_geo = self.geometry()
+        start_window_rect = current_window_geo
+        
+        # Center the target
+        current_center_x = current_window_geo.x() + current_window_geo.width() // 2
+        target_x = current_center_x - target_w // 2
+        end_window_rect = QRect(target_x, current_window_geo.y(), target_w, target_h)
+
+        # Create window geometry animation
+        win_animation = self.animation_manager.create_hover_animation(
+            start_window_rect,
+            end_window_rect,
+            lambda value: (
+                self._update_rounded_mask(),
+                self.container.setFixedSize(value.width(), value.height())
+            ),
+            None
+        )
+        win_animation.start()
 
     def _on_focus_changed(self, old_widget, new_widget):
         """失去焦点时自动收缩。"""

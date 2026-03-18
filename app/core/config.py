@@ -25,6 +25,10 @@ COLLAPSED_HEIGHT = 40
 EXPANDED_WIDTH = 360
 EXPANDED_HEIGHT = 160
 
+# Hover dimensions
+HOVER_WIDTH = 240  # Wider than collapsed
+HOVER_HEIGHT = 60  # Taller than collapsed
+
 # 控件尺寸配置
 CONTROLS_HEIGHT = 120
 TIME_LABEL_HEIGHT = 40
