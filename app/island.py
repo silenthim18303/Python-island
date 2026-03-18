@@ -327,6 +327,14 @@ class ModernIsland(QWidget):
     def _update_time_display(self):
         """根据展开/收起状态更新时间或日期显示。"""
         now = datetime.now()
+        
+        # 如果处于悬停状态，显示完整时间格式
+        if self.is_hovering:
+            current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+            self.time_label.setText(current_time)
+            self.time_label.setAlignment(Qt.AlignCenter)
+            return
+            
         current_time = now.strftime("%H:%M")
         current_date = now.strftime("%m/%d")
         weekday_map = {0: "周一", 1: "周二", 2: "周三", 3: "周四", 4: "周五", 5: "周六", 6: "周日"}
@@ -603,15 +611,29 @@ class ModernIsland(QWidget):
         end_rect = QRect(target_x, current_geo.y(), target_w, target_h)
 
         # Animation for the window geometry
+        # Time display update will be done in on_finished callback after animation completes
+        def on_animation_finished():
+            if is_enter:
+                self._update_hover_time_display()
+            else:
+                self._update_time_display()
+
         win_animation = self.animation_manager.create_hover_animation(
             start_rect, end_rect,
             lambda value: (
                 self._update_rounded_mask(),
                 self.container.setFixedSize(value.width(), value.height())
             ),
-            self.time_label.show
+            on_animation_finished
         )
         win_animation.start()
+
+    def _update_hover_time_display(self):
+        """Hover时显示完整时间格式：年-月-日 时：分：秒"""
+        now = datetime.now()
+        full_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        self.time_label.setText(full_time)
+        self.time_label.setAlignment(Qt.AlignCenter)
 
     def _on_focus_changed(self, old_widget, new_widget):
         """失去焦点时自动收缩。"""
