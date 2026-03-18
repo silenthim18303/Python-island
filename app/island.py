@@ -6,6 +6,7 @@
 from datetime import datetime
 
 from PySide6.QtCore import QEvent, QPropertyAnimation, QEasingCurve, QRect, QSize, Qt, QTimer
+from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import (
     QApplication, QFrame, QHBoxLayout, QLabel,
     QStackedWidget, QVBoxLayout, QWidget,
@@ -328,22 +329,14 @@ class ModernIsland(QWidget):
         """根据展开/收起状态更新时间或日期显示。"""
         now = datetime.now()
         
-        # 如果处于悬停状态，显示完整时间格式
-        if self.is_hovering:
-            current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-            self.time_label.setText(current_time)
-            self.time_label.setAlignment(Qt.AlignCenter)
-            return
-            
-        current_time = now.strftime("%H:%M")
-        current_date = now.strftime("%m/%d")
-        weekday_map = {0: "周一", 1: "周二", 2: "周三", 3: "周四", 4: "周五", 5: "周六", 6: "周日"}
-        current_weekday = weekday_map[now.weekday()]
-
-        self.time_label.setText(current_time)
-        self.date_label.setText(f"{current_date} {current_weekday} {current_time}")
-
+        # 展开状态：显示日期标签（忽略hover状态，展开时以日期为主）
         if self.is_expanded:
+            current_date = now.strftime("%m/%d")
+            weekday_map = {0: "周一", 1: "周二", 2: "周三", 3: "周四", 4: "周五", 5: "周六", 6: "周日"}
+            current_weekday = weekday_map[now.weekday()]
+            current_time = now.strftime("%H:%M")
+            
+            self.date_label.setText(f"{current_date} {current_weekday} {current_time}")
             temp_label = QLabel(f"{current_date} {current_weekday} {current_time}")
             temp_label.setObjectName("DateLabel")
             temp_label.setStyleSheet(self.date_label.styleSheet())
@@ -353,6 +346,18 @@ class ModernIsland(QWidget):
             x = (EXPANDED_WIDTH - width) // 2
             self.date_label.setFixedWidth(width)
             self.date_label.move(x, 0)
+            return
+        
+        # 收起状态：根据hover状态显示
+        if self.is_hovering:
+            current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+            self.time_label.setText(current_time)
+            self.time_label.setAlignment(Qt.AlignCenter)
+            return
+            
+        # 正常收起状态
+        current_time = now.strftime("%H:%M")
+        self.time_label.setText(current_time)
 
     def _check_clipboard(self):
         """检查剪贴板是否有新的URL。"""
@@ -630,6 +635,10 @@ class ModernIsland(QWidget):
 
     def _update_hover_time_display(self):
         """Hover时显示完整时间格式：年-月-日 时：分：秒"""
+        # 如果处于展开状态，不处理hover时间显示
+        if self.is_expanded:
+            return
+            
         now = datetime.now()
         full_time = now.strftime("%Y-%m-%d %H:%M:%S")
         self.time_label.setText(full_time)
@@ -657,6 +666,7 @@ class ModernIsland(QWidget):
     def _do_expand(self, current_pos):
         """执行展开动画。"""
         self.is_expanded = True
+        self.is_hovering = False  # 清除hover状态
 
         self.time_label.hide()
         self.date_label.hide()
@@ -700,12 +710,12 @@ class ModernIsland(QWidget):
             self._update_rounded_mask()
 
         def on_finished():
-            print(f"Collapse finished. is_hovering: {self.is_hovering}, is_expanded: {self.is_expanded}")
             self.time_label.show()
-            print(f"time_label is now visible: {self.time_label.isVisible()}")
             self._update_time_display()
             self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
-            self.is_hovering = False  # Reset hover state
+            # 如果鼠标已经离开，则清除hover状态；否则保持hover状态让leaveEvent处理
+            if not self.rect().contains(self.mapFromGlobal(QCursor.pos())):
+                self.is_hovering = False
 
         self.animation_manager.create_collapse_animation(
             start, end, on_value_changed, on_finished
