@@ -603,61 +603,8 @@ class ModernIsland(QWidget):
         end_rect = QRect(target_x, current_geo.y(), target_w, target_h)
 
         # Animation for the window geometry
-        animation = self.animation_manager.create_hover_animation(
-            start_rect, end_rect,
-            lambda value: self._update_rounded_mask(),
-            None
-        )
-        animation.start()
-
-        # Also animate the container size to match
-        start_size = self.container.size()
-        end_size = QSize(target_w, target_h)
-
-        # Use a separate animation for container size to decouple visuals if needed
-        # But here we just set it directly or use a helper.
-        # Ideally we want to update container size during the window animation
-        # But since we are using AnimationManager, let's just set final size or animate it.
-        # For simplicity and effect, let's animate container too
-
-        # We need a callback to update container during the window animation
-        # But QPropertyAnimation doesn't easily sync two properties unless we use one animation with custom setter
-        # OR we just use the window animation to drive the container update
-
-        # Let's modify the valueChanged of the window animation to update container
-        # We need to access the animation object
-
-        # Actually, let's just start a parallel animation for container using the same duration/easing
-        # but simpler: just update container size at the end? No, that looks jumpy.
-
-        # Let's create a simple size animation for container
-        # But wait, create_hover_animation is specific to geometry.
-        # Let's just connect to the animation's valueChanged
-
-        # Re-connecting valueChanged to also update container
-        # We already passed a lambda to valueChanged, let's modify that lambda
-
-        # Actually, let's rewrite this cleanly.
-
-        # Correct logic:
-        # 1. Animate self.geometry() from current to target (centered)
-        # 2. Update self.container.setFixedSize() during animation
-
-        # Let's replace the previous logic completely.
-
-        # Start of new implementation
-        current_window_geo = self.geometry()
-        start_window_rect = current_window_geo
-        
-        # Center the target
-        current_center_x = current_window_geo.x() + current_window_geo.width() // 2
-        target_x = current_center_x - target_w // 2
-        end_window_rect = QRect(target_x, current_window_geo.y(), target_w, target_h)
-
-        # Create window geometry animation
         win_animation = self.animation_manager.create_hover_animation(
-            start_window_rect,
-            end_window_rect,
+            start_rect, end_rect,
             lambda value: (
                 self._update_rounded_mask(),
                 self.container.setFixedSize(value.width(), value.height())
@@ -734,6 +681,7 @@ class ModernIsland(QWidget):
             self.time_label.show()
             self._update_time_display()
             self.container.setFixedSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT)
+            self.is_hovering = False  # Reset hover state
 
         self.animation_manager.create_collapse_animation(
             start, end, on_value_changed, on_finished
