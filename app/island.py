@@ -616,15 +616,26 @@ class ModernIsland(QWidget):
         
         end_rect = QRect(target_x, current_geo.y(), target_w, target_h)
 
-        # 离开时立即切换到简短时间模式
-        if not is_enter:
-            self._update_time_display()
+        # 动画开始时隐藏时间控件
+        self.time_label.hide()
 
-        # Animation for the window geometry
-        # Time display update will be done in on_finished callback after animation completes
+        # 暂停时间更新计时器，避免动画过程中时间更新导致抖动
+        was_timer_running = self.time_timer.isActive()
+        if was_timer_running:
+            self.time_timer.stop()
+
         def on_animation_finished():
             if is_enter:
                 self._update_hover_time_display()
+            else:
+                # 离开hover动画完成后才切换到简短时间模式
+                self._update_time_display()
+            # 动画完成后显示时间控件
+            self.time_label.show()
+            # 恢复时间更新计时器
+            if was_timer_running:
+                self.time_timer.start()
+                self._update_time()
 
         win_animation = self.animation_manager.create_hover_animation(
             start_rect, end_rect,
