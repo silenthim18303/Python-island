@@ -154,6 +154,7 @@ class AnimationController:
         def on_value_changed(value):
             if value.width() > 50:
                 self.controls.show()
+            self._update_mask()
             intermediate_h = self._calculate_intermediate_height(
                 value.width(), target_height
             )
@@ -162,6 +163,7 @@ class AnimationController:
         def on_animation_finished():
             self.controls.show()
             self.container.setFixedSize(EXPANDED_WIDTH, target_height)
+            self._update_mask()
             if on_finished:
                 on_finished()
 

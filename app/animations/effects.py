@@ -162,11 +162,10 @@ class AnimationManager:
         current_pos = self.widget.geometry().topLeft()
         current_w = self.widget.rect().width()
         current_h = self.widget.rect().height()
-        center_x = current_pos.x() + current_w // 2
 
-        start = QRect(center_x, current_pos.y(), 0, current_h)
+        start = QRect(current_pos.x(), current_pos.y(), current_w, current_h)
         end = QRect(
-            center_x - 180, current_pos.y(), EXPANDED_WIDTH, target_height
+            current_pos.x(), current_pos.y(), EXPANDED_WIDTH, target_height
         )
 
         animation = QPropertyAnimation(self.widget, b"geometry")
