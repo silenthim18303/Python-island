@@ -5,6 +5,7 @@
 
 from typing import Callable, Optional
 from PySide6.QtCore import QRect
+from PySide6.QtWidgets import QApplication
 
 from app.core.config import (
     COLLAPSED_HEIGHT,
@@ -79,8 +80,11 @@ class AnimationController:
         width: float,
         on_finished: Optional[Callable] = None
     ):
+        from app.core.config import EXPANDED_WIDTH
+        screen_w = QApplication.primaryScreen().size().width()
+        target_x = (screen_w - COLLAPSED_WIDTH) // 2
         end_rect = QRect(
-            current_pos_x + width / 2 - 90,
+            target_x,
             start_rect.y(),
             COLLAPSED_WIDTH, COLLAPSED_HEIGHT
         )
