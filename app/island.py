@@ -343,13 +343,19 @@ class ModernIsland(QWidget):
     def leaveEvent(self, event):
         super().leaveEvent(event)
         self.event_handler.handle_leave_event(
-            self.state_manager.is_collapsed(),
+            self.state_manager.is_collapsed() or self.state_manager.is_hovering(),
             self._start_hover_animation
         )
 
     def _start_hover_animation(self, is_enter: bool):
-        if is_enter == self.state_manager.is_hovering():
-            return
+        if is_enter:
+            if not self.state_manager.is_collapsed():
+                return
+            self.state_manager.set_state(IslandState.HOVERING)
+        else:
+            if not self.state_manager.is_hovering():
+                return
+            self.state_manager.set_state(IslandState.COLLAPSED)
 
         self.time_label.hide()
         was_timer_running = self.timer_manager.is_timer_active("time_update")
@@ -358,15 +364,12 @@ class ModernIsland(QWidget):
 
         def on_finished():
             if is_enter:
-                self.state_manager.set_state(IslandState.HOVERING)
                 self.time_display_manager.update_for_hover()
             else:
-                self.state_manager.set_state(IslandState.COLLAPSED)
                 self._update_time_display()
             self.time_label.show()
             if was_timer_running:
                 self.timer_manager.start_timer("time_update")
-                self._update_time_display()
 
         self.animation_controller.animate_hover(
             self.geometry(), is_enter, self.screen_w, on_finished
