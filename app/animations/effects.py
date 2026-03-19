@@ -147,7 +147,7 @@ class AnimationManager:
         on_value_changed=None,
         on_finished=None,
     ) -> QPropertyAnimation:
-        """创建URL页面展开动画。
+        """创建URL页面展开动画（从中间向两边展开）。
 
         Args:
             target_height: 目标高度
@@ -162,10 +162,15 @@ class AnimationManager:
         current_pos = self.widget.geometry().topLeft()
         current_w = self.widget.rect().width()
         current_h = self.widget.rect().height()
+        current_center_x = current_pos.x() + current_w // 2
 
-        start = QRect(current_pos.x(), current_pos.y(), current_w, current_h)
+        # 从中间向两边展开：起始宽度为0，位置在中心
+        start = QRect(current_center_x, current_pos.y(), 0, current_h)
         end = QRect(
-            current_pos.x(), current_pos.y(), EXPANDED_WIDTH, target_height
+            current_center_x - EXPANDED_WIDTH // 2,
+            current_pos.y(),
+            EXPANDED_WIDTH,
+            target_height
         )
 
         animation = QPropertyAnimation(self.widget, b"geometry")
