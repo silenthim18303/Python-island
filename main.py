@@ -55,11 +55,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-'''
-test:
-www.360.com
-www.baidu.com
-www.python.org
-www.douyin.com
-'''

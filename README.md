@@ -15,19 +15,69 @@ Pyisland是一个基于PySide6开发的现代化灵动岛控制中心，提供�
 - **自动收缩**：展开后失去焦点自动收缩
 - **实时时间显示**：初始状态显示当前系统时间
 
+## 架构设计
+
+本项目采用**模块化架构设计**，遵循**单一职责原则**，将复杂功能拆分为独立的管理器模块，实现高内聚低耦合。
+
+### 核心架构图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      ModernIsland (主类)                     │
+│                        349 行代码                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│StateManager  │    │TimerManager  │    │ServiceCoord  │
+│  状态管理器   │    │  定时器管理器  │    │  服务协调器   │
+│   111 行     │    │   127 行     │    │   153 行     │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│UIBuilder     │    │AnimationCtrl │    │EventHandler  │
+│  UI构建器     │    │  动画控制器    │   │  事件处理器   │
+│   135 行     │    │   170 行     │    │    94 行     │
+└──────────────┘    └──────────────┘    └──────────────┘
+                              │
+                              ▼
+                    ┌──────────────┐
+                    │TimeDisplayMgr│
+                    │ 时间显示管理器 │
+                    │    97 行     │
+                    └──────────────┘
+```
+
+### 设计原则
+
+1. **单一职责原则 (SRP)**：每个模块只负责一个核心功能
+2. **开闭原则 (OCP)**：对扩展开放，对修改关闭
+3. **依赖倒置原则 (DIP)**：高层模块不依赖低层模块，两者都依赖抽象
+4. **接口隔离原则 (ISP)**：使用多个专门的接口，而不是单一的总接口
+
 ## 项目结构
 
 ```
 PyislandWeb/
 ├── app/
 │   ├── __init__.py           # 包初始化
-│   ├── island.py             # 主窗口，整合所有模块
+│   ├── island.py             # 主窗口 (349行，重构前746行)
 │   ├── utils.py              # 工具函数（向后兼容）
 │   ├── core/                 # 核心功能模块
 │   │   ├── __init__.py
 │   │   ├── worker.py         # 后台工作线程
 │   │   ├── config.py         # 配置常量
-│   │   └── icons.py          # 图标枚举类
+│   │   ├── icons.py          # 图标枚举类
+│   │   ├── state_manager.py       # 状态管理器 ⭐ 新增
+│   │   ├── timer_manager.py       # 定时器管理器 ⭐ 新增
+│   │   ├── ui_builder.py          # UI构建器 ⭐ 新增
+│   │   ├── service_coordinator.py # 服务协调器 ⭐ 新增
+│   │   ├── animation_controller.py # 动画控制器 ⭐ 新增
+│   │   ├── event_handler.py       # 事件处理器 ⭐ 新增
+│   │   └── time_display_manager.py # 时间显示管理器 ⭐ 新增
 │   ├── ui/                   # UI组件模块
 │   │   ├── __init__.py
 │   │   ├── controls.py       # 控制面板组件
@@ -157,11 +207,18 @@ qicon = IslandIcon.TRAY.qicon()
 
 ### 核心模块 (core/)
 
-| 模块 | 说明 |
-|------|------|
-| `worker.py` | 后台工作线程，执行耗时操作 |
-| `config.py` | 配置常量，包括尺寸、时间间隔等 |
-| `icons.py` | 图标枚举类，参考FluentIcon实现，管理所有图标路径 |
+| 模块 | 说明 | 行数 |
+|------|------|------|
+| `worker.py` | 后台工作线程，执行耗时操作 | - |
+| `config.py` | 配置常量，包括尺寸、时间间隔等 | - |
+| `icons.py` | 图标枚举类，参考FluentIcon实现，管理所有图标路径 | - |
+| `state_manager.py` ⭐ | **状态管理器**：管理灵动岛的5种状态及其转换逻辑 | 111 |
+| `timer_manager.py` ⭐ | **定时器管理器**：统一管理所有定时器的创建、启动、停止 | 127 |
+| `ui_builder.py` ⭐ | **UI构建器**：负责UI组件的构建和初始化 | 135 |
+| `service_coordinator.py` ⭐ | **服务协调器**：协调亮度、剪贴板、系统状态服务 | 153 |
+| `animation_controller.py` ⭐ | **动画控制器**：协调所有动画，包括展开、收起、悬停等 | 170 |
+| `event_handler.py` ⭐ | **事件处理器**：处理鼠标拖动、点击和焦点变化事件 | 94 |
+| `time_display_manager.py` ⭐ | **时间显示管理器**：管理不同状态下的时间显示 | 97 |
 
 ### UI模块 (ui/)
 
@@ -186,6 +243,71 @@ qicon = IslandIcon.TRAY.qicon()
 | 模块 | 说明 |
 |------|------|
 | `effects.py` | 动画效果，展开/收起动画、圆角遮罩 |
+
+## 重构成果
+
+### 代码质量提升
+
+| 指标 | 重构前 | 重构后 | 改进 |
+|------|--------|--------|------|
+| **island.py 行数** | 746行 | 349行 | **减少53%** ⬇️ |
+| **模块数量** | 1个主文件 | 7个专业模块 | 职责更清晰 ✅ |
+| **代码复杂度** | 高 | 低 | 易于维护 ✅ |
+| **可测试性** | 低 | 高 | 模块独立测试 ✅ |
+
+### 架构优势
+
+1. **单一职责**：每个模块只负责一个核心功能
+2. **高内聚低耦合**：模块间依赖清晰，易于测试
+3. **可维护性强**：修改某个功能只需关注对应模块
+4. **可扩展性好**：新增功能时更容易扩展
+5. **代码复用**：工具方法可在多处使用
+
+### 模块使用示例
+
+```python
+# 状态管理
+from app.core.state_manager import IslandStateManager, IslandState
+
+state_manager = IslandStateManager()
+state_manager.set_state(IslandState.EXPANDED)
+is_expanded = state_manager.is_expanded()
+
+# 定时器管理
+from app.core.timer_manager import TimerManager
+
+timer_manager = TimerManager()
+timer_manager.create_timer("update", 1000, callback)
+timer_manager.stop_timer("update")
+
+# 服务协调
+from app.core.service_coordinator import ServiceCoordinator
+
+coordinator = ServiceCoordinator()
+coordinator.load_initial_brightness(callback)
+wifi_msg, bt_msg = coordinator.check_status_changes(...)
+
+# 动画控制
+from app.core.animation_controller import AnimationController
+
+animation_ctrl = AnimationController(
+    animation_manager, container, controls,
+    update_mask_callback, update_time_callback
+)
+animation_ctrl.animate_expand(...)
+
+# 事件处理
+from app.core.event_handler import EventHandler
+
+event_handler = EventHandler(toggle_callback, is_expanded_callback)
+event_handler.handle_mouse_press(event, get_window_pos)
+
+# 时间显示
+from app.core.time_display_manager import TimeDisplayManager
+
+time_manager = TimeDisplayManager(time_label, date_label, position_callback)
+time_manager.update(is_expanded=True, is_hovering=False)
+```
 
 ## 技术栈
 
