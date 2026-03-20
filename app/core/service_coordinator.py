@@ -32,6 +32,7 @@ class ServiceCoordinator:
 
         self._previous_wifi_status: Optional[Tuple] = None
         self._previous_bluetooth_status: Optional[List] = None
+        self._previous_battery_status: Optional[Tuple] = None
         self._first_status_check = True
 
     def load_initial_brightness(self, callback: Callable[[Optional[int]], None]):
@@ -98,13 +99,15 @@ class ServiceCoordinator:
         self,
         ssid: str,
         dns_connected: bool,
-        bluetooth_devices: List
-    ) -> Tuple[Optional[str], Optional[str]]:
+        bluetooth_devices: List,
+        battery_status: str
+    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         if self._first_status_check:
             self._previous_wifi_status = (ssid, dns_connected)
             self._previous_bluetooth_status = bluetooth_devices
+            self._previous_battery_status = battery_status
             self._first_status_check = False
-            return None, None
+            return None, None, None
 
         current_wifi_status = (ssid, dns_connected)
         current_bluetooth_status = bluetooth_devices
@@ -126,18 +129,29 @@ class ServiceCoordinator:
             self._previous_bluetooth_status[0][1] in ["已开启", "Connected", "已连接"]
         )
 
+        # 检测电池充电状态变化
+        current_battery_charging = battery_status in ["接通电源", "充电"]
+        prev_battery_charging = (
+            self._previous_battery_status and 
+            self._previous_battery_status in ["接通电源", "充电"]
+        )
+
         wifi_message = None
         bt_message = None
+        battery_message = None
 
         if wifi_connected != prev_wifi_connected:
             wifi_message = "WiFi已连接" if wifi_connected else "WiFi已断开"
         elif bluetooth_connected != prev_bluetooth_connected:
-            bt_message = "蓝牙已连接" if bluetooth_connected else "蓝牙已断开"
+            bt_message = "蓝牙已打开" if bluetooth_connected else "蓝牙已关闭"
+        elif current_battery_charging != prev_battery_charging:
+            battery_message = "已接入电源" if current_battery_charging else "已断开电源"
 
         self._previous_wifi_status = current_wifi_status
         self._previous_bluetooth_status = current_bluetooth_status
+        self._previous_battery_status = battery_status
 
-        return wifi_message, bt_message
+        return wifi_message, bt_message, battery_message
 
     def cleanup(self):
         threads = [

@@ -124,11 +124,18 @@ class IslandUIBuilder:
         return temp_label.width()
 
     @staticmethod
-    def position_label_center(label: QLabel, text: str, container_width: int, object_name: str = None):
+    def position_label_center(label: QLabel, text: str, container_width: int, object_name: str = None, container_height: int = None):
         width = IslandUIBuilder.calculate_label_width(label, text, object_name)
         x = (container_width - width) // 2
+        
+        # 垂直居中
+        y = 0
+        if container_height:
+            label_height = label.height()
+            y = (container_height - label_height) // 2
+        
         label.setFixedWidth(width)
-        label.move(x, 0)
+        label.move(x, y)
 
     def get_icon_cache(self) -> Dict[IslandIcon, Any]:
         return self._icon_cache

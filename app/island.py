@@ -198,14 +198,16 @@ class ModernIsland(QWidget):
         self.status_bar.update_bluetooth(bt_name, bt_status)
         self.status_bar.update_battery(charge, status)
 
-        wifi_msg, bt_msg = self.service_coordinator.check_status_changes(
-            ssid, dns_connected, result[1]
+        wifi_msg, bt_msg, battery_msg = self.service_coordinator.check_status_changes(
+            ssid, dns_connected, result[1], status
         )
 
         if wifi_msg:
-            self._show_connection_animation(wifi_msg, "📶")
+            self._show_connection_animation(wifi_msg, "internet")
         elif bt_msg:
-            self._show_connection_animation(bt_msg, "🔵")
+            self._show_connection_animation(bt_msg, "bluetooth")
+        elif battery_msg:
+            self._show_connection_animation(battery_msg, "battery")
 
     def _update_time_display(self):
         self.time_display_manager.update(
@@ -308,7 +310,7 @@ class ModernIsland(QWidget):
         self.timer_manager.stop_timer("time_update")
 
         if not self.state_manager.is_expanded():
-            self._do_expand_and_show_connection(message, icon)
+            self._do_hover_and_show_connection(message, icon)
         else:
             self._update_connection_display(message, icon)
 
@@ -318,25 +320,50 @@ class ModernIsland(QWidget):
             self._close_connection_page
         )
 
-    def _do_expand_and_show_connection(self, message: str, icon: str):
-        self.state_manager.set_state(IslandState.CONNECTION_DISPLAY)
+    def _do_hover_and_show_connection(self, message: str, icon: str):
+        self.state_manager.set_state(IslandState.HOVERING)
 
-        self.animation_controller.animate_connection_expand(
-            message, icon,
-            on_show_message=self._update_connection_display,
-            on_finished=lambda: self._set_controls_height(EXPANDED_HEIGHT)
+        self.time_label.hide()
+        self.date_label.hide()
+
+        def on_finished():
+            from app.core.config import HOVER_WIDTH, HOVER_HEIGHT
+            self.time_display_manager.show_connection_message(message, icon, HOVER_WIDTH, HOVER_HEIGHT)
+            self.time_label.hide()
+            self.date_label.show()
+
+        self.animation_controller.animate_hover(
+            self.geometry(), True, self.screen_w, on_finished
         )
 
     def _update_connection_display(self, message: str, icon: str):
-        self.controls.setCurrentIndex(0)
-        self.time_display_manager.show_connection_message(message, icon)
+        self.time_label.hide()
+        self.date_label.show()
+        from app.core.config import EXPANDED_WIDTH, EXPANDED_HEIGHT
+        self.time_display_manager.show_connection_message(message, icon, EXPANDED_WIDTH, EXPANDED_HEIGHT)
 
     def _close_connection_page(self):
-        if self.state_manager.is_expanded():
-            self.toggle_island()
-
-        self.timer_manager.start_timer("time_update")
-        self._update_time_display()
+        if self.state_manager.is_hovering():
+            self.state_manager.set_state(IslandState.COLLAPSED)
+            
+            self.time_label.hide()
+            self.date_label.hide()
+            was_timer_running = self.timer_manager.is_timer_active("time_update")
+            
+            def on_finished():
+                self.time_display_manager.show_time_only()
+                self._update_time_display()
+                self.time_label.show()
+                self.date_label.hide()
+                if was_timer_running:
+                    self.timer_manager.start_timer("time_update")
+            
+            self.animation_controller.animate_hover(
+                self.geometry(), False, self.screen_w, on_finished
+            )
+        else:
+            self.timer_manager.start_timer("time_update")
+            self._update_time_display()
 
     def _update_rounded_mask(self):
         RoundedMaskHelper.update_mask(self)

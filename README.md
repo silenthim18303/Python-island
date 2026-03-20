@@ -345,6 +345,13 @@ time_manager.update(is_expanded=True, is_hovering=False)
 - 检查PowerShell命令是否能在系统中正常执行
 - 确保图标文件路径正确
 
+### 进群问题
+
+- 主包帅吗？
+帅的话回答：主包太帅了
+不帅的话别进来了
+
+
 ## 贡献指南
 
 欢迎提交问题和改进建议！如果您想为项目贡献代码，请：

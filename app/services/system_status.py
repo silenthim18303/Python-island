@@ -72,20 +72,220 @@ class SystemStatusService:
         devices = []
 
         try:
-            result = subprocess.run(
-                ["sc", "query", "bthserv"],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="ignore",
-                creationflags=subprocess.CREATE_NO_WINDOW,
-            )
-
-            output = result.stdout
-            if "RUNNING" in output:
-                devices.append(("蓝牙", "已开启"))
-            else:
-                devices.append(("蓝牙", "已关闭"))
+            # 尝试使用Windows蓝牙命令行工具检测
+            try:
+                # 使用PowerShell命令检测蓝牙状态
+                result = subprocess.run(
+                    ["powershell", "Get-BluetoothRadio | Select-Object -Property Status"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="ignore",
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                )
+                
+                output = result.stdout
+                
+                if "On" in output:
+                    devices.append(("蓝牙", "已开启"))
+                elif "Off" in output:
+                    devices.append(("蓝牙", "已关闭"))
+                else:
+                    # 如果PowerShell命令失败，尝试使用bleak
+                    try:
+                        import asyncio
+                        from bleak import BleakScanner
+                        
+                        async def check_bluetooth():
+                            try:
+                                # 尝试扫描蓝牙设备
+                                await BleakScanner.discover(timeout=1)
+                                return True
+                            except Exception:
+                                return False
+                        
+                        # 运行异步函数
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        is_bluetooth_on = loop.run_until_complete(check_bluetooth())
+                        loop.close()
+                        
+                        if is_bluetooth_on:
+                            devices.append(("蓝牙", "已开启"))
+                        else:
+                            # 尝试使用devcon命令检测蓝牙设备状态
+                            try:
+                                # 查找devcon.exe路径
+                                devcon_paths = [
+                                    "C:\\Windows\\System32\\devcon.exe",
+                                    "C:\\Windows\\SysWOW64\\devcon.exe"
+                                ]
+                                devcon_exe = None
+                                for path in devcon_paths:
+                                    if os.path.exists(path):
+                                        devcon_exe = path
+                                        break
+                                
+                                if devcon_exe:
+                                    # 列出蓝牙设备
+                                    result = subprocess.run(
+                                        [devcon_exe, "status", "*Bluetooth*"],
+                                        capture_output=True,
+                                        text=True,
+                                        encoding="utf-8",
+                                        errors="ignore",
+                                        creationflags=subprocess.CREATE_NO_WINDOW,
+                                    )
+                                    
+                                    output = result.stdout
+                                    
+                                    if "运行中" in output or "Running" in output:
+                                        devices.append(("蓝牙", "已开启"))
+                                    else:
+                                        devices.append(("蓝牙", "已关闭"))
+                                else:
+                                    # 如果所有方法都失败，使用WMI作为最后尝试
+                                    try:
+                                        import wmi
+                                        
+                                        c = wmi.WMI()
+                                        # 查找蓝牙适配器
+                                        bluetooth_adapters = c.Win32_PnPEntity()
+                                        has_bluetooth = False
+                                        
+                                        for adapter in bluetooth_adapters:
+                                            if adapter.Caption and "Bluetooth" in adapter.Caption:
+                                                has_bluetooth = True
+                                                break
+                                        
+                                        if has_bluetooth:
+                                            # 检查蓝牙服务状态
+                                            service_result = subprocess.run(
+                                                ["sc", "query", "bthserv"],
+                                                capture_output=True,
+                                                text=True,
+                                                encoding="utf-8",
+                                                errors="ignore",
+                                                creationflags=subprocess.CREATE_NO_WINDOW,
+                                            )
+                                            
+                                            if "RUNNING" in service_result.stdout:
+                                                devices.append(("蓝牙", "已开启"))
+                                            else:
+                                                devices.append(("蓝牙", "已关闭"))
+                                        else:
+                                            devices.append(("蓝牙", "未连接"))
+                                    except ImportError:
+                                        # 如果所有方法都不可用，基于服务状态判断
+                                        service_result = subprocess.run(
+                                            ["sc", "query", "bthserv"],
+                                            capture_output=True,
+                                            text=True,
+                                            encoding="utf-8",
+                                            errors="ignore",
+                                            creationflags=subprocess.CREATE_NO_WINDOW,
+                                        )
+                                        
+                                        if "RUNNING" in service_result.stdout:
+                                            devices.append(("蓝牙", "已开启"))
+                                        else:
+                                            devices.append(("蓝牙", "已关闭"))
+                            except Exception:
+                                pass
+                    except ImportError:
+                        # 回退到其他方法
+                        try:
+                            import wmi
+                            
+                            c = wmi.WMI()
+                            # 查找蓝牙适配器
+                            bluetooth_adapters = c.Win32_PnPEntity()
+                            has_bluetooth = False
+                            
+                            for adapter in bluetooth_adapters:
+                                if adapter.Caption and "Bluetooth" in adapter.Caption:
+                                    has_bluetooth = True
+                                    break
+                            
+                            if has_bluetooth:
+                                # 检查蓝牙服务状态
+                                service_result = subprocess.run(
+                                    ["sc", "query", "bthserv"],
+                                    capture_output=True,
+                                    text=True,
+                                    encoding="utf-8",
+                                    errors="ignore",
+                                    creationflags=subprocess.CREATE_NO_WINDOW,
+                                )
+                                
+                                if "RUNNING" in service_result.stdout:
+                                    devices.append(("蓝牙", "已开启"))
+                                else:
+                                    devices.append(("蓝牙", "已关闭"))
+                            else:
+                                devices.append(("蓝牙", "未连接"))
+                        except ImportError:
+                            # 如果所有方法都不可用，基于服务状态判断
+                            service_result = subprocess.run(
+                                ["sc", "query", "bthserv"],
+                                capture_output=True,
+                                text=True,
+                                encoding="utf-8",
+                                errors="ignore",
+                                creationflags=subprocess.CREATE_NO_WINDOW,
+                            )
+                            
+                            if "RUNNING" in service_result.stdout:
+                                devices.append(("蓝牙", "已开启"))
+                            else:
+                                devices.append(("蓝牙", "已关闭"))
+            except Exception:
+                # 回退到其他方法
+                try:
+                    import wmi
+                    
+                    c = wmi.WMI()
+                    # 查找蓝牙适配器
+                    bluetooth_adapters = c.Win32_PnPEntity()
+                    has_bluetooth = False
+                    
+                    for adapter in bluetooth_adapters:
+                        if adapter.Caption and "Bluetooth" in adapter.Caption:
+                            has_bluetooth = True
+                            break
+                    
+                    if has_bluetooth:
+                        # 检查蓝牙服务状态
+                        service_result = subprocess.run(
+                            ["sc", "query", "bthserv"],
+                            capture_output=True,
+                            text=True,
+                            encoding="utf-8",
+                            errors="ignore",
+                            creationflags=subprocess.CREATE_NO_WINDOW,
+                        )
+                        
+                        if "RUNNING" in service_result.stdout:
+                            devices.append(("蓝牙", "已开启"))
+                        else:
+                            devices.append(("蓝牙", "已关闭"))
+                    else:
+                        devices.append(("蓝牙", "未连接"))
+                except ImportError:
+                    # 如果所有方法都不可用，基于服务状态判断
+                    service_result = subprocess.run(
+                        ["sc", "query", "bthserv"],
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="ignore",
+                        creationflags=subprocess.CREATE_NO_WINDOW,
+                    )
+                    
+                    if "RUNNING" in service_result.stdout:
+                        devices.append(("蓝牙", "已开启"))
+                    else:
+                        devices.append(("蓝牙", "已关闭"))
         except Exception:
             devices.append(("蓝牙", "未连接"))
 
