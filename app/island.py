@@ -272,7 +272,26 @@ class ModernIsland(QWidget):
             AnimationController.calculate_controls_height(EXPANDED_HEIGHT)
         )
         if self.state_manager.is_expanded():
-            self.toggle_island()
+            self._collapse_from_url_page()
+
+    def _collapse_from_url_page(self):
+        current_pos = self.pos()
+
+        self.state_manager.set_state(IslandState.COLLAPSED)
+        self.time_display_manager.hide_all()
+
+        def on_finished():
+            self.time_display_manager.show_time_only()
+            self._update_time_display()
+
+        self.animation_controller.animate_collapse(
+            self.geometry(),
+            current_pos.x(),
+            self.rect().width(),
+            on_finished
+        )
+
+        self.controls.setCurrentIndex(0)
 
     def _open_url_and_close(self, url: str):
         self.service_coordinator.open_url(url)

@@ -5,6 +5,7 @@
 
 from typing import Callable, Optional
 from PySide6.QtCore import QRect
+from PySide6.QtWidgets import QApplication
 
 from app.core.config import (
     COLLAPSED_HEIGHT,
@@ -79,8 +80,11 @@ class AnimationController:
         width: float,
         on_finished: Optional[Callable] = None
     ):
+        from app.core.config import EXPANDED_WIDTH
+        screen_w = QApplication.primaryScreen().size().width()
+        target_x = (screen_w - COLLAPSED_WIDTH) // 2
         end_rect = QRect(
-            current_pos_x + width / 2 - 90,
+            target_x,
             start_rect.y(),
             COLLAPSED_WIDTH, COLLAPSED_HEIGHT
         )
@@ -154,6 +158,7 @@ class AnimationController:
         def on_value_changed(value):
             if value.width() > 50:
                 self.controls.show()
+            self._update_mask()
             intermediate_h = self._calculate_intermediate_height(
                 value.width(), target_height
             )
@@ -162,6 +167,7 @@ class AnimationController:
         def on_animation_finished():
             self.controls.show()
             self.container.setFixedSize(EXPANDED_WIDTH, target_height)
+            self._update_mask()
             if on_finished:
                 on_finished()
 
