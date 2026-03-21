@@ -317,10 +317,15 @@ class SystemStatusService:
                 import wmi
 
                 c = wmi.WMI()
-                battery = c.Win32_Battery()[0]
-                charge = battery.EstimatedChargeRemaining
-                status_code = battery.BatteryStatus
-                status = status_map.get(status_code, "未知")
+                batteries = c.Win32_Battery()
+                if batteries:
+                    battery = batteries[0]
+                    charge = battery.EstimatedChargeRemaining
+                    status_code = battery.BatteryStatus
+                    status = status_map.get(status_code, "未知")
+                else:
+                    # 没有电池，可能是台式机
+                    status = "插电"
             except ImportError:
                 result = subprocess.run(
                     [
@@ -332,7 +337,6 @@ class SystemStatusService:
                     ],
                     capture_output=True,
                     text=True,
-                    check=True,
                     encoding="utf-8",
                     errors="ignore",
                     creationflags=subprocess.CREATE_NO_WINDOW,
@@ -340,14 +344,18 @@ class SystemStatusService:
                 output = result.stdout
 
                 lines = output.strip().split("\n")[1:]
-                if lines:
+                if lines and lines[0].strip():
                     parts = lines[0].strip().split()
                     if len(parts) >= 2:
                         charge = parts[0]
                         status_code = int(parts[1])
                         status = status_map.get(status_code, "未知")
+                else:
+                    # 没有电池信息，可能是台式机
+                    status = "插电"
         except Exception:
-            pass
+            # 发生异常，可能是没有电池
+            status = "插电"
 
         return str(charge) if charge else "", status
 

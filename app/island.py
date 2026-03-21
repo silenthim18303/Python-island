@@ -254,10 +254,15 @@ class ModernIsland(QWidget):
                     self.geometry().width(),
                     self._set_controls_height
                 )
+            # 隐藏时间标签
+            self.time_label.hide()
+            self.date_label.hide()
             return
 
         self.state_manager.set_state(IslandState.URL_DISPLAY)
-        self._update_time_display()
+        # 隐藏时间标签
+        self.time_label.hide()
+        self.date_label.hide()
 
         self.animation_controller.animate_url_expand(
             target_height,
@@ -275,6 +280,11 @@ class ModernIsland(QWidget):
         )
         if self.state_manager.is_expanded():
             self._collapse_from_url_page()
+        else:
+            # 恢复时间标签显示
+            self.time_display_manager.show_time_only()
+            self._update_time_display()
+            self.time_label.show()
 
     def _collapse_from_url_page(self):
         current_pos = self.pos()
@@ -285,6 +295,7 @@ class ModernIsland(QWidget):
         def on_finished():
             self.time_display_manager.show_time_only()
             self._update_time_display()
+            self.time_label.show()
 
         self.animation_controller.animate_collapse(
             self.geometry(),
@@ -330,7 +341,7 @@ class ModernIsland(QWidget):
             from app.core.config import HOVER_WIDTH, HOVER_HEIGHT
             self.time_display_manager.show_connection_message(message, icon, HOVER_WIDTH, HOVER_HEIGHT)
             self.time_label.hide()
-            self.date_label.show()
+            self.date_label.hide()
 
         self.animation_controller.animate_hover(
             self.geometry(), True, self.screen_w, on_finished
@@ -338,7 +349,7 @@ class ModernIsland(QWidget):
 
     def _update_connection_display(self, message: str, icon: str):
         self.time_label.hide()
-        self.date_label.show()
+        self.date_label.hide()
         from app.core.config import EXPANDED_WIDTH, EXPANDED_HEIGHT
         self.time_display_manager.show_connection_message(message, icon, EXPANDED_WIDTH, EXPANDED_HEIGHT)
 
@@ -362,6 +373,7 @@ class ModernIsland(QWidget):
                 self.geometry(), False, self.screen_w, on_finished
             )
         else:
+            self.time_display_manager.show_time_only()
             self.timer_manager.start_timer("time_update")
             self._update_time_display()
 

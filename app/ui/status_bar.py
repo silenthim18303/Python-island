@@ -124,10 +124,13 @@ class StatusBar(QWidget):
             charge: 电量百分比
             status: 电池状态
         """
-        if charge:
+        if charge or status == "插电":
             self.battery_icon.show()
             self.battery_label.show()
-            self.battery_label.setText(f"{charge}% ({status})" if status else f"{charge}%")
+            if status == "插电":
+                self.battery_label.setText("插电")
+            else:
+                self.battery_label.setText(f"{charge}% ({status})" if status else f"{charge}%")
         else:
             self.battery_label.setText("未知")
             self.battery_icon.hide()
