@@ -89,68 +89,88 @@ QSlider#CapsuleSlider::groove:horizontal:hover {
     font-weight: bold; /* 粗体 */
 }
 
+/* URL对话框样式 */
+/* 可修改项：background-color（背景色）、border（边框）、border-radius（圆角） */
 #UrlDialog {
-    background-color: #1C1C1E;
-    border: 1px solid #3A3A3C;
-    border-radius: 12px;
+    background-color: #1C1C1E; /* 深色背景 */
+    border: 1px solid #3A3A3C; /* 边框颜色 */
+    border-radius: 12px; /* 圆角大小 */
 }
 
+/* 对话框标题样式 */
+/* 可修改项：color（文字颜色）、font-size（字体大小）、font-weight（字重） */
 #DialogTitle {
-    color: #FFFFFF;
-    font-size: 16px;
-    font-weight: bold;
-    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    color: #FFFFFF; /* 白色文字 */
+    font-size: 16px; /* 字体大小 */
+    font-weight: bold; /* 粗体 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体 */
 }
 
+/* URL标签样式 */
+/* 可修改项：color（文字颜色）、font-size（字体大小）、padding（内边距） */
 #UrlLabel {
-    color: #8E8E93;
-    font-size: 12px;
-    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
-    padding: 5px;
-    min-height: 20px;
+    color: #8E8E93; /* 灰色文字 */
+    font-size: 12px; /* 字体大小 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体 */
+    padding: 5px; /* 内边距 */
+    min-height: 20px; /* 最小高度 */
 }
 
+/* 复选框样式 */
+/* 可修改项：color（文字颜色）、font-size（字体大小）、spacing（间距） */
 QCheckBox {
-    color: #FFFFFF;
-    font-size: 12px;
-    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
-    spacing: 8px;
+    color: #FFFFFF; /* 白色文字 */
+    font-size: 12px; /* 字体大小 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体 */
+    spacing: 8px; /* 文字与复选框的间距 */
 }
 
+/* 复选框指示器样式 */
+/* 可修改项：width（宽度）、height（高度）、border-radius（圆角）、border（边框） */
 QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 2px solid #3A3A3C;
-    background-color: transparent;
+    width: 18px; /* 宽度 */
+    height: 18px; /* 高度 */
+    border-radius: 4px; /* 圆角 */
+    border: 2px solid #3A3A3C; /* 边框颜色 */
+    background-color: transparent; /* 透明背景 */
 }
 
+/* 复选框选中状态样式 */
+/* 可修改项：background-color（背景色）、border（边框） */
 QCheckBox::indicator:checked {
-    background-color: #007AFF;
-    border: 2px solid #007AFF;
+    background-color: #007AFF; /* 选中时背景色 */
+    border: 2px solid #007AFF; /* 选中时边框颜色 */
 }
 
+/* 复选框悬停状态样式 */
+/* 可修改项：border（边框） */
 QCheckBox::indicator:hover {
-    border: 2px solid #007AFF;
+    border: 2px solid #007AFF; /* 悬停时边框颜色 */
 }
 
+/* 对话框按钮样式 */
+/* 可修改项：background-color（背景色）、color（文字颜色）、border-radius（圆角）、padding（内边距）、font-size（字体大小） */
 #DialogButton {
-    background-color: #3A3A3C;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
-    font-weight: bold;
-    min-width: 70px;
-    min-height: 18px;
+    background-color: #3A3A3C; /* 按钮背景色 */
+    color: #FFFFFF; /* 按钮文字颜色 */
+    border: none; /* 无边框 */
+    border-radius: 8px; /* 圆角 */
+    padding: 8px 16px; /* 内边距 */
+    font-size: 13px; /* 字体大小 */
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif; /* 字体 */
+    font-weight: bold; /* 粗体 */
+    min-width: 70px; /* 最小宽度 */
+    min-height: 18px; /* 最小高度 */
 }
 
+/* 对话框按钮悬停样式 */
+/* 可修改项：background-color（背景色） */
 #DialogButton:hover {
-    background-color: #48484A;
+    background-color: #48484A; /* 悬停时背景色 */
 }
 
+/* 对话框按钮按下样式 */
+/* 可修改项：background-color（背景色） */
 #DialogButton:pressed {
-    background-color: #2C2C2E;
+    background-color: #2C2C2E; /* 按下时背景色 */
 }

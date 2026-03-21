@@ -34,6 +34,11 @@ class ServiceCoordinator:
         self._previous_bluetooth_status: Optional[List] = None
         self._previous_battery_status: Optional[Tuple] = None
         self._first_status_check = True
+        
+        # 防抖机制相关
+        import time
+        self._last_status_change_time = 0
+        self._debounce_interval = 3  # 3秒防抖间隔
 
     def load_initial_brightness(self, callback: Callable[[Optional[int]], None]):
         if self._brightness_thread and self._brightness_thread.isRunning():
@@ -130,22 +135,45 @@ class ServiceCoordinator:
         )
 
         # 检测电池充电状态变化
-        current_battery_charging = battery_status in ["接通电源", "充电"]
-        prev_battery_charging = (
-            self._previous_battery_status and 
-            self._previous_battery_status in ["接通电源", "充电"]
-        )
+        # 跳过插电状态的检测，因为台式机一直是插电状态
+        if battery_status == "插电" or self._previous_battery_status == "插电":
+            current_battery_charging = False
+            prev_battery_charging = False
+        else:
+            current_battery_charging = battery_status in ["接通电源", "充电"]
+            prev_battery_charging = (
+                self._previous_battery_status and 
+                self._previous_battery_status in ["接通电源", "充电"]
+            )
 
         wifi_message = None
         bt_message = None
         battery_message = None
 
+        # 检查是否有状态变化
+        has_change = False
         if wifi_connected != prev_wifi_connected:
             wifi_message = "WiFi已连接" if wifi_connected else "WiFi已断开"
+            has_change = True
         elif bluetooth_connected != prev_bluetooth_connected:
             bt_message = "蓝牙已打开" if bluetooth_connected else "蓝牙已关闭"
+            has_change = True
         elif current_battery_charging != prev_battery_charging:
             battery_message = "已接入电源" if current_battery_charging else "已断开电源"
+            has_change = True
+
+        # 防抖处理
+        if has_change:
+            import time
+            current_time = time.time()
+            if current_time - self._last_status_change_time < self._debounce_interval:
+                # 在防抖间隔内，不发送通知
+                wifi_message = None
+                bt_message = None
+                battery_message = None
+            else:
+                # 超过防抖间隔，更新时间戳
+                self._last_status_change_time = current_time
 
         self._previous_wifi_status = current_wifi_status
         self._previous_bluetooth_status = current_bluetooth_status

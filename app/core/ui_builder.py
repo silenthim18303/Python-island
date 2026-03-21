@@ -95,6 +95,7 @@ class IslandUIBuilder:
     def _create_ctrl_page(self) -> Tuple[QWidget, StatusBar, QSlider, QLabel]:
         ctrl_page = QWidget()
         ctrl_layout = QVBoxLayout(ctrl_page)
+        #减少顶部边距
         ctrl_layout.setContentsMargins(5, 20, 5, 10)
         ctrl_layout.setSpacing(15)
 
