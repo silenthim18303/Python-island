@@ -216,6 +216,7 @@ class ModernIsland(QWidget):
         self._window_start_pos = None
         self._is_docked = False
         self._snap_preview = False
+        self._docked_before_notification = False
 
         self.bright_slider.valueChanged.connect(self._on_brightness_slider_changed)
         self._update_rounded_mask()
@@ -325,6 +326,7 @@ class ModernIsland(QWidget):
             self._show_url_notification(urls)
 
     def _show_url_notification(self, urls: list):
+        self._docked_before_notification = self._is_docked
         self._ensure_not_docked()
         if len(urls) == 1:
             self.controls.setCurrentIndex(1)
@@ -390,6 +392,8 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_time_only()
             self._update_time_display()
             self.time_label.show()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
     def _collapse_from_url_page(self):
         current_pos = self.pos()
@@ -402,6 +406,8 @@ class ModernIsland(QWidget):
             self._update_time_display()
             self.time_label.show()
             self._clamp_position()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
         self.animation_controller.animate_collapse(
             self.geometry(),
@@ -424,6 +430,7 @@ class ModernIsland(QWidget):
         self._close_url_page()
 
     def _show_connection_animation(self, message: str, icon: str = "📶"):
+        self._docked_before_notification = self._is_docked
         self._ensure_not_docked()
         self.timer_manager.stop_timer("time_update")
 
@@ -477,6 +484,8 @@ class ModernIsland(QWidget):
                 if was_timer_running:
                     self.timer_manager.start_timer("time_update")
                 self._clamp_position()
+                if self._docked_before_notification:
+                    self._snap_to_top()
 
             self.animation_controller.animate_hover(
                 self.geometry(), False, self.screen_w, on_finished
@@ -485,6 +494,8 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_time_only()
             self.timer_manager.start_timer("time_update")
             self._update_time_display()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
     def _update_rounded_mask(self):
         RoundedMaskHelper.update_mask(self)
