@@ -166,6 +166,17 @@ class ModernIsland(QWidget):
         anim.start()
         self._dock_animation = anim
 
+    def _ensure_not_docked(self):
+        """解除吸附状态（瞬移到正常位置），任何状态切换前调用。"""
+        if not self._is_docked:
+            return
+        self._is_docked = False
+        current = self.geometry()
+        screen_geo = self._get_current_screen().geometry()
+        target_x = screen_geo.left() + (screen_geo.width() - current.width()) // 2
+        target_y = screen_geo.top() + 20
+        self.setGeometry(QRect(target_x, target_y, current.width(), current.height()))
+
     def _init_ui(self):
         ui_builder = IslandUIBuilder(self)
         (
@@ -314,6 +325,7 @@ class ModernIsland(QWidget):
             self._show_url_notification(urls)
 
     def _show_url_notification(self, urls: list):
+        self._ensure_not_docked()
         if len(urls) == 1:
             self.controls.setCurrentIndex(1)
             url_single_page = self.controls.widget(1)
@@ -412,6 +424,7 @@ class ModernIsland(QWidget):
         self._close_url_page()
 
     def _show_connection_animation(self, message: str, icon: str = "📶"):
+        self._ensure_not_docked()
         self.timer_manager.stop_timer("time_update")
 
         if not self.state_manager.is_expanded():
@@ -589,6 +602,7 @@ class ModernIsland(QWidget):
         )
 
     def toggle_island(self):
+        self._ensure_not_docked()
         current_pos = self.pos()
 
         if not self.state_manager.is_expanded():
