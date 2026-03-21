@@ -73,10 +73,32 @@ class ModernIsland(QWidget):
             (self.screen_w - COLLAPSED_WIDTH) // 2, 20,
             COLLAPSED_WIDTH, COLLAPSED_HEIGHT
         )
-        self.setGeometry(self.col_rect)
+        self.setGeometry(self._clamp_rect_to_screen(self.col_rect))
 
         self.setMouseTracking(True)
         QApplication.instance().focusChanged.connect(self._on_focus_changed)
+
+    def _get_current_screen(self):
+        """获取灵动岛当前所在的屏幕（支持多屏幕）。"""
+        center = self.geometry().center()
+        screen = QApplication.screenAt(center)
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        return screen
+
+    def _clamp_rect_to_screen(self, rect: QRect) -> QRect:
+        """将矩形限制在当前屏幕边界内，防止超出屏幕。"""
+        screen_geo = self._get_current_screen().geometry()
+        x = max(screen_geo.left(), min(rect.left(), screen_geo.right() - rect.width()))
+        y = max(screen_geo.top(), min(rect.top(), screen_geo.bottom() - rect.height()))
+        return QRect(x, y, rect.width(), rect.height())
+
+    def _clamp_position(self):
+        """将当前窗口位置限制在屏幕边界内。"""
+        current = self.geometry()
+        clamped = self._clamp_rect_to_screen(current)
+        if clamped.topLeft() != current.topLeft():
+            self.move(clamped.topLeft())
 
     def _init_ui(self):
         ui_builder = IslandUIBuilder(self)
@@ -112,6 +134,9 @@ class ModernIsland(QWidget):
             self.toggle_island,
             self.state_manager.is_expanded
         )
+        self._is_dragging = False
+        self._drag_start_pos = None
+        self._window_start_pos = None
 
         self.bright_slider.valueChanged.connect(self._on_brightness_slider_changed)
         self._update_rounded_mask()
@@ -296,6 +321,7 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_time_only()
             self._update_time_display()
             self.time_label.show()
+            self._clamp_position()
 
         self.animation_controller.animate_collapse(
             self.geometry(),
@@ -342,6 +368,7 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_connection_message(message, icon, HOVER_WIDTH, HOVER_HEIGHT)
             self.time_label.hide()
             self.date_label.hide()
+            self._clamp_position()
 
         self.animation_controller.animate_hover(
             self.geometry(), True, self.screen_w, on_finished
@@ -368,7 +395,8 @@ class ModernIsland(QWidget):
                 self.date_label.hide()
                 if was_timer_running:
                     self.timer_manager.start_timer("time_update")
-            
+                self._clamp_position()
+
             self.animation_controller.animate_hover(
                 self.geometry(), False, self.screen_w, on_finished
             )
@@ -381,15 +409,40 @@ class ModernIsland(QWidget):
         RoundedMaskHelper.update_mask(self)
 
     def mousePressEvent(self, event):
-        self.event_handler.handle_mouse_press(
-            event, self.frameGeometry().topLeft
-        )
+        if event.button() == Qt.LeftButton:
+            self._is_dragging = True
+            self._drag_start_pos = event.globalPos()
+            self._window_start_pos = self.frameGeometry().topLeft()
+        else:
+            self.event_handler.handle_mouse_press(
+                event, self.frameGeometry().topLeft
+            )
 
     def mouseMoveEvent(self, event):
-        self.event_handler.handle_mouse_move(event, self.move)
+        if self._is_dragging:
+            delta = event.globalPos() - self._drag_start_pos
+            raw_pos = self._window_start_pos + delta
+            clamped_rect = self._clamp_rect_to_screen(
+                QRect(raw_pos.x(), raw_pos.y(), self.width(), self.height())
+            )
+            self.move(clamped_rect.topLeft())
+        else:
+            self.event_handler.handle_mouse_move(event, self.move)
 
     def mouseReleaseEvent(self, event):
-        self.event_handler.handle_mouse_release(event, self.rect)
+        if event.button() == Qt.LeftButton:
+            should_toggle = (
+                self._is_dragging and
+                self._drag_start_pos is not None and
+                (event.globalPos() - self._drag_start_pos).manhattanLength() < 5
+            )
+            self._is_dragging = False
+            self._drag_start_pos = None
+            self._window_start_pos = None
+            if should_toggle:
+                self.toggle_island()
+        else:
+            self.event_handler.handle_mouse_release(event, self.rect)
 
     def enterEvent(self, event):
         super().enterEvent(event)
@@ -428,6 +481,7 @@ class ModernIsland(QWidget):
             self.time_label.show()
             if was_timer_running:
                 self.timer_manager.start_timer("time_update")
+            self._clamp_position()
 
         self.animation_controller.animate_hover(
             self.geometry(), is_enter, self.screen_w, on_finished
@@ -453,6 +507,7 @@ class ModernIsland(QWidget):
         def on_finished():
             self.time_display_manager.show_date_only()
             self._update_time_display()
+            self._clamp_position()
 
         self.animation_controller.animate_expand(
             self.geometry(),
@@ -468,6 +523,7 @@ class ModernIsland(QWidget):
         def on_finished():
             self.time_display_manager.show_time_only()
             self._update_time_display()
+            self._clamp_position()
 
         self.animation_controller.animate_collapse(
             self.geometry(),

@@ -4,8 +4,9 @@
 """
 
 from typing import Callable, Optional
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QRect
 from PySide6.QtGui import QCursor
+from PySide6.QtWidgets import QApplication
 
 
 class EventHandler:
