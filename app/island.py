@@ -15,14 +15,17 @@ from app.core.config import (
     COLLAPSED_WIDTH,
     CONNECTION_AUTO_CLOSE_DELAY,
     DEBOUNCE_DELAY,
+    DOCK_ANIMATION_DURATION,
     DRAG_IDLE_RETURN_DELAY,
     EXPANDED_HEIGHT,
     EXPANDED_WIDTH,
     MAX_EXPAND_HEIGHT_RATIO,
+    SNAP_THRESHOLD,
     STATUS_UPDATE_INTERVAL,
     STYLES_PATH,
     TIME_UPDATE_INTERVAL,
     URL_AUTO_CLOSE_DELAY,
+    VISIBLE_TOP_BORDER,
 )
 from app.core.event_handler import EventHandler
 from app.core.service_coordinator import ServiceCoordinator
@@ -106,24 +109,73 @@ class ModernIsland(QWidget):
         if getattr(self, "_drag_idle_timer", None) and self._drag_idle_timer.isActive():
             self._drag_idle_timer.stop()
 
-    def _return_to_top(self):
-        """拖拽结束后，经过延迟时间将灵动岛平滑移回屏幕顶部。"""
+    def _snap_to_top(self):
+        """拖拽释放时吸附到屏幕顶部，只露出 VISIBLE_TOP_BORDER 像素的黑边。"""
         if self._is_dragging:
+            return
+        self._is_docked = True
+        self._snap_preview = False
+        current = self.geometry()
+        screen_geo = self._get_current_screen().geometry()
+        dock_y = screen_geo.top() - current.height() + VISIBLE_TOP_BORDER
+        target_x = (screen_geo.width() - current.width()) // 2 + screen_geo.left()
+        end_rect = QRect(target_x, dock_y, current.width(), current.height())
+
+        anim = QPropertyAnimation(self, b"geometry")
+        anim.setDuration(DOCK_ANIMATION_DURATION)
+        anim.setStartValue(current)
+        anim.setEndValue(end_rect)
+        anim.setEasingCurve(QEasingCurve.InOutCubic)
+        anim.start()
+        self._dock_animation = anim
+
+    def _return_to_top(self):
+        """拖拽结束后恢复屏幕上方的固定位置。"""
+        if self._is_dragging or self._is_docked:
             return
         current_rect = self.geometry()
         screen_geo = self._get_current_screen().geometry()
         target_x = screen_geo.left() + (screen_geo.width() - current_rect.width()) // 2
         target_y = screen_geo.top() + 20
-        end_rect = QRect(target_x, target_y, current_rect.width(), current_rect.height())
+        target_rect = QRect(target_x, target_y, current_rect.width(), current_rect.height())
 
         anim = QPropertyAnimation(self, b"geometry")
-        anim.setDuration(400)
+        anim.setDuration(DOCK_ANIMATION_DURATION)
         anim.setStartValue(current_rect)
-        anim.setEndValue(end_rect)
+        anim.setEndValue(target_rect)
         anim.setEasingCurve(QEasingCurve.InOutCubic)
-        anim.finished.connect(self._clamp_position)
         anim.start()
         self._return_animation = anim
+
+    def _return_to_default(self):
+        """从吸附状态恢复屏幕上方的固定位置。"""
+        if not self._is_docked:
+            return
+        self._is_docked = False
+        current = self.geometry()
+        screen_geo = self._get_current_screen().geometry()
+        target_x = screen_geo.left() + (screen_geo.width() - current.width()) // 2
+        target_y = screen_geo.top() + 20
+        target_rect = QRect(target_x, target_y, current.width(), current.height())
+
+        anim = QPropertyAnimation(self, b"geometry")
+        anim.setDuration(DOCK_ANIMATION_DURATION)
+        anim.setStartValue(current)
+        anim.setEndValue(target_rect)
+        anim.setEasingCurve(QEasingCurve.InOutCubic)
+        anim.start()
+        self._dock_animation = anim
+
+    def _ensure_not_docked(self):
+        """解除吸附状态（瞬移到正常位置），任何状态切换前调用。"""
+        if not self._is_docked:
+            return
+        self._is_docked = False
+        current = self.geometry()
+        screen_geo = self._get_current_screen().geometry()
+        target_x = screen_geo.left() + (screen_geo.width() - current.width()) // 2
+        target_y = screen_geo.top() + 20
+        self.setGeometry(QRect(target_x, target_y, current.width(), current.height()))
 
     def _init_ui(self):
         ui_builder = IslandUIBuilder(self)
@@ -162,6 +214,9 @@ class ModernIsland(QWidget):
         self._is_dragging = False
         self._drag_start_pos = None
         self._window_start_pos = None
+        self._is_docked = False
+        self._snap_preview = False
+        self._docked_before_notification = False
 
         self.bright_slider.valueChanged.connect(self._on_brightness_slider_changed)
         self._update_rounded_mask()
@@ -271,6 +326,8 @@ class ModernIsland(QWidget):
             self._show_url_notification(urls)
 
     def _show_url_notification(self, urls: list):
+        self._docked_before_notification = self._is_docked
+        self._ensure_not_docked()
         if len(urls) == 1:
             self.controls.setCurrentIndex(1)
             url_single_page = self.controls.widget(1)
@@ -335,6 +392,8 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_time_only()
             self._update_time_display()
             self.time_label.show()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
     def _collapse_from_url_page(self):
         current_pos = self.pos()
@@ -347,6 +406,8 @@ class ModernIsland(QWidget):
             self._update_time_display()
             self.time_label.show()
             self._clamp_position()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
         self.animation_controller.animate_collapse(
             self.geometry(),
@@ -369,6 +430,8 @@ class ModernIsland(QWidget):
         self._close_url_page()
 
     def _show_connection_animation(self, message: str, icon: str = "📶"):
+        self._docked_before_notification = self._is_docked
+        self._ensure_not_docked()
         self.timer_manager.stop_timer("time_update")
 
         if not self.state_manager.is_expanded():
@@ -421,6 +484,8 @@ class ModernIsland(QWidget):
                 if was_timer_running:
                     self.timer_manager.start_timer("time_update")
                 self._clamp_position()
+                if self._docked_before_notification:
+                    self._snap_to_top()
 
             self.animation_controller.animate_hover(
                 self.geometry(), False, self.screen_w, on_finished
@@ -429,6 +494,8 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_time_only()
             self.timer_manager.start_timer("time_update")
             self._update_time_display()
+            if self._docked_before_notification:
+                self._snap_to_top()
 
     def _update_rounded_mask(self):
         RoundedMaskHelper.update_mask(self)
@@ -436,6 +503,8 @@ class ModernIsland(QWidget):
     def mousePressEvent(self, event):
         self._start_drag_idle_timer()
         if event.button() == Qt.LeftButton:
+            if self._is_docked:
+                self._is_docked = False
             self._is_dragging = True
             self._drag_start_pos = event.globalPos()
             self._window_start_pos = self.frameGeometry().topLeft()
@@ -452,6 +521,12 @@ class ModernIsland(QWidget):
                 QRect(raw_pos.x(), raw_pos.y(), self.width(), self.height())
             )
             self.move(clamped_rect.topLeft())
+            # 拖拽到屏幕顶部附近时显示吸附预览
+            screen_geo = self._get_current_screen().geometry()
+            near_top = clamped_rect.top() - screen_geo.top() < SNAP_THRESHOLD
+            if near_top != self._snap_preview:
+                self._snap_preview = near_top
+                self._update_rounded_mask()
         else:
             self.event_handler.handle_mouse_move(event, self.move)
 
@@ -462,11 +537,15 @@ class ModernIsland(QWidget):
                 self._drag_start_pos is not None and
                 (event.globalPos() - self._drag_start_pos).manhattanLength() < 5
             )
+            was_snapping = self._snap_preview
             self._is_dragging = False
             self._drag_start_pos = None
             self._window_start_pos = None
+            self._snap_preview = False
             if should_toggle:
                 self.toggle_island()
+            elif was_snapping:
+                self._snap_to_top()
             else:
                 self._start_return_to_top_timer()
         else:
@@ -482,6 +561,9 @@ class ModernIsland(QWidget):
 
     def enterEvent(self, event):
         super().enterEvent(event)
+        if self._is_docked:
+            self._return_to_default()
+            return
         self.event_handler.handle_enter_event(
             self.state_manager.is_collapsed(),
             self._start_hover_animation
@@ -495,6 +577,8 @@ class ModernIsland(QWidget):
         )
 
     def _start_hover_animation(self, is_enter: bool):
+        if self._is_docked:
+            return
         if is_enter:
             if not self.state_manager.is_collapsed():
                 return
@@ -529,6 +613,7 @@ class ModernIsland(QWidget):
         )
 
     def toggle_island(self):
+        self._ensure_not_docked()
         current_pos = self.pos()
 
         if not self.state_manager.is_expanded():

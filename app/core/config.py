@@ -68,3 +68,8 @@ MULTI_URL_BTN_TOP_SPACING = 35
 # 圆角半径配置
 CORNER_RADIUS_MIN = 10
 CORNER_RADIUS_MAX = 20
+
+# 顶部吸附配置
+SNAP_THRESHOLD = 40        # 距离屏幕顶部多少像素内触发吸附
+VISIBLE_TOP_BORDER = 5     # 吸附后露出的顶部黑色边框高度（像素）
+DOCK_ANIMATION_DURATION = 300
