@@ -15,16 +15,19 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_island_index_setting_general_ui(object):
     def setupUi(self, island_index_setting_general_ui):
         if not island_index_setting_general_ui.objectName():
             island_index_setting_general_ui.setObjectName(u"island_index_setting_general_ui")
         island_index_setting_general_ui.resize(450, 300)
-        self.startup_checkbox = QCheckBox(island_index_setting_general_ui)
-        self.startup_checkbox.setObjectName(u"startup_checkbox")
-        self.startup_checkbox.setGeometry(QRect(20, 20, 151, 20))
+        self.verticalLayoutWidget = QWidget(island_index_setting_general_ui)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(0, 0, 421, 300))
+        self.vl_index_setting_general_main = QVBoxLayout(self.verticalLayoutWidget)
+        self.vl_index_setting_general_main.setObjectName(u"vl_index_setting_general_main")
+        self.vl_index_setting_general_main.setContentsMargins(0, 0, 0, 0)
 
         self.retranslateUi(island_index_setting_general_ui)
 
@@ -33,5 +36,5 @@ class Ui_island_index_setting_general_ui(object):
 
     def retranslateUi(self, island_index_setting_general_ui):
         island_index_setting_general_ui.setWindowTitle(QCoreApplication.translate("island_index_setting_general_ui", u"island_index_setting_general_ui", None))
-        self.startup_checkbox.setText(QCoreApplication.translate("island_index_setting_general_ui", u"开机自启", None))
     # retranslateUi
+

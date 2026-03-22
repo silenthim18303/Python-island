@@ -2,6 +2,8 @@
 
 from PySide6.QtWidgets import QWidget
 
+from qfluentwidgets import FluentIcon, SwitchSettingCard
+
 from app.services.startup import StartupService
 from app.ui.interfaces.index_setting.index_setting_general.island_index_setting_general_ui import (
     Ui_island_index_setting_general_ui,
@@ -20,32 +22,23 @@ class SettingGeneralDriver(QWidget, Ui_island_index_setting_general_ui):
 
     def _init_ui(self):
         self.setFixedSize(450, 300)
-        # 设置背景色和文本颜色
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f0f0f0;
-                color: #333333;
-            }
-            QCheckBox {
-                color: #333333;
-            }
-        """)
-        # 初始化开机自启选项状态
-        self.startup_checkbox.setChecked(self._startup_service.is_startup_enabled())
+        self.startup_card = SwitchSettingCard(
+            icon=FluentIcon.POWER_BUTTON,
+            title="开机自启",
+            content="开机时自动启动 Pyisland",
+        )
+        self.startup_card.switchButton.setChecked(
+            self._startup_service.is_startup_enabled()
+        )
+        self.vl_index_setting_general_main.addWidget(self.startup_card)
 
     def _init_slots(self):
-        # 连接开机自启选项的信号
-        self.startup_checkbox.stateChanged.connect(self._on_startup_changed)
+        self.startup_card.checkedChanged.connect(self._on_startup_changed)
 
-    def _on_startup_changed(self, state):
-        """处理开机自启选项变化。
-
-        Args:
-            state: 复选框状态
-        """
-        if state == 2:  # 选中
+    def _on_startup_changed(self, is_checked: bool):
+        if is_checked:
             self._startup_service.enable_startup()
-        else:  # 未选中
+        else:
             self._startup_service.disable_startup()
 
 
