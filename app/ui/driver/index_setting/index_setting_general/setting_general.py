@@ -1,9 +1,8 @@
 """通用设置界面模块"""
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QWidget
 
-from qfluentwidgets import FluentIcon, SingleDirectionScrollArea, SwitchSettingCard
+from qfluentwidgets import FluentIcon, SwitchSettingCard
 
 from app.services.startup import StartupService
 from app.ui.interfaces.index_setting.index_setting_general.island_index_setting_general_ui import (
@@ -22,18 +21,7 @@ class SettingGeneralDriver(QWidget, Ui_island_index_setting_general_ui):
         self._init_slots()
 
     def _init_ui(self):
-        self.setFixedSize(450, 300)
-
-        scroll_area = SingleDirectionScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.enableTransparentBackground()
-
-        container = QWidget()
-        container_layout = QVBoxLayout(container)
-        container_layout.setContentsMargins(24, 16, 24, 16)
-        container_layout.setSpacing(8)
-        container_layout.setAlignment(Qt.AlignTop)
+        self.sa_index_setting_general.enableTransparentBackground()
 
         self.startup_card = SwitchSettingCard(
             icon=FluentIcon.POWER_BUTTON,
@@ -44,10 +32,7 @@ class SettingGeneralDriver(QWidget, Ui_island_index_setting_general_ui):
             self._startup_service.is_startup_enabled()
         )
 
-        container_layout.addWidget(self.startup_card)
-        scroll_area.setWidget(container)
-
-        self.vl_index_setting_general_main.addWidget(scroll_area)
+        self.vl_index_setting_general_main.addWidget(self.startup_card)
 
     def _init_slots(self):
         self.startup_card.checkedChanged.connect(self._on_startup_changed)

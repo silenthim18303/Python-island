@@ -13,18 +13,42 @@
   <property name="windowTitle">
    <string>island_index_setting_general_ui</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
+  <widget class="SingleDirectionScrollArea" name="sa_index_setting_general">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>421</width>
+     <width>431</width>
      <height>300</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="vl_index_setting_general_main"/>
+   <property name="horizontalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>429</width>
+      <height>298</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="vl_index_setting_general_main"/>
+   </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SingleDirectionScrollArea</class>
+   <extends>QScrollArea</extends>
+   <header>qfluentwidgets</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

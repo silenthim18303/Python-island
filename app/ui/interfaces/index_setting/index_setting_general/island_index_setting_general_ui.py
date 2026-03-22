@@ -17,17 +17,24 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QSizePolicy, QVBoxLayout, QWidget)
 
+from qfluentwidgets import SingleDirectionScrollArea
+
 class Ui_island_index_setting_general_ui(object):
     def setupUi(self, island_index_setting_general_ui):
         if not island_index_setting_general_ui.objectName():
             island_index_setting_general_ui.setObjectName(u"island_index_setting_general_ui")
         island_index_setting_general_ui.resize(450, 300)
-        self.verticalLayoutWidget = QWidget(island_index_setting_general_ui)
-        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(0, 0, 421, 300))
-        self.vl_index_setting_general_main = QVBoxLayout(self.verticalLayoutWidget)
+        self.sa_index_setting_general = SingleDirectionScrollArea(island_index_setting_general_ui)
+        self.sa_index_setting_general.setObjectName(u"sa_index_setting_general")
+        self.sa_index_setting_general.setGeometry(QRect(0, 0, 431, 300))
+        self.sa_index_setting_general.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sa_index_setting_general.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 429, 298))
+        self.vl_index_setting_general_main = QVBoxLayout(self.scrollAreaWidgetContents)
         self.vl_index_setting_general_main.setObjectName(u"vl_index_setting_general_main")
-        self.vl_index_setting_general_main.setContentsMargins(0, 0, 0, 0)
+        self.sa_index_setting_general.setWidget(self.scrollAreaWidgetContents)
 
         self.retranslateUi(island_index_setting_general_ui)
 
