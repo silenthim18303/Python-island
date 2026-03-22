@@ -34,6 +34,9 @@ class Ui_island_index_setting_general_ui(object):
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 429, 298))
         self.vl_index_setting_general_main = QVBoxLayout(self.scrollAreaWidgetContents)
         self.vl_index_setting_general_main.setObjectName(u"vl_index_setting_general_main")
+        self.vl_index_setting_general_main.setContentsMargins(24, 16, 24, 16)
+        self.vl_index_setting_general_main.setSpacing(8)
+        self.vl_index_setting_general_main.setAlignment(Qt.AlignTop)
         self.sa_index_setting_general.setWidget(self.scrollAreaWidgetContents)
 
         self.retranslateUi(island_index_setting_general_ui)

@@ -33,7 +33,7 @@ class SettingGeneralDriver(QWidget, Ui_island_index_setting_general_ui):
         )
 
         self.vl_index_setting_general_main.addWidget(self.startup_card)
-
+        
     def _init_slots(self):
         self.startup_card.checkedChanged.connect(self._on_startup_changed)
 
