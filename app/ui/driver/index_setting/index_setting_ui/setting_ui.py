@@ -1,13 +1,13 @@
 """图形设置界面模块"""
 
-from PySide6.QtWidgets import QWidget
+from qfluentwidgets import ScrollArea, SettingCardGroup
 
 from app.ui.interfaces.index_setting.index_setting_ui.island_index_setting_ui_ui import (
     Ui_island_index_setting_ui_ui,
 )
 
 
-class SettingUiDriver(QWidget, Ui_island_index_setting_ui_ui):
+class SettingUiDriver(ScrollArea, Ui_island_index_setting_ui_ui):
     """图形设置界面驱动类。"""
 
     def __init__(self):
@@ -16,17 +16,12 @@ class SettingUiDriver(QWidget, Ui_island_index_setting_ui_ui):
         self._init_ui()
 
     def _init_ui(self):
-        self.setFixedSize(450, 300)
-        # 设置背景色和文本颜色
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f0f0f0;
-                color: #333333;
-            }
-        """)
-
-    def _init_slots(self):
-        pass
+        self.scg_index_setting_ui_main = SettingCardGroup(
+            title="图形",
+        )
+        self.setWidget(self.scg_index_setting_ui_main)
+        self.setWidgetResizable(True)
+        self.enableTransparentBackground()
 
 
 # 兼容旧代码
