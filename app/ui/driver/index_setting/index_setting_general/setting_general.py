@@ -1,6 +1,6 @@
 """通用设置界面模块"""
 
-from qfluentwidgets import FluentIcon, ScrollArea, SettingCardGroup, SwitchSettingCard
+from qfluentwidgets import FluentIcon, ScrollArea, SettingCardGroup, SwitchSettingCard, isDarkTheme, setTheme, Theme
 
 from app.services.startup import StartupService
 from app.ui.interfaces.index_setting.index_setting_general.island_index_setting_general_ui import (
@@ -26,11 +26,25 @@ class SettingGeneralDriver(ScrollArea, Ui_island_index_setting_general_ui):
         self.startup_card.switchButton.setChecked(
             self._startup_service.is_startup_enabled()
         )
+        
+        self.color_theme_card = SwitchSettingCard(
+            icon=FluentIcon.CONSTRACT,
+            title="深色模式",
+            content="GUI 样式使用深色策略",
+        )
+        self.startup_card.switchButton.setChecked(
+            self._startup_service.is_startup_enabled()
+        )
+        self.color_theme_card.switchButton.setChecked(
+            isDarkTheme()
+        )
         self.scg_index_setting_general_main = SettingCardGroup(
             title="通用",
         )
         self.scg_index_setting_general_main.addSettingCard(self.startup_card)
+        self.scg_index_setting_general_main.addSettingCard(self.color_theme_card)
         self.startup_card.checkedChanged.connect(self._on_startup_changed)
+        self.color_theme_card.checkedChanged.connect(lambda : setTheme(Theme.DARK if self.color_theme_card.isChecked() else Theme.LIGHT))
         self.setWidget(self.scg_index_setting_general_main)
         self.setWidgetResizable(True)
         self.enableTransparentBackground()
