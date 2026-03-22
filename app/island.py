@@ -599,8 +599,8 @@ class ModernIsland(QWidget):
             else:
                 self._update_time_display()
             self.time_label.show()
-            if was_timer_running:
-                self.timer_manager.start_timer("time_update")
+            # 确保定时器总是运行，无论之前是否活跃
+            self.timer_manager.start_timer("time_update")
             self._clamp_position()
 
         self.animation_controller.animate_hover(
