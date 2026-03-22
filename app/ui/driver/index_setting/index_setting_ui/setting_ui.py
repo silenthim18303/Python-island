@@ -17,6 +17,13 @@ class SettingUiDriver(QWidget, Ui_island_index_setting_ui_ui):
 
     def _init_ui(self):
         self.setFixedSize(450, 300)
+        # 设置背景色和文本颜色
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f0f0f0;
+                color: #333333;
+            }
+        """)
 
     def _init_slots(self):
         pass
