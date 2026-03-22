@@ -4,11 +4,13 @@
 - clipboard: 剪贴板监听服务
 - system_status: 系统状态监控服务
 - brightness: 亮度控制服务
+- startup: 开机自启服务
 """
 
 from app.services.clipboard import ClipboardService
 from app.services.system_status import SystemStatusService
 from app.services.brightness import BrightnessService
 from app.services.tray import TrayService
+from app.services.startup import StartupService
 
-__all__ = ['ClipboardService', 'SystemStatusService', 'BrightnessService', 'TrayService']
+__all__ = ['ClipboardService', 'SystemStatusService', 'BrightnessService', 'TrayService', 'StartupService']
