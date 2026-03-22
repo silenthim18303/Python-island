@@ -3,7 +3,8 @@
 提供应用设置界面，包括各种配置选项。
 """
 
-from qfluentwidgets import FluentIcon, MSFluentWindow
+from PySide6.QtGui import QColor
+from qfluentwidgets import FluentIcon, MSFluentWindow, Theme, setTheme
 
 from app.ui.driver.index_setting.index_setting_general.setting_general import (
     setting_general_driver,
@@ -29,25 +30,13 @@ class SettingDriver(MSFluentWindow, Ui_island_index_setting_ui):
         self.setupUi(self)
 
         self.setWindowTitle("Pyisland 设置")
-
         self._init_ui()
         self._init_navigations()
-        self.resize(500, 300)
         self.activateWindow()
 
     def _init_ui(self):
-        self.setFixedSize(500, 300)
         self.setMicaEffectEnabled(True)
-        # 设置背景色和文本颜色
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f0f0f0;
-                color: #333333;
-            }
-            QCheckBox {
-                color: #333333;
-            }
-        """)
+        setTheme(Theme.AUTO)
 
     def _init_navigations(self):
         self.island_index_setting_general_interface = setting_general_driver()
@@ -55,14 +44,14 @@ class SettingDriver(MSFluentWindow, Ui_island_index_setting_ui):
             self.island_index_setting_general_interface,
             FluentIcon.APPLICATION,
             "通用",
-            isTransparent=True,
+            isTransparent = True
         )
         self.island_index_setting_ui_interface = setting_ui_driver()
         self.addSubInterface(
             self.island_index_setting_ui_interface,
             FluentIcon.SETTING,
             "图形",
-            isTransparent=True,
+            isTransparent = True
         )
 
 

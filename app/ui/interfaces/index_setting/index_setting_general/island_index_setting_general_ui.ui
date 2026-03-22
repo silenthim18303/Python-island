@@ -13,19 +13,6 @@
   <property name="windowTitle">
    <string>island_index_setting_general_ui</string>
   </property>
-  <widget class="QCheckBox" name="startup_checkbox">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>151</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>开机自启</string>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>

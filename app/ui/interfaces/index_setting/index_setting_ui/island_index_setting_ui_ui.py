@@ -17,6 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QSizePolicy, QWidget)
 
+
 class Ui_island_index_setting_ui_ui(object):
     def setupUi(self, island_index_setting_ui_ui):
         if not island_index_setting_ui_ui.objectName():
