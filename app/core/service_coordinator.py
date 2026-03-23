@@ -72,6 +72,25 @@ class ServiceCoordinator:
         self._status_thread.error_signal.connect(error_callback)
         self._status_thread.start()
 
+    def update_performance_status(
+        self,
+        success_callback: Callable[[Tuple], None],
+        error_callback: Callable[[str], None]
+    ):
+        """更新CPU和内存使用率信息。"""
+        if self._status_thread and self._status_thread.isRunning():
+            return
+
+        def get_performance():
+            cpu_usage = SystemStatusService.get_cpu_usage()
+            memory_usage = SystemStatusService.get_memory_usage()
+            return (cpu_usage, memory_usage)
+
+        self._status_thread = WorkerThread(get_performance)
+        self._status_thread.finished_signal.connect(success_callback)
+        self._status_thread.error_signal.connect(error_callback)
+        self._status_thread.start()
+
     def check_clipboard(self) -> Tuple[bool, List[str]]:
         return self.clipboard_service.check_for_new_urls()
 

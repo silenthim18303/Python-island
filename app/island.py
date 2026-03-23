@@ -257,11 +257,13 @@ class ModernIsland(QWidget):
         )
 
     def _on_state_collapsed(self, data):
+        if hasattr(self, "_performance_timer") and self._performance_timer.isActive():
+            self._performance_timer.stop()
         self.time_display_manager.show_time_only()
         self.controls.hide()
 
     def _on_state_hovering(self, data):
-        self.time_display_manager.update_for_hover()
+        self._update_hover_performance()
 
     def _on_state_expanded(self, data):
         self.time_display_manager.show_date_only()
@@ -589,16 +591,23 @@ class ModernIsland(QWidget):
             self.state_manager.set_state(IslandState.COLLAPSED)
 
         self.time_label.hide()
+
         was_timer_running = self.timer_manager.is_timer_active("time_update")
         if was_timer_running:
             self.timer_manager.stop_timer("time_update")
 
         def on_finished():
             if is_enter:
-                self.time_display_manager.update_for_hover()
+                # 动画完成后立即显示占位符
+                self.time_display_manager.update_for_hover(None, None)
+                # 再获取性能数据
+                self._update_hover_performance()
             else:
+                if hasattr(self, "_performance_timer") and self._performance_timer.isActive():
+                    self._performance_timer.stop()
+                self.time_display_manager.show_time_only()
                 self._update_time_display()
-            self.time_label.show()
+                self.time_label.show()
             # 确保定时器总是运行，无论之前是否活跃
             self.timer_manager.start_timer("time_update")
             self._clamp_position()
@@ -606,6 +615,36 @@ class ModernIsland(QWidget):
         self.animation_controller.animate_hover(
             self.geometry(), is_enter, self.screen_w, on_finished
         )
+
+    def _update_hover_performance(self):
+        """更新悬停态的CPU和内存使用率显示。"""
+        def on_performance_updated(result):
+            cpu_usage, memory_usage = result
+            self.time_display_manager.update_for_hover(cpu_usage, memory_usage)
+            self._start_performance_update_timer()
+
+        def on_error(error):
+            self._start_performance_update_timer()
+
+        self.service_coordinator.update_performance_status(
+            on_performance_updated,
+            on_error
+        )
+
+    def _start_performance_update_timer(self):
+        """启动性能更新定时器（仅在悬停态时生效）。"""
+        if not hasattr(self, "_performance_timer"):
+            self._performance_timer = QTimer(self)
+            self._performance_timer.setSingleShot(True)
+            self._performance_timer.timeout.connect(self._on_performance_timer)
+
+        if self.state_manager.is_hovering() and not self._performance_timer.isActive():
+            self._performance_timer.start(2000)  # 每2秒更新一次
+
+    def _on_performance_timer(self):
+        """性能更新定时器回调。"""
+        if self.state_manager.is_hovering():
+            self._update_hover_performance()
 
     def _on_focus_changed(self, old_widget, new_widget):
         self.event_handler.handle_focus_change(

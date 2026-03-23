@@ -174,3 +174,40 @@ QCheckBox::indicator:hover {
 #DialogButton:pressed {
     background-color: #2C2C2E; /* 按下时背景色 */
 }
+
+/* 悬停态信息标签容器样式 */
+#HoverInfoLabel {
+    background-color: transparent;
+}
+
+/* 悬停态时间标签样式 */
+#HoverTimeLabel {
+    color: #FFFFFF;
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* 悬停态CPU标签样式 */
+#HoverCpuLabel {
+    color: #8E8E93;
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* 悬停态内存标签样式 */
+#HoverMemoryLabel {
+    color: #8E8E93;
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* 连接信息标签样式 */
+#ConnectionLabel {
+    color: #FFFFFF;
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+}
