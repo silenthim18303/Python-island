@@ -13,9 +13,11 @@
 import sys
 
 from PySide6.QtCore import QSize
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from app.config._bqa import init_qa
+from app.core.config import get_resource_path
 from app.island import ModernIsland
 from app.services.tray import TrayService
 from app.ui.driver.index_setting.settings import setting_driver
@@ -29,6 +31,7 @@ def main():
     app = QApplication(sys.argv)
 
     app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(QIcon(get_resource_path("resources/icons/favicon.ico")))
     # app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     island = ModernIsland()
