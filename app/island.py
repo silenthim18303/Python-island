@@ -590,10 +590,7 @@ class ModernIsland(QWidget):
                 return
             self.state_manager.set_state(IslandState.COLLAPSED)
 
-        # 立即隐藏时间标签，显示性能信息
         self.time_label.hide()
-        if is_enter:
-            self.time_display_manager.update_for_hover(None, None)
 
         was_timer_running = self.timer_manager.is_timer_active("time_update")
         if was_timer_running:
@@ -601,14 +598,15 @@ class ModernIsland(QWidget):
 
         def on_finished():
             if is_enter:
+                # 动画完成后立即显示占位符
+                self.time_display_manager.update_for_hover(None, None)
+                # 再获取性能数据
                 self._update_hover_performance()
             else:
                 if hasattr(self, "_performance_timer") and self._performance_timer.isActive():
                     self._performance_timer.stop()
                 self.time_display_manager.show_time_only()
                 self._update_time_display()
-            # 退出悬停态时才显示时间标签
-            if not is_enter:
                 self.time_label.show()
             # 确保定时器总是运行，无论之前是否活跃
             self.timer_manager.start_timer("time_update")

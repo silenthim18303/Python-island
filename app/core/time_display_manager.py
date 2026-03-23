@@ -119,6 +119,7 @@ class TimeDisplayManager:
         full_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         # 进入悬停态时，如果还没有数据，立即显示性能信息标签（带占位符）
+        # 用 is None 来检查是否传入了参数，因为 0.0 是有效的 CPU 使用率
         if cpu_usage is None and memory_usage is None:
             self._show_hover_info_loading(full_time)
         else:
@@ -128,8 +129,8 @@ class TimeDisplayManager:
         """显示悬停信息标签（带占位符）。"""
         self.time_label.hide()
 
-        parent = self.time_label.parent()
         from app.core.config import HOVER_WIDTH, HOVER_HEIGHT
+        parent = self.time_label.parent()
 
         if not self._hover_info_label:
             self._hover_info_label = SystemInfoLabel(parent)
@@ -157,8 +158,8 @@ class TimeDisplayManager:
         # 隐藏原来的时间标签，使用自定义布局
         self.time_label.hide()
 
-        parent = self.time_label.parent()
         from app.core.config import HOVER_WIDTH, HOVER_HEIGHT
+        parent = self.time_label.parent()
 
         if not self._hover_info_label:
             self._hover_info_label = SystemInfoLabel(parent)
