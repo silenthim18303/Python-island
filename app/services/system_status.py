@@ -397,7 +397,6 @@ class SystemStatusService:
         if psutil is None:
             return -1
         try:
-            # psutil.cpu_percent 返回一个浮点数表示CPU使用率百分比
             return psutil.cpu_percent(interval=0.1)
         except Exception:
             return -1
@@ -423,4 +422,5 @@ class SystemStatusService:
             percent = mem.percent
             return (used_gb, total_gb, percent)
         except Exception:
+            return None
             return None

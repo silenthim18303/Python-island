@@ -624,7 +624,6 @@ class ModernIsland(QWidget):
             self._start_performance_update_timer()
 
         def on_error(error):
-            self.time_display_manager.update_for_hover()
             self._start_performance_update_timer()
 
         self.service_coordinator.update_performance_status(

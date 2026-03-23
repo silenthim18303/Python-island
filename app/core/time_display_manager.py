@@ -97,6 +97,8 @@ class TimeDisplayManager:
         self._connection_label = None
         self._icon_label = None
         self._hover_info_label = None
+        self._last_cpu_usage = None
+        self._last_memory_usage = None
 
     def update_for_expanded(self):
         now = datetime.now()
@@ -118,12 +120,29 @@ class TimeDisplayManager:
         now = datetime.now()
         full_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        # 进入悬停态时，如果还没有数据，立即显示性能信息标签（带占位符）
-        # 用 is None 来检查是否传入了参数，因为 0.0 是有效的 CPU 使用率
-        if cpu_usage is None and memory_usage is None:
-            self._show_hover_info_loading(full_time)
-        else:
+        # 检查数据有效性
+        if cpu_usage is None or cpu_usage == -1:
+            cpu_usage = self._last_cpu_usage
+        if memory_usage is None:
+            memory_usage = self._last_memory_usage
+        
+        # 只有在有有效数据时才更新显示
+        if cpu_usage is not None and memory_usage is not None:
+            # 保存当前值
+            self._last_cpu_usage = cpu_usage
+            self._last_memory_usage = memory_usage
             self._update_hover_with_system_info(full_time, cpu_usage, memory_usage)
+            # 强制刷新显示
+            if self._hover_info_label:
+                self._hover_info_label.update()
+        elif self._last_cpu_usage is not None and self._last_memory_usage is not None:
+            # 有缓存数据，使用缓存
+            self._update_hover_with_system_info(full_time, self._last_cpu_usage, self._last_memory_usage)
+            if self._hover_info_label:
+                self._hover_info_label.update()
+        else:
+            # 首次进入且没有缓存，显示占位符但使用默认值
+            self._show_hover_info_loading(full_time)
 
     def _show_hover_info_loading(self, time_str: str):
         """显示悬停信息标签（带占位符）。"""
