@@ -1,11 +1,20 @@
 """系统状态服务模块
 
-提供获取系统状态（WiFi、蓝牙、电池）的功能。
+提供获取系统状态（WiFi、蓝牙、电池、CPU、内存）的功能。
 """
 
 import os
 import socket
 import subprocess
+
+
+def _get_psutil():
+    """延迟导入 psutil，避免未安装时影响其他功能。"""
+    try:
+        import psutil
+        return psutil
+    except ImportError:
+        return None
 
 
 class SystemStatusService:
@@ -376,3 +385,42 @@ class SystemStatusService:
         battery_info = (charge, status)
 
         return wifi_info, bluetooth_devices, battery_info
+
+    @staticmethod
+    def get_cpu_usage() -> float:
+        """获取CPU使用率。
+
+        Returns:
+            float: CPU使用率百分比（0-100），获取失败返回-1
+        """
+        psutil = _get_psutil()
+        if psutil is None:
+            return -1
+        try:
+            # psutil.cpu_percent 返回一个浮点数表示CPU使用率百分比
+            return psutil.cpu_percent(interval=0.1)
+        except Exception:
+            return -1
+
+    @staticmethod
+    def get_memory_usage() -> tuple:
+        """获取内存使用信息。
+
+        Returns:
+            tuple: (used_gb, total_gb, percent)
+                used_gb: 已使用内存（GB）
+                total_gb: 总内存（GB）
+                percent: 使用百分比
+            获取失败时返回 None
+        """
+        psutil = _get_psutil()
+        if psutil is None:
+            return None
+        try:
+            mem = psutil.virtual_memory()
+            total_gb = round(mem.total / (1024 ** 3), 1)
+            used_gb = round(mem.used / (1024 ** 3), 1)
+            percent = mem.percent
+            return (used_gb, total_gb, percent)
+        except Exception:
+            return None
