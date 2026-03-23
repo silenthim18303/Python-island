@@ -156,9 +156,8 @@ class TimeDisplayManager:
             self._hover_info_label.setObjectName("HoverInfoLabel")
             self._hover_info_label.setFixedSize(HOVER_WIDTH, HOVER_HEIGHT)
 
-        # 计算居中位置
-        parent_width = parent.width() if parent.width() > 0 else HOVER_WIDTH
-        x = (parent_width - HOVER_WIDTH) // 2
+        # 使用固定的 HOVER_WIDTH 计算居中位置，避免动画过程中位置漂移
+        x = (HOVER_WIDTH - HOVER_WIDTH) // 2
         y = 0
         self._hover_info_label.move(x, y)
 
@@ -185,9 +184,8 @@ class TimeDisplayManager:
             self._hover_info_label.setObjectName("HoverInfoLabel")
             self._hover_info_label.setFixedSize(HOVER_WIDTH, HOVER_HEIGHT)
 
-        # 计算居中位置
-        parent_width = parent.width() if parent.width() > 0 else HOVER_WIDTH
-        x = (parent_width - HOVER_WIDTH) // 2
+        # 使用固定的 HOVER_WIDTH 计算居中位置，避免动画过程中位置漂移
+        x = (HOVER_WIDTH - HOVER_WIDTH) // 2
         y = 0
         self._hover_info_label.move(x, y)
 
