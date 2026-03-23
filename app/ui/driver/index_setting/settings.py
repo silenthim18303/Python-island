@@ -3,7 +3,9 @@
 提供应用设置界面，包括各种配置选项。
 """
 
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QIcon
+
+from app.core.config import get_resource_path
 from qfluentwidgets import FluentIcon, MSFluentWindow, Theme, setTheme
 
 from app.ui.driver.index_setting.index_setting_general.setting_general import (
@@ -36,6 +38,7 @@ class SettingDriver(MSFluentWindow, Ui_island_index_setting_ui):
 
     def _init_ui(self):
         self.setMicaEffectEnabled(True)
+        self.setWindowIcon(QIcon(get_resource_path("resources/icons/favicon.ico")))
         setTheme(Theme.AUTO)
 
     def _init_navigations(self):
