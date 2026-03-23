@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Callable, Optional
 
 from PySide6.QtCore import Qt, QRect, QEasingCurve, QPropertyAnimation
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFrame
 
 from app.core.config import EXPANDED_WIDTH
@@ -255,8 +255,11 @@ class TimeDisplayManager:
         target_width = width or EXPANDED_WIDTH
         target_height = height or HOVER_HEIGHT
         
-        # 隐藏日期标签
+        # 隐藏所有其他标签
+        self.time_label.hide()
         self.date_label.hide()
+        if self._hover_info_label:
+            self._hover_info_label.hide()
         
         # 如果连接标签不存在，创建它
         if not self._connection_label:

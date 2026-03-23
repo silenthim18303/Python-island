@@ -38,7 +38,7 @@ class ServiceCoordinator:
         # 防抖机制相关
         import time
         self._last_status_change_time = 0
-        self._debounce_interval = 3  # 3秒防抖间隔
+        self._debounce_interval = 2  # 减少到2秒，加快状态变化响应
 
     def load_initial_brightness(self, callback: Callable[[Optional[int]], None]):
         if self._brightness_thread and self._brightness_thread.isRunning():
@@ -67,7 +67,36 @@ class ServiceCoordinator:
         if self._status_thread and self._status_thread.isRunning():
             return
 
-        self._status_thread = WorkerThread(SystemStatusService.get_all_status)
+        # 只获取网络状态和电池状态，不获取蓝牙状态，加快网络状态检测
+        def get_network_status():
+            # 获取网络状态
+            ssid, signal, dns_connected = SystemStatusService.get_wifi_info()
+            wifi_info = (ssid, signal, dns_connected)
+            # 电池信息获取较快，也一起获取
+            charge, status = SystemStatusService.get_battery_info()
+            battery_info = (charge, status)
+            # 蓝牙信息暂时使用缓存值，减少延迟
+            bluetooth_devices = self._previous_bluetooth_status or []
+            return wifi_info, bluetooth_devices, battery_info
+
+        self._status_thread = WorkerThread(get_network_status)
+        self._status_thread.finished_signal.connect(success_callback)
+        self._status_thread.error_signal.connect(error_callback)
+        self._status_thread.start()
+
+    def update_bluetooth_status(
+        self,
+        success_callback: Callable[[list], None],
+        error_callback: Callable[[str], None]
+    ):
+        """单独更新蓝牙状态，避免影响网络状态检测速度"""
+        if self._status_thread and self._status_thread.isRunning():
+            return
+
+        def get_bluetooth_status():
+            return SystemStatusService.get_bluetooth_devices()
+
+        self._status_thread = WorkerThread(get_bluetooth_status)
         self._status_thread.finished_signal.connect(success_callback)
         self._status_thread.error_signal.connect(error_callback)
         self._status_thread.start()
@@ -136,11 +165,10 @@ class ServiceCoordinator:
         current_wifi_status = (ssid, dns_connected)
         current_bluetooth_status = bluetooth_devices
 
-        wifi_connected = ssid and ssid != "未连接" and dns_connected
+        # 简化逻辑，只基于dns_connected判断
+        wifi_connected = dns_connected
         prev_wifi_connected = (
             self._previous_wifi_status and
-            self._previous_wifi_status[0] and
-            self._previous_wifi_status[0] != "未连接" and
             self._previous_wifi_status[1]
         )
 
@@ -172,7 +200,7 @@ class ServiceCoordinator:
         # 检查是否有状态变化
         has_change = False
         if wifi_connected != prev_wifi_connected:
-            wifi_message = "WiFi已连接" if wifi_connected else "WiFi已断开"
+            wifi_message = "网络已连接" if wifi_connected else "网络已断开"
             has_change = True
         elif bluetooth_connected != prev_bluetooth_connected:
             bt_message = "蓝牙已打开" if bluetooth_connected else "蓝牙已关闭"
