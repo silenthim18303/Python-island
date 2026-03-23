@@ -10,7 +10,10 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
-from app.core.icons import IslandIcon
+from app.core.config import get_resource_path
+
+
+TRAY_ICON_PATH = get_resource_path("resources/icons/favicon.ico")
 
 
 class TrayService(QObject):
@@ -26,15 +29,13 @@ class TrayService(QObject):
     quit_app = Signal()
     open_settings = Signal()
 
-    def __init__(self, icon: IslandIcon = None, parent=None):
+    def __init__(self, parent=None):
         """初始化托盘服务。
 
         Args:
-            icon: 托盘图标枚举，默认为 IslandIcon.TRAY
             parent: 父对象
         """
         super().__init__(parent)
-        self.icon = icon or IslandIcon.TRAY
         self._tray_icon = None
         self._tray_menu = None
 
@@ -44,7 +45,7 @@ class TrayService(QObject):
 
     def _create_tray_icon(self):
         """创建托盘图标。"""
-        icon = QIcon(self.icon.path())
+        icon = QIcon(TRAY_ICON_PATH)
         self._tray_icon = QSystemTrayIcon(icon, self)
         self._tray_icon.setToolTip("Pyisland - 现代灵动岛")
 
