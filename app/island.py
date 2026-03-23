@@ -228,6 +228,10 @@ class ModernIsland(QWidget):
         self.timer_manager.create_timer(
             "status_update", STATUS_UPDATE_INTERVAL, self._start_status_update
         )
+        # 添加蓝牙状态更新定时器，频率较低，避免影响网络状态检测
+        self.timer_manager.create_timer(
+            "bluetooth_update", 10000, self._start_bluetooth_update
+        )
         self.timer_manager.create_debounce_timer(
             "brightness_debounce", DEBOUNCE_DELAY, self._apply_brightness
         )
@@ -236,6 +240,7 @@ class ModernIsland(QWidget):
         )
 
         self._start_status_update()
+        self._start_bluetooth_update()  # 初始更新一次蓝牙状态
         self._load_initial_brightness()
 
     def _load_styles(self):
@@ -293,6 +298,22 @@ class ModernIsland(QWidget):
             self._on_status_updated,
             self._on_status_error
         )
+
+    def _start_bluetooth_update(self):
+        """启动蓝牙状态更新"""
+        self.service_coordinator.update_bluetooth_status(
+            self._on_bluetooth_updated,
+            self._on_status_error
+        )
+
+    def _on_bluetooth_updated(self, bluetooth_devices):
+        """处理蓝牙状态更新"""
+        # 更新蓝牙状态显示
+        if bluetooth_devices:
+            device_name, device_status = bluetooth_devices[0]
+            self.status_bar.update_bluetooth(device_name, device_status)
+        # 更新缓存的蓝牙状态
+        self.service_coordinator._previous_bluetooth_status = bluetooth_devices
 
     def _on_status_error(self, error):
         print(f"状态更新失败: {error}")
@@ -450,8 +471,8 @@ class ModernIsland(QWidget):
     def _do_hover_and_show_connection(self, message: str, icon: str):
         self.state_manager.set_state(IslandState.HOVERING)
 
-        self.time_label.hide()
-        self.date_label.hide()
+        # 隐藏所有标签，避免动画过程中显示时间日期
+        self.time_display_manager.hide_all()
 
         def on_finished():
             from app.core.config import HOVER_WIDTH, HOVER_HEIGHT

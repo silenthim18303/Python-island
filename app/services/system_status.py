@@ -35,42 +35,19 @@ class SystemStatusService:
 
     @staticmethod
     def get_wifi_info() -> tuple:
-        """获取WiFi信息。
+        """获取网络连接状态。
 
         Returns:
-            tuple: (ssid, signal, dns_connected)
+            tuple: (status, signal, dns_connected)
         """
-        ssid = ""
+        # 简化逻辑，只检测DNS连接状态
+        dns_connected = SystemStatusService.check_dns_connection()
+        
+        # 根据DNS连接状态返回简单的状态信息
+        status = "已连接" if dns_connected else "未连接"
         signal = ""
-        dns_connected = False
 
-        try:
-            result = subprocess.run(
-                ["netsh", "wlan", "show", "interfaces"],
-                capture_output=True,
-                text=True,
-                check=True,
-                encoding="utf-8",
-                errors="ignore",
-                creationflags=subprocess.CREATE_NO_WINDOW,
-            )
-            output = result.stdout
-
-            for line in output.split("\n"):
-                line = line.strip()
-                if line.startswith("SSID"):
-                    ssid = line.split(":")[1].strip()
-                elif line.startswith("Signal"):
-                    signal = line.split(":")[1].strip()
-
-            if ssid:
-                dns_connected = SystemStatusService.check_dns_connection()
-            else:
-                ssid = "未连接"
-        except Exception:
-            ssid = "未连接"
-
-        return ssid, signal, dns_connected
+        return status, signal, dns_connected
 
     @staticmethod
     def get_bluetooth_devices() -> list:
@@ -376,13 +353,16 @@ class SystemStatusService:
         Returns:
             tuple: (wifi_info, bluetooth_devices, battery_info)
         """
+        # 优先获取网络状态，减少网络状态变化的检测延迟
         ssid, signal, dns_connected = SystemStatusService.get_wifi_info()
         wifi_info = (ssid, signal, dns_connected)
 
-        bluetooth_devices = SystemStatusService.get_bluetooth_devices()
-
+        # 电池信息获取较快，次之
         charge, status = SystemStatusService.get_battery_info()
         battery_info = (charge, status)
+
+        # 蓝牙信息获取较慢，放在最后
+        bluetooth_devices = SystemStatusService.get_bluetooth_devices()
 
         return wifi_info, bluetooth_devices, battery_info
 

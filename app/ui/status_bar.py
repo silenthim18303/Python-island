@@ -97,13 +97,11 @@ class StatusBar(QWidget):
         """更新WiFi状态显示。
 
         Args:
-            ssid: WiFi名称
+            ssid: 连接状态
             signal: 信号强度
         """
-        if ssid and ssid != "未连接":
-            self.wifi_label.setText(f"{ssid} ({signal})" if signal else ssid)
-        else:
-            self.wifi_label.setText("未连接")
+        # 简化显示，只显示"已连接"和"未连接"
+        self.wifi_label.setText(ssid)
 
     def update_bluetooth(self, device_name: str = None, status: str = None):
         """更新蓝牙状态显示。
