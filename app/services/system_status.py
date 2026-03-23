@@ -3,6 +3,7 @@
 提供获取系统状态（WiFi、蓝牙、电池）的功能。
 """
 
+import os
 import socket
 import subprocess
 
