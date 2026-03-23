@@ -43,7 +43,7 @@ STYLES_PATH = get_resource_path("resources/styles/style.qss")
 
 # 定时器间隔配置（毫秒）
 TIME_UPDATE_INTERVAL = 1000
-STATUS_UPDATE_INTERVAL = 5000
+STATUS_UPDATE_INTERVAL = 1000  # 减少到1秒，加快网络状态检测
 CLIPBOARD_CHECK_INTERVAL = 1500
 DEBOUNCE_DELAY = 180
 
