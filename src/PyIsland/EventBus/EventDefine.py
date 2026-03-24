@@ -4,7 +4,7 @@
 # All rights reserved
 
 import enum
-from ..Configure import CONFIG_MANAGER
+from PyIsland.Configure import CONFIG_MANAGER
 
 
 class EventCode(enum.IntEnum):

@@ -9,8 +9,8 @@ from waitress import serve as wr_server
 from rich import print as rprint
 import asyncio
 
-from ..EventBus.Bus import EventManager
-from ..EventBus.EventDefine import EventCode
+from PyIsland.EventBus.Bus import EventManager
+from PyIsland.EventBus.EventDefine import EventCode
 
 
 class _API(QThread):

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyIsland"
-version = "0.0.3+Canary"
+version = "0.0.3"
 authors = [
     { name = "星灿长风v(StarWindv)", email = "starwindv.stv@gmail.com"}
 ]
@@ -18,12 +18,13 @@ classifiers = [
 dependencies = [
     "pyqt5",
     "asyncio>=3.4.3",
-    "wmi>=1.5.1",
     "pillow>=11.3.0",
-    "rich>=14.2.0",
-    "mss>=10.0.0",
+    "rich>=14.3.3",
     "keyboard>=0.13.5",
-    "pytesseract>=0.3.13"
+    "pytesseract>=0.3.13",
+    "win_notice_lite>=0.1.2",
+    "windows_bluetooth_watcher>=0.1.0",
+    "flask>=3.1.3"
 ]
 urls = { "Homepage" = "https://github.com/StarWindv/PyIsland" }
 

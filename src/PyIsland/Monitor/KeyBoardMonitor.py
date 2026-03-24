@@ -1,9 +1,8 @@
 import keyboard
 import asyncio
-from rich import print as rprint
 
-from ..EventBus.Bus import EventManager
-from ..Pluging.Screenshot import ScreenshotOCR
+from PyIsland.EventBus.Bus import EventManager
+from PyIsland.Pluging.Screenshot import ScreenshotOCR
 
 
 class  KeyBoardMonitor:

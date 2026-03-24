@@ -1,10 +1,7 @@
-from typing import Set, Any
 import windows_bluetooth_watcher as wbw
-import pythoncom
-import wmi
 
-from ..EventBus.EventDefine import EventCode, EVENT_TEMPLATES
-from ..EventBus.Bus import EventManager
+from PyIsland.EventBus.Bus import EventManager
+from PyIsland.EventBus.EventDefine import EventCode, EVENT_TEMPLATES
 
 
 def replace_event_placeholder(template: dict, placeholder: str, value: str) -> dict:
@@ -14,15 +11,6 @@ def replace_event_placeholder(template: dict, placeholder: str, value: str) -> d
         # str不可变，需重新赋值
         new_template["text"] = new_template["text"].replace(placeholder, value)
     return new_template
-
-
-def init_wmi() -> Any:
-    pythoncom.CoInitializeEx(0)
-    return wmi.WMI()
-
-
-def deconstructor_wmi():
-    pythoncom.CoUninitialize()
 
 
 class BluetoothMonitor:

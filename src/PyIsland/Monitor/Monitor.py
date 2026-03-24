@@ -8,14 +8,12 @@ import asyncio
 from PyQt5.QtCore import QThread
 
 
-from ..EventBus.Bus import EventManager
+from PyIsland.EventBus.Bus import EventManager
 
-from ..Configure import CONFIG_MANAGER
-from .NetworkMonitor import NetworkMonitor
-from .BlueToothMonitor import BluetoothMonitor
-from .KeyBoardMonitor import KeyBoardMonitor
-
-
+from PyIsland.Configure import CONFIG_MANAGER
+from PyIsland.Monitor.NetworkMonitor import NetworkMonitor
+from PyIsland.Monitor.BlueToothMonitor import BluetoothMonitor
+from PyIsland.Monitor.KeyBoardMonitor import KeyBoardMonitor
 
 
 class AsyncMonitorThread(QThread):

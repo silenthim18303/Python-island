@@ -18,12 +18,12 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QSystemTrayIcon, QMenu, QAction, QStyle
 )
 
-from .Container import CapsuleWidget
-from ..Configure import CONFIG_MANAGER
-from ..Debugger.server import Debugger
-from ..EventBus.Bus import EventManager
-from ..EventBus.EventDefine import EventCode
-from ..Monitor.Monitor import AsyncMonitorThread
+from PyIsland.Display.Container import CapsuleWidget
+from PyIsland.Configure import CONFIG_MANAGER
+from PyIsland.Debugger.server import Debugger
+from PyIsland.EventBus.Bus import EventManager
+from PyIsland.EventBus.EventDefine import EventCode
+from PyIsland.Monitor.Monitor import AsyncMonitorThread
 
 
 # noinspection PyAttributeOutsideInit, PyUnresolvedReferences
