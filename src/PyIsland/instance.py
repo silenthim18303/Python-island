@@ -6,8 +6,8 @@
 import ctypes
 import sys
 import argparse
-
 from PyIsland.Display.Island import DynamicIslandWindow
+
 
 from PyQt5.QtWidgets import QApplication
 

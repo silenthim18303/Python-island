@@ -95,7 +95,7 @@ PS:Path> island
 ### 2.2 运行时占用
 
 **内存**: 在运行一小时后, 内存占用在`20744 K`左右浮动, 最高在`24000 K`以下
-
+**测试版本**: 0.0.1
 **启动用时**: 不到 3 秒
 
 <img src="./assets/cost.png" alt="占用截图" height="36" width="929"/>
@@ -112,14 +112,26 @@ PS:Path> island
 
 ```plaintext
 PyIsland/
-├── Configure.py      # 配置管理模块(单例模式)
-├── Display/          # 显示层模块
-│   ├── Island.py     # 主窗口类(DynamicIslandWindow)
-│   └── Container.py  # 胶囊容器(CapsuleWidget)
-├── EventBus/         # 事件总线模块
-│   ├── Bus.py        # 事件管理器(单例模式+队列处理)
-│   └── EventDefine.py # 事件定义与模板
-└── Monitor.py        # 异步监控模块(网络/蓝牙)
+├── __init__.py
+├── Configure.py
+├── Debugger
+│   └── server.py
+├── Display
+│   ├── Container.py
+│   └── Island.py
+├── EventBus
+│   ├── Bus.py
+│   └── EventDefine.py
+├── instance.py
+├── main.py
+├── Monitor
+│   ├── BlueToothMonitor.py
+│   ├── KeyBoardMonitor.py
+│   ├── Monitor.py
+│   └── NetworkMonitor.py
+└── Pluging
+    ├── __init__.py
+    └── Screenshot.py
 ```
 
 ### 3.2 模块说明
@@ -173,5 +185,5 @@ self._handle_notification(event_data) -> show_notification()
 
 - **异步监控线程**: 继承 `QThread` 并集成 `asyncio` 事件循环
 - **网络监控**: 通过异步DNS查询检测网络连通性
-- **蓝牙监控**: 调用PowerShell命令获取已连接蓝牙设备
+- **蓝牙监控**: 调用 rust 编写的高性能库来注册蓝牙设备通断事件回调
 - **配置化间隔**: 监控间隔通过配置文件动态调整

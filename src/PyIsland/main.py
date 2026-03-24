@@ -44,7 +44,7 @@ def background_task(cmd_args):
         return 1
 
 
-def main():
+def main() -> int:
     return background_task(["_island_instance"] + sys.argv[1:])
 
 

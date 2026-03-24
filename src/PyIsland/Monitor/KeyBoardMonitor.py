@@ -2,15 +2,18 @@ import keyboard
 import asyncio
 
 from PyIsland.EventBus.Bus import EventManager
-from PyIsland.Pluging.Screenshot import ScreenshotOCR
+from PyIsland.Pluging import plugs
 
 
 class  KeyBoardMonitor:
-    Screenshotter = ScreenshotOCR()
+    plugs_obj = dict()
+    for name, cls in plugs.items():
+        plugs_obj[name] = cls()
+    print(plugs_obj)
     MAP = {
         "SCREENSHOT" : {
             "key": "ctrl+shift+z",
-            "callback": Screenshotter.capture_and_overlay
+            "callback": plugs_obj["OCR"].capture_and_overlay
         },
     }
     def __init__(self, event_manager: EventManager):
