@@ -95,6 +95,8 @@ class ConfigManager:
 
         except Exception as e:
             print(f"配置文件加载失败, 使用默认配置: {e}")
+            with open(self.CONFIG_PATH, "w", encoding="utf-8") as f:
+                json.dump(self.DEFAULT_CONFIG, f, indent=4, ensure_ascii=False)
             self.config = self.DEFAULT_CONFIG.copy()
 
 

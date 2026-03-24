@@ -23,7 +23,7 @@ from ..Configure import CONFIG_MANAGER
 from ..Debugger.server import Debugger
 from ..EventBus.Bus import EventManager
 from ..EventBus.EventDefine import EventCode
-from ..EventBus.Monitor import AsyncMonitorThread
+from ..Monitor.Monitor import AsyncMonitorThread
 
 
 # noinspection PyAttributeOutsideInit, PyUnresolvedReferences
@@ -64,7 +64,12 @@ class _OverrideWidget(QWidget):
 
 # noinspection PyAttributeOutsideInit, PyUnresolvedReferences
 class _DynamicIslandWindow(_OverrideWidget):
-    def __init__(self, debug: bool = False):
+    def __init__(
+        self,
+        debug: bool = False,
+        disable_nt: bool = False,
+        disable_bt: bool = False
+    ):
         super().__init__()
         self.drag_pos = None
         self.is_locked = False
@@ -82,7 +87,7 @@ class _DynamicIslandWindow(_OverrideWidget):
 
         self.center_top()
         self.init_time_update()
-        self.init_monitors()
+        self.init_monitors(disable_nt, disable_bt)
         if debug: self.debug_server()
         self.init_animations()
 
@@ -162,8 +167,11 @@ class _DynamicIslandWindow(_OverrideWidget):
         self.time_timer.start(1000)
         self.update_time()
 
-    def init_monitors(self):
-        self.async_monitor_thread = AsyncMonitorThread()
+    def init_monitors(self, disable_nt, disable_bt):
+        self.async_monitor_thread = AsyncMonitorThread(
+            disable_nt,
+            disable_bt
+        )
         self.async_monitor_thread.start()
 
     def debug_server(self):
@@ -412,8 +420,17 @@ class _DynamicIslandWindow(_OverrideWidget):
 
 # noinspection PyAttributeOutsideInit, PyUnresolvedReferences
 class DynamicIslandWindow(_DynamicIslandWindow):
-    def __init__(self, debug: bool = False):
-        super().__init__(debug=debug)
+    def __init__(
+            self,
+            debug: bool = False,
+            disable_nt: bool = False,
+            disable_bt: bool = False,
+    ):
+        super().__init__(
+            debug,
+            disable_nt,
+            disable_bt
+        )
         self.init_tray()
 
     def init_tray(self):

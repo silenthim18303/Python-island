@@ -8,6 +8,8 @@ from PyIsland.EventBus.EventDefine import EventCode, EVENT_TEMPLATES
 from collections import deque
 from PyQt5.QtCore import QTimer
 
+from rich import print as rprint
+
 
 # noinspection PyAttributeOutsideInit
 class EventManager:
@@ -36,6 +38,8 @@ class EventManager:
                 self.subscribers[event_code].append(callback)
 
     def publish(self, event_code: EventCode, data=None):
+        rprint(f"\n[bold underline #ffffff][EVENT BUS][/] PUBLISH: {event_code}")
+        rprint(  f"[bold underline #ffffff][EVENT BUS][/] DATA   : {data}")
         event_data = EVENT_TEMPLATES.get(event_code, {}).copy()
         if data:
             event_data.update(data)
