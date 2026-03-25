@@ -571,6 +571,9 @@ class ModernIsland(QWidget):
                 self._snap_to_top()
             else:
                 self._start_return_to_top_timer()
+        elif event.button() == Qt.RightButton:
+            # 右键点击：展开空页面
+            self._toggle_right_click()
         else:
             self.event_handler.handle_mouse_release(event, self.rect)
 
@@ -681,9 +684,42 @@ class ModernIsland(QWidget):
         else:
             self._do_collapse(current_pos)
 
+    def _toggle_right_click(self):
+        """右键点击切换：展开空页面或收起"""
+        self._ensure_not_docked()
+        current_pos = self.pos()
+
+        if not self.state_manager.is_expanded():
+            self._do_right_click_expand(current_pos)
+        else:
+            self._do_collapse(current_pos)
+
     def _do_expand(self, current_pos):
         self.state_manager.set_state(IslandState.EXPANDED)
         self.time_display_manager.hide_all()
+        
+        # 在动画开始前就切换到控制页面，避免闪烁
+        self.controls.setCurrentIndex(0)
+
+        def on_finished():
+            self.time_display_manager.show_date_only()
+            self._update_time_display()
+            self._clamp_position()
+
+        self.animation_controller.animate_expand(
+            self.geometry(),
+            current_pos.x(),
+            self.rect().width(),
+            on_finished
+        )
+
+    def _do_right_click_expand(self, current_pos):
+        """右键展开：显示空页面"""
+        self.state_manager.set_state(IslandState.EXPANDED)
+        self.time_display_manager.hide_all()
+        
+        # 在动画开始前就切换到空页面，避免闪烁
+        self.controls.setCurrentIndex(3)
 
         def on_finished():
             self.time_display_manager.show_date_only()
