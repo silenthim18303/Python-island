@@ -85,10 +85,12 @@ class IslandUIBuilder:
 
         ctrl_page, status_bar, bright_slider, bright_val = self._create_ctrl_page()
         url_single_page, url_multi_page = self._create_url_pages()
+        empty_page = self._create_empty_page()
 
         controls.addWidget(ctrl_page)
         controls.addWidget(url_single_page)
         controls.addWidget(url_multi_page)
+        controls.addWidget(empty_page)
 
         return controls, status_bar, bright_slider, bright_val
 
@@ -113,6 +115,20 @@ class IslandUIBuilder:
         url_single_page = UrlDialog()
         url_multi_page = UrlDialog()
         return url_single_page, url_multi_page
+
+    def _create_empty_page(self) -> QWidget:
+        """创建空页面（用于右键展开）"""
+        empty_page = QWidget()
+        empty_page_layout = QVBoxLayout(empty_page)
+        empty_page_layout.setContentsMargins(5, 20, 5, 10)
+        empty_page_layout.setSpacing(15)
+        
+        # 添加一个空白的占位符
+        placeholder = QLabel("")
+        placeholder.setFixedHeight(CONTROLS_HEIGHT - 40)  # 留出一些边距
+        empty_page_layout.addWidget(placeholder)
+        
+        return empty_page
 
     @staticmethod
     def calculate_label_width(label: QLabel, text: str, object_name: str = None) -> int:
