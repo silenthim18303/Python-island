@@ -22,6 +22,9 @@ from app.ui.controls import ControlRowFactory
 from app.ui.status_bar import StatusBar
 from app.ui.url_dialog import UrlDialog
 
+from PySide6.QtGui import QFont  # 如果已导入则无需重复
+
+
 
 class IslandUIBuilder:
     """灵动岛UI构建器
@@ -123,8 +126,17 @@ class IslandUIBuilder:
         empty_page_layout.setContentsMargins(5, 20, 5, 10)
         empty_page_layout.setSpacing(15)
         
-        # 添加一个空白的占位符
-        placeholder = QLabel("")
+        # 添加"敬请期待"文本
+        placeholder = QLabel("美好的事情，正在发生，请期待")
+        placeholder.setAlignment(Qt.AlignCenter)
+
+        # 设置字体样式
+        font = QFont()
+        font.setBold(True)  # 加粗
+        font.setPointSize(14)  # 字体大小
+        placeholder.setFont(font)
+        placeholder.setStyleSheet("color: #333333;")  # 文本颜色
+
         placeholder.setFixedHeight(CONTROLS_HEIGHT - 40)  # 留出一些边距
         empty_page_layout.addWidget(placeholder)
         

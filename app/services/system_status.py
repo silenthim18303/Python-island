@@ -61,9 +61,9 @@ class SystemStatusService:
         try:
             # 尝试使用Windows蓝牙命令行工具检测
             try:
-                # 使用PowerShell命令检测蓝牙状态
+                # 使用PowerShell命令检测蓝牙状态 - 改进命令以获取更可靠的结果
                 result = subprocess.run(
-                    ["powershell", "Get-BluetoothRadio | Select-Object -Property Status"],
+                    ["powershell", "Get-BluetoothRadio | Select-Object -ExpandProperty Status"],
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
@@ -71,11 +71,11 @@ class SystemStatusService:
                     creationflags=subprocess.CREATE_NO_WINDOW,
                 )
                 
-                output = result.stdout
+                output = result.stdout.strip()
                 
-                if "On" in output:
+                if output == "On":
                     devices.append(("蓝牙", "已开启"))
-                elif "Off" in output:
+                elif output == "Off":
                     devices.append(("蓝牙", "已关闭"))
                 else:
                     # 如果PowerShell命令失败，尝试使用bleak
