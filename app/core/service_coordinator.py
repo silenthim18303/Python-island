@@ -200,11 +200,19 @@ class ServiceCoordinator:
         # 检查是否有状态变化
         has_change = False
         if wifi_connected != prev_wifi_connected:
-            wifi_message = "网络已连接" if wifi_connected else "网络已断开"
+            wifi_message = "已连接到互联网" if wifi_connected else "已断开互联网连接"
             has_change = True
         elif bluetooth_connected != prev_bluetooth_connected:
-            bt_message = "蓝牙已打开" if bluetooth_connected else "蓝牙已关闭"
-            has_change = True
+            # 只在有设备名称时显示蓝牙状态变化消息（即设备连接/断开）
+            if bluetooth_connected and bluetooth_devices and bluetooth_devices[0][0] != "蓝牙":
+                device_name = bluetooth_devices[0][0]
+                bt_message = f"已连接到{device_name}"
+                has_change = True
+            elif not bluetooth_connected and self._previous_bluetooth_status and self._previous_bluetooth_status[0][0] != "蓝牙":
+                device_name = self._previous_bluetooth_status[0][0]
+                bt_message = f"已断开与{device_name}的连接"
+                has_change = True
+            # 去除蓝牙打开/关闭的提示
         elif current_battery_charging != prev_battery_charging:
             battery_message = "已接入电源" if current_battery_charging else "已断开电源"
             has_change = True

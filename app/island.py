@@ -51,6 +51,8 @@ class ModernIsland(QWidget):
         self._init_timers()
         self._load_styles()
         self._register_state_callbacks()
+        self._last_click_time = 0
+        self._click_cooldown = 250  # 点击冷却时间（毫秒）
 
     def _init_managers(self):
         self.state_manager = IslandStateManager()
@@ -177,6 +179,18 @@ class ModernIsland(QWidget):
         target_y = screen_geo.top() + 20
         self.setGeometry(QRect(target_x, target_y, current.width(), current.height()))
 
+    def _clear_animations(self):
+        """清除所有正在运行的动画，防止状态重叠。"""
+        if hasattr(self, "animation_manager") and self.animation_manager:
+            self.animation_manager.stop()
+        # 清除可能存在的动画对象
+        for attr in ["_dock_animation", "_return_animation"]:
+            if hasattr(self, attr) and getattr(self, attr):
+                anim = getattr(self, attr)
+                anim.stop()
+                anim.deleteLater()
+                setattr(self, attr, None)
+
     def _init_ui(self):
         ui_builder = IslandUIBuilder(self)
         (
@@ -228,9 +242,9 @@ class ModernIsland(QWidget):
         self.timer_manager.create_timer(
             "status_update", STATUS_UPDATE_INTERVAL, self._start_status_update
         )
-        # 添加蓝牙状态更新定时器，频率较低，避免影响网络状态检测
+        # 添加蓝牙状态更新定时器，提高频率以减少弹窗延迟
         self.timer_manager.create_timer(
-            "bluetooth_update", 10000, self._start_bluetooth_update
+            "bluetooth_update", 3000, self._start_bluetooth_update
         )
         self.timer_manager.create_debounce_timer(
             "brightness_debounce", DEBOUNCE_DELAY, self._apply_brightness
@@ -312,6 +326,21 @@ class ModernIsland(QWidget):
         if bluetooth_devices:
             device_name, device_status = bluetooth_devices[0]
             self.status_bar.update_bluetooth(device_name, device_status)
+        
+        # 检测蓝牙状态变化
+        # 获取当前的网络状态和电池状态
+        ssid, signal, dns_connected = self.service_coordinator.status_service.get_wifi_info()
+        charge, battery_status = self.service_coordinator.status_service.get_battery_info()
+        
+        # 检查状态变化
+        wifi_msg, bt_msg, battery_msg = self.service_coordinator.check_status_changes(
+            ssid, dns_connected, bluetooth_devices, battery_status
+        )
+        
+        # 显示状态变化提示
+        if bt_msg:
+            self._show_connection_animation(bt_msg, "bluetooth")
+        
         # 更新缓存的蓝牙状态
         self.service_coordinator._previous_bluetooth_status = bluetooth_devices
 
@@ -349,6 +378,7 @@ class ModernIsland(QWidget):
             self._show_url_notification(urls)
 
     def _show_url_notification(self, urls: list):
+        self._clear_animations()
         self._docked_before_notification = self._is_docked
         self._ensure_not_docked()
         if len(urls) == 1:
@@ -453,6 +483,7 @@ class ModernIsland(QWidget):
         self._close_url_page()
 
     def _show_connection_animation(self, message: str, icon: str = "📶"):
+        self._clear_animations()
         self._docked_before_notification = self._is_docked
         self._ensure_not_docked()
         self.timer_manager.stop_timer("time_update")
@@ -614,6 +645,7 @@ class ModernIsland(QWidget):
                 return
             self.state_manager.set_state(IslandState.COLLAPSED)
 
+        self._clear_animations()
         self.time_label.hide()
 
         was_timer_running = self.timer_manager.is_timer_active("time_update")
@@ -676,21 +708,49 @@ class ModernIsland(QWidget):
         )
 
     def toggle_island(self):
+        from PySide6.QtCore import QDateTime, QTimer
+        current_time = QDateTime.currentMSecsSinceEpoch()
+        if current_time - self._last_click_time < self._click_cooldown:
+            return
+        self._last_click_time = current_time
+        
+        self._clear_animations()
         self._ensure_not_docked()
         current_pos = self.pos()
 
         if not self.state_manager.is_expanded():
-            self._do_expand(current_pos)
+            # 检查是否从hover状态切换
+            if self.state_manager.is_hovering():
+                # 先切换回collapsed状态
+                self.state_manager.set_state(IslandState.COLLAPSED)
+                # 添加150毫秒延迟
+                QTimer.singleShot(150, lambda: self._do_expand(current_pos))
+            else:
+                self._do_expand(current_pos)
         else:
             self._do_collapse(current_pos)
 
     def _toggle_right_click(self):
         """右键点击切换：展开空页面或收起"""
+        from PySide6.QtCore import QDateTime, QTimer
+        current_time = QDateTime.currentMSecsSinceEpoch()
+        if current_time - self._last_click_time < self._click_cooldown:
+            return
+        self._last_click_time = current_time
+        
+        self._clear_animations()
         self._ensure_not_docked()
         current_pos = self.pos()
 
         if not self.state_manager.is_expanded():
-            self._do_right_click_expand(current_pos)
+            # 检查是否从hover状态切换
+            if self.state_manager.is_hovering():
+                # 先切换回collapsed状态
+                self.state_manager.set_state(IslandState.COLLAPSED)
+                # 添加150毫秒延迟
+                QTimer.singleShot(150, lambda: self._do_right_click_expand(current_pos))
+            else:
+                self._do_right_click_expand(current_pos)
         else:
             self._do_collapse(current_pos)
 
@@ -705,6 +765,8 @@ class ModernIsland(QWidget):
             self.time_display_manager.show_date_only()
             self._update_time_display()
             self._clamp_position()
+            # 展开窗口后更新蓝牙状态
+            self._start_bluetooth_update()
 
         self.animation_controller.animate_expand(
             self.geometry(),
