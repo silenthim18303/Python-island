@@ -1,4 +1,4 @@
-# 发送Windows系统通知的示例
+# 发送Windows系统通知的模块
 
 # 首先需要安装win10toast库
 # 命令: pip install win10toast
@@ -8,7 +8,8 @@ from win10toast import ToastNotifier
 # 创建通知实例
 toaster = ToastNotifier()
 
-def send_notification():
+def send_startup_notification():
+    """发送启动通知"""
     # 发送基本通知
     toaster.show_toast(
         "pyisland蟒蛇岛已启动",  # 通知标题
@@ -18,15 +19,19 @@ def send_notification():
         threaded=True  # 是否在后台线程中显示
     )
 
-def send_notification2():
-    # 发送带图标的通知
+def send_notification(title, message, duration=5, icon_path=None):
+    """发送自定义通知
+    
+    Args:
+        title (str): 通知标题
+        message (str): 通知内容
+        duration (int): 通知显示时间（秒）
+        icon_path (str): 图标路径，可选
+    """
     toaster.show_toast(
-        "带图标通知",
-        "这是一条带有图标的通知",
-        duration=5,
-        icon_path="path/to/icon.ico"  # 替换为实际的图标路径
+        title,
+        message,
+        duration=duration,
+        icon_path=icon_path,
+        threaded=True
     )
-
-send_notification2()
-
-print("通知已发送")

@@ -33,7 +33,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 280px;
+        width: 300px;
         height: var(--collapsed-height);
         margin-top: 5px;
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -70,12 +70,12 @@
         transform: translateY(-50%);
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 20px;
     }
     .icon-container.left { left: 18px; }
     .icon-container.right { right: 18px; }
 
-    .icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
+    .icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .icon-bg {
         position: absolute;
         width: 22px; height: 22px;
@@ -121,6 +121,8 @@
     /* 强调文字色彩，避免全灰太死板 */
     .highlight { color: var(--accent-color); font-weight: 500; }
 </style>
+<!-- 添加QWebChannel的JavaScript库 -->
+<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
 </head>
 <body>
     <div class="island" id="island">
@@ -141,6 +143,36 @@
         </div>
     </div>
 
+    <style>
+        /* 通知样式 - 显示在岛下方 */
+        .notification {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: "Segoe UI", sans-serif;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            min-width: 200px;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+
+    </style>
     <script>
         function updateTime(t) { document.getElementById('time').textContent = t; }
         function setWebState(isExp) { document.getElementById('island').classList.toggle('active', isExp); }
@@ -148,7 +180,7 @@
         function updateSystemStatus(data) {
             // 更新顶部小图标类名逻辑保持不变
             document.getElementById('wifi-wrapper').className = 'icon-wrapper ' + (data.wifi === 'online' ? 'status-green' : 'status-off');
-            document.getElementById('bluetooth-wrapper').className = 'icon-wrapper ' + (data.bluetooth === 'on' ? 'status-green' : 'status-off');
+            document.getElementById('bluetooth-wrapper').className = 'icon-wrapper ' + (data.bluetooth.status === 'on' ? 'status-green' : 'status-off');
 
             const batLevel = data.battery.level || 0;
             const batStatus = data.battery.status || "";
@@ -162,13 +194,113 @@
 
             // 更新下方纯文字状态
             const wifiStr = data.wifi === 'online' ? '已连接至互联网' : '未连接至互联网';
-            const btStr = data.bluetooth === 'on' ? '蓝牙已连接' : '蓝牙未连接';
-            const batStr = `Power ${batLevel}%`;
+            
+            // 处理蓝牙设备名称
+            let btStr = '未连接设备';
+            if (data.bluetooth.status === 'on' && data.bluetooth.devices && data.bluetooth.devices.length > 0) {
+                if (data.bluetooth.devices.length === 1) {
+                    btStr = data.bluetooth.devices[0];
+                } else {
+                    btStr = `${data.bluetooth.devices.length} 个设备`;
+                }
+            }
+            
+            const batStr = `电池 ${batLevel}%`;
 
-            // 使用分隔符连接，给数值部分加个高亮类名
+            // 横向排列，节省垂直空间
             document.getElementById('status-info').innerHTML =
-                `${wifiStr} &nbsp;•&nbsp;&nbsp; ${btStr} &nbsp;•&nbsp;&nbsp; <span class="highlight">${batStr}</span>`;
+                `<div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img src="icon/wifi.png" class="icon" style="width: 14px; height: 14px; opacity: 0.7;" />
+                        <span class="highlight">${wifiStr}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 80px;">
+                        <img src="icon/bluetooth.png" class="icon" style="width: 14px; height: 14px; opacity: 0.7; flex-shrink: 0;" />
+                        <span class="highlight" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1;">${btStr}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img src="icon/battery.png" class="icon" style="width: 14px; height: 14px; opacity: 0.7;" />
+                        <span class="highlight">${batStr}</span>
+                    </div>
+                 </div>`;
         }
+        
+        function showNotification(title, message) {
+            // 检查是否已存在通知元素
+            let notification = document.getElementById('notification');
+            if (!notification) {
+                // 创建通知元素，添加到island容器内
+                notification = document.createElement('div');
+                notification.id = 'notification';
+                notification.className = 'notification';
+                document.getElementById('island').appendChild(notification);
+            }
+            
+            // 设置通知内容
+            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+            
+            // 显示通知
+            notification.classList.add('show');
+            
+            // 3秒后隐藏通知
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 全局变量，用于存储后端桥接对象
+        var pyisland;
+        
+        // 初始化QWebChannel
+        document.addEventListener('DOMContentLoaded', function() {
+            new QWebChannel(qt.webChannelTransport, function(channel) {
+                // 获取后端桥接对象
+                pyisland = channel.objects.pyisland;
+                
+                // 为WiFi图标添加点击事件
+                document.getElementById('wifi-wrapper').addEventListener('click', function() {
+                    pyisland.openWindowsSettings('network');
+                });
+                
+                // 为蓝牙图标添加点击事件
+                document.getElementById('bluetooth-wrapper').addEventListener('click', function() {
+                    pyisland.openWindowsSettings('bluetooth');
+                });
+                
+                // 为电池图标添加点击事件
+                document.getElementById('battery-wrapper').addEventListener('click', function() {
+                    pyisland.openWindowsSettings('battery');
+                });
+                
+                // 为通知图标添加点击事件
+                document.getElementById('notice-wrapper').addEventListener('click', function() {
+                    pyisland.openWindowsSettings('notifications');
+                });
+            });
+        })
+        
+        // 添加点击事件处理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为WiFi图标添加点击事件
+            document.getElementById('wifi-wrapper').addEventListener('click', function() {
+                window.pyisland.openWindowsSettings('network');
+            });
+            
+            // 为蓝牙图标添加点击事件
+            document.getElementById('bluetooth-wrapper').addEventListener('click', function() {
+                window.pyisland.openWindowsSettings('bluetooth');
+            });
+            
+            // 为电池图标添加点击事件
+            document.getElementById('battery-wrapper').addEventListener('click', function() {
+                window.pyisland.openWindowsSettings('battery');
+            });
+            
+            // 为通知图标添加点击事件
+            document.getElementById('notice-wrapper').addEventListener('click', function() {
+                window.pyisland.openWindowsSettings('notifications');
+            });
+        });
     </script>
 </body>
 </html>

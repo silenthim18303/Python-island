@@ -1,0 +1,62 @@
+# Python编译生成的文件和目录
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境目录
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 编辑器和IDE生成的文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+
+# 可能的敏感信息文件
+*.env
+*.secret
+*.key
+
+# PySide6相关文件
+*.pyc
+*.pyo
+
+# QWebEngine相关文件
+QtWebEngineProcess
+
+# 项目特定的文件
+# 如果你有自定义的图标或资源文件，确保不要忽略它们
+# icon/
+
+# 第三方库
+# 如果你使用pip安装了依赖，确保不要忽略它们
+# 但如果使用了requirements.txt或pyproject.toml，应该忽略site-packages
+# site-packages/
+
+# 生成的HTML文件（如果有的话）
+# *.html
+
+# 测试文件
+# tests/__pycache__/
+
+# 构建文件
+build/
+dist/
+*.egg-info/
