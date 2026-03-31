@@ -13,19 +13,19 @@ from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEngineSettings, QWebE
 import subprocess
 
 # 导入你的检测工具类 (请确保路径正确)
-# try:
-from method.getbattery import BatteryChecker
-from method.getinternet import InternetChecker
-from method.sendtoast import send_startup_notification
-import windows_bluetooth_watcher as wbw
-# except ImportError:
-#     # 防止因缺少自定义模块导致演示代码无法运行
-#     class BatteryChecker:
-#         def check_battery(self): return "AC", 100
+try:
+    from method.getbattery import BatteryChecker
+    from method.getinternet import InternetChecker
+    from method.sendtoast import send_startup_notification
+    import windows_bluetooth_watcher as wbw
+except ImportError:
+    # 防止因缺少自定义模块导致演示代码无法运行
+    class BatteryChecker:
+        def check_battery(self): return "AC", 100
 
 
-#     class InternetChecker:
-#         def check_internet(self): return "已连接"
+    class InternetChecker:
+        def check_internet(self): return "已连接"
 
 
 class StatusWorker(QThread):
