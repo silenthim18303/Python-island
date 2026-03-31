@@ -139,7 +139,7 @@ class IslandWindow(QMainWindow):
 
         # 加载 HTML
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        island_html_path = os.path.join(current_dir, "island.html")
+        island_html_path = os.path.join(current_dir, "assets", "island.html")
         self.web_view.load(QUrl.fromLocalFile(island_html_path))
 
         # 初始化系统托盘

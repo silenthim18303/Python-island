@@ -1,0 +1,155 @@
+:root {
+    --bg-color: rgba(10, 10, 10, 0.92);
+    --accent-color: rgba(255, 255, 255, 0.9);
+    --sub-color: rgba(255, 255, 255, 0.4);
+    --collapsed-height: 36px;
+}
+
+body, html {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.island {
+    background: var(--bg-color);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    height: var(--collapsed-height);
+    margin-top: 5px;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.island.active {
+    height: 100px;
+    width: 300px;
+}
+
+.time-container {
+    width: 100%;
+    min-height: var(--collapsed-height);
+    height: var(--collapsed-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+#time {
+    font-size: 15px;
+    font-weight: 600;
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    color: var(--accent-color);
+}
+
+.icon-container {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-container.left { left: 18px; }
+.icon-container.right { right: 18px; }
+
+.icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.icon-bg {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    opacity: 0.25;
+    transition: background-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.icon {
+    position: relative;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.status-green .icon-bg { background-color: #4CAF50; box-shadow: 0 0 8px rgba(76, 175, 80, 0.3); }
+.status-yellow .icon-bg { background-color: #FFC107; }
+.status-red .icon-bg { background-color: #F44336; }
+.status-off .icon-bg { background-color: rgba(255, 255, 255, 0.1); }
+
+.extra-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 5px;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+}
+
+.active .extra-content {
+    opacity: 1;
+    transform: scale(1);
+}
+
+#status-info {
+    font-size: 11px;
+    color: var(--sub-color);
+    font-family: "Segoe UI", sans-serif;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+}
+
+.highlight { color: var(--accent-color); font-weight: 500; }
+
+/* Notification - displayed below the island */
+.notification {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: "Segoe UI", sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    min-width: 200px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
