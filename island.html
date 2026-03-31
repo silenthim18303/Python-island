@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    :root {
+        --bg-color: rgba(10, 10, 10, 0.92);
+        --accent-color: rgba(255, 255, 255, 0.9);
+        --sub-color: rgba(255, 255, 255, 0.4);
+        --collapsed-height: 36px;
+    }
+
+    body, html {
+        margin: 0; padding: 0;
+        width: 100%; height: 100%;
+        background: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow: hidden;
+        /* 禁用选择 */
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: default;
+    }
+
+    .island {
+        background: var(--bg-color);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 0.5px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 280px;
+        height: var(--collapsed-height);
+        margin-top: 5px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+    }
+
+    .island.active {
+        height: 100px;
+        width: 300px;
+    }
+
+    .time-container {
+        width: 100%;
+        min-height: var(--collapsed-height);
+        height: var(--collapsed-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    #time {
+        font-size: 15px;
+        font-weight: 600;
+        font-family: "SF Pro Display", "Segoe UI", sans-serif;
+        color: var(--accent-color);
+    }
+
+    /* 图标样式保持，增加 background-color 过渡 */
+    .icon-container {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .icon-container.left { left: 18px; }
+    .icon-container.right { right: 18px; }
+
+    .icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
+    .icon-bg {
+        position: absolute;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        opacity: 0.25;
+        /* 状态切换时的丝滑过渡 */
+        transition: background-color 0.5s ease, box-shadow 0.5s ease;
+
+    }
+    .icon { position: relative; z-index: 1; width: 14px; height: 14px; opacity: 0.7; }
+
+    .status-green .icon-bg { background-color: #4CAF50; box-shadow: 0 0 8px rgba(76, 175, 80, 0.3); }
+    .status-yellow .icon-bg { background-color: #FFC107; }
+    .status-red .icon-bg { background-color: #F44336; }
+    .status-off .icon-bg { background-color: rgba(255, 255, 255, 0.1); }
+
+    /* 展开后的纯文字内容 */
+    .extra-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-top: 5px;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: all 0.3s ease;
+    }
+
+    .active .extra-content {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    #status-info {
+        font-size: 11px;
+        color: var(--sub-color);
+        font-family: "Segoe UI", sans-serif;
+        letter-spacing: 0.3px;
+        margin-top: 2px;
+    }
+
+    /* 强调文字色彩，避免全灰太死板 */
+    .highlight { color: var(--accent-color); font-weight: 500; }
+</style>
+</head>
+<body>
+    <div class="island" id="island">
+        <div class="time-container">
+            <div class="icon-container left">
+                <div class="icon-wrapper" id="wifi-wrapper"><div class="icon-bg"></div><img class="icon" src="icon/wifi.png"></div>
+                <div class="icon-wrapper" id="bluetooth-wrapper"><div class="icon-bg"></div><img class="icon" src="icon/bluetooth.png"></div>
+            </div>
+            <div id="time">00:00:00</div>
+            <div class="icon-container right">
+                <div class="icon-wrapper" id="battery-wrapper"><div class="icon-bg"></div><img class="icon" src="icon/battery.png"></div>
+                <div class="icon-wrapper" id="notice-wrapper"><img class="icon" src="icon/notice.png"></div>
+            </div>
+        </div>
+
+        <div class="extra-content">
+            <div id="status-info">System Synchronizing...</div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime(t) { document.getElementById('time').textContent = t; }
+        function setWebState(isExp) { document.getElementById('island').classList.toggle('active', isExp); }
+
+        function updateSystemStatus(data) {
+            // 更新顶部小图标类名逻辑保持不变
+            document.getElementById('wifi-wrapper').className = 'icon-wrapper ' + (data.wifi === 'online' ? 'status-green' : 'status-off');
+            document.getElementById('bluetooth-wrapper').className = 'icon-wrapper ' + (data.bluetooth === 'on' ? 'status-green' : 'status-off');
+
+            const batLevel = data.battery.level || 0;
+            const batStatus = data.battery.status || "";
+            const batWrap = document.getElementById('battery-wrapper');
+
+            if (batStatus.includes("充电") || batStatus.includes("接通")) {
+                batWrap.className = 'icon-wrapper status-green';
+            } else {
+                batWrap.className = 'icon-wrapper ' + (batLevel <= 20 ? 'status-red' : 'status-green');
+            }
+
+            // 更新下方纯文字状态
+            const wifiStr = data.wifi === 'online' ? '已连接至互联网' : '未连接至互联网';
+            const btStr = data.bluetooth === 'on' ? '蓝牙已连接' : '蓝牙未连接';
+            const batStr = `Power ${batLevel}%`;
+
+            // 使用分隔符连接，给数值部分加个高亮类名
+            document.getElementById('status-info').innerHTML =
+                `${wifiStr} &nbsp;•&nbsp;&nbsp; ${btStr} &nbsp;•&nbsp;&nbsp; <span class="highlight">${batStr}</span>`;
+        }
+    </script>
+</body>
+</html>
