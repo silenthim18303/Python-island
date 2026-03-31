@@ -77,22 +77,19 @@ class PyIslandBridge(QObject):
     @Slot(str)
     def openWindowsSettings(self, setting_type):
         """打开Windows设置页面
-        
+
         Args:
             setting_type (str): 设置类型，如 'network', 'bluetooth', 'battery', 'notifications'
         """
-        if setting_type == 'network':
-            # 打开网络设置
-            subprocess.run(['ms-settings:network'])
-        elif setting_type == 'bluetooth':
-            # 打开蓝牙设置
-            subprocess.run(['ms-settings:bluetooth'])
-        elif setting_type == 'battery':
-            # 打开电池设置
-            subprocess.run(['ms-settings:batterysaver'])
-        elif setting_type == 'notifications':
-            # 打开通知设置
-            subprocess.run(['ms-settings:notifications'])
+        settings_map = {
+            'network': 'ms-settings:network',
+            'bluetooth': 'ms-settings:bluetooth',
+            'battery': 'ms-settings:batterysaver',
+            'notifications': 'ms-settings:notifications'
+        }
+
+        if setting_type in settings_map:
+            os.startfile(settings_map[setting_type])
 
 
 class IslandWindow(QMainWindow):
