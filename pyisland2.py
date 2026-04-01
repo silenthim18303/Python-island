@@ -14,9 +14,9 @@ import subprocess
 
 # 导入你的检测工具类 (请确保路径正确)
 try:
-    from pyislandWeb.method.getbattery import BatteryChecker
-    from pyislandWeb.method.getinternet import InternetChecker
-    from pyislandWeb.method.sendtoast import send_startup_notification
+    from method.getbattery import BatteryChecker
+    from method.getinternet import InternetChecker
+    from method.sendtoast import send_startup_notification
     import windows_bluetooth_watcher as wbw
 except ImportError:
     # 防止因缺少自定义模块导致演示代码无法运行
@@ -26,9 +26,6 @@ except ImportError:
 
     class InternetChecker:
         def check_internet(self): return "已连接"
-
-
-    import magic as wbw  # 占位
 
 
 class StatusWorker(QThread):
@@ -80,22 +77,19 @@ class PyIslandBridge(QObject):
     @Slot(str)
     def openWindowsSettings(self, setting_type):
         """打开Windows设置页面
-        
+
         Args:
             setting_type (str): 设置类型，如 'network', 'bluetooth', 'battery', 'notifications'
         """
-        if setting_type == 'network':
-            # 打开网络设置
-            subprocess.run(['ms-settings:network'])
-        elif setting_type == 'bluetooth':
-            # 打开蓝牙设置
-            subprocess.run(['ms-settings:bluetooth'])
-        elif setting_type == 'battery':
-            # 打开电池设置
-            subprocess.run(['ms-settings:batterysaver'])
-        elif setting_type == 'notifications':
-            # 打开通知设置
-            subprocess.run(['ms-settings:notifications'])
+        settings_map = {
+            'network': 'ms-settings:network',
+            'bluetooth': 'ms-settings:bluetooth',
+            'battery': 'ms-settings:batterysaver',
+            'notifications': 'ms-settings:notifications'
+        }
+
+        if setting_type in settings_map:
+            os.startfile(settings_map[setting_type])
 
 
 class IslandWindow(QMainWindow):
@@ -142,7 +136,7 @@ class IslandWindow(QMainWindow):
 
         # 加载 HTML
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        island_html_path = os.path.join(current_dir, "island.html")
+        island_html_path = os.path.join(current_dir, "assets", "island.html")
         self.web_view.load(QUrl.fromLocalFile(island_html_path))
 
         # 初始化系统托盘

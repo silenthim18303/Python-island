@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/island.css">
+    <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body>
+    <div class="island" id="island">
+        <div class="time-container">
+            <div class="icon-container left">
+                <div class="icon-wrapper" id="wifi-wrapper">
+                    <div class="icon-bg"></div>
+                    <img class="icon" src="public/image/wifi.png">
+                </div>
+                <div class="icon-wrapper" id="bluetooth-wrapper">
+                    <div class="icon-bg"></div>
+                    <img class="icon" src="public/image/bluetooth.png">
+                </div>
+            </div>
+
+            <div id="time">00:00:00</div>
+
+            <div class="icon-container right">
+                <div class="icon-wrapper" id="battery-wrapper">
+                    <div class="icon-bg"></div>
+                    <img class="icon" src="public/image/battery.png">
+                </div>
+                <div class="icon-wrapper" id="notice-wrapper">
+                    <img class="icon" src="public/image/notice.png">
+                </div>
+            </div>
+        </div>
+
+        <div class="extra-content">
+            <div id="status-info">System Synchronizing...</div>
+        </div>
+    </div>
+
+    <script src="js/island.js"></script>
+</body>
+</html>
