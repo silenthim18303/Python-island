@@ -126,7 +126,6 @@ class PyIslandBridge(QObject):
                             except:
                                 pass
 
-
 class IslandWindow(QMainWindow):
     def __init__(self):
         super().__init__()
