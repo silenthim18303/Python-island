@@ -4,6 +4,7 @@ import json
 import os
 import gc
 import asyncio
+import ctypes
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSystemTrayIcon,
                                QMenu, QStyle)
 from PySide6.QtGui import QAction, QIcon
@@ -37,6 +38,7 @@ class StatusWorker(QThread):
         self.battery_checker = BatteryChecker()
         self.internet_checker = InternetChecker()
         self.loop = asyncio.new_event_loop()
+        self.running = True
 
     async def get_bt_status(self):
         try:
@@ -48,7 +50,7 @@ class StatusWorker(QThread):
             return False
 
     def run(self):
-        while True:
+        while self.running:
             bat_status, bat_level = self.battery_checker.check_battery()
             net_status = self.internet_checker.check_internet()
             try:
@@ -70,10 +72,14 @@ class StatusWorker(QThread):
             self.status_updated.emit(data)
             time.sleep(3)
 
+    def stop(self):
+        self.running = False
+        self.loop.close()
+
 
 class PyIslandBridge(QObject):
     """JavaScript桥接对象，用于前端调用后端方法"""
-    
+
     @Slot(str)
     def openWindowsSettings(self, setting_type):
         """打开Windows设置页面
@@ -89,20 +95,58 @@ class PyIslandBridge(QObject):
         }
 
         if setting_type in settings_map:
-            os.startfile(settings_map[setting_type])
-
+            try:
+                # 使用subprocess替代os.startfile，提高可靠性
+                import subprocess
+                # 使用explorer.exe打开URI，这在所有Windows版本上都更可靠
+                subprocess.run(['explorer.exe', settings_map[setting_type]], 
+                              shell=True, 
+                              check=False, 
+                              creationflags=subprocess.CREATE_NO_WINDOW)
+            except Exception as e:
+                # 异常处理，确保即使失败也不会影响程序运行
+                print(f"打开设置失败: {e}")
+                # 作为后备方案，尝试使用os.startfile
+                try:
+                    os.startfile(settings_map[setting_type])
+                except Exception as e2:
+                    print(f"后备方案也失败: {e2}")
+                    # 当电池设置打开失败时（可能是台式机没有电池），尝试打开电源设置
+                    if setting_type == 'battery':
+                        try:
+                            print("尝试打开电源设置作为替代")
+                            subprocess.run(['explorer.exe', 'ms-settings:powersleep'], 
+                                          shell=True, 
+                                          check=False, 
+                                          creationflags=subprocess.CREATE_NO_WINDOW)
+                        except Exception as e3:
+                            print(f"打开电源设置也失败: {e3}")
+                            try:
+                                os.startfile('ms-settings:powersleep')
+                            except:
+                                pass
 
 class IslandWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         # 初始窗口属性：置顶、无边框、工具窗口（不在任务栏显示）
-        self.base_flags = Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
+        self.base_flags = (
+                Qt.FramelessWindowHint
+                | Qt.WindowStaysOnTopHint
+                | Qt.Tool
+                | Qt.NoDropShadowWindowHint
+        )
         self.setWindowFlags(self.base_flags)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_NoSystemBackground, True)
+        self.setStyleSheet("background: transparent;")
+        self.setContentsMargins(0, 0, 0, 0)
 
         # --- QWebEngineView 优化配置 ---
         self.web_view = QWebEngineView()
+        self.web_view.setStyleSheet("background: transparent; border: none;")
+        self.web_view.setContentsMargins(0, 0, 0, 0)
         settings = self.web_view.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
         settings.setAttribute(QWebEngineSettings.WebAttribute.ShowScrollBars, False)
@@ -114,9 +158,9 @@ class IslandWindow(QMainWindow):
         # 创建并设置JavaScript桥接对象
         from PySide6.QtWebChannel import QWebChannel
         self.bridge = PyIslandBridge()
-        channel = QWebChannel()
-        channel.registerObject('pyisland', self.bridge)
-        self.web_view.page().setWebChannel(channel)
+        self.channel = QWebChannel()
+        self.channel.registerObject('pyisland', self.bridge)
+        self.web_view.page().setWebChannel(self.channel)
 
         self.setCentralWidget(self.web_view)
         self.web_view.setAttribute(Qt.WA_TranslucentBackground)
@@ -124,9 +168,9 @@ class IslandWindow(QMainWindow):
         self.web_view.setContextMenuPolicy(Qt.NoContextMenu)
 
         # 尺寸配置
-        self.fixed_width = 320
-        self.height_small = 55
-        self.height_large = 120
+        self.fixed_width = 300
+        self.height_small = 45
+        self.height_large = 110
         self.is_expanded = False
         self.last_status = None
 
@@ -135,7 +179,14 @@ class IslandWindow(QMainWindow):
         self.animation.setEasingCurve(QEasingCurve.OutCubic)
 
         # 加载 HTML
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 获取资源文件路径，支持 PyInstaller 打包
+        import sys
+        if hasattr(sys, '_MEIPASS'):
+            # 打包后的环境
+            current_dir = sys._MEIPASS
+        else:
+            # 开发环境
+            current_dir = os.path.dirname(os.path.abspath(__file__))
         island_html_path = os.path.join(current_dir, "assets", "island.html")
         self.web_view.load(QUrl.fromLocalFile(island_html_path))
 
@@ -151,16 +202,33 @@ class IslandWindow(QMainWindow):
         self.worker.status_updated.connect(self.update_web_status)
         self.worker.start()
 
+        QApplication.instance().aboutToQuit.connect(self.cleanup)
+
         self.update_geometry(self.height_small, animate=False)
-        
+        QTimer.singleShot(0, self.apply_native_window_fixes)
+
         # 发送启动通知
         send_startup_notification()
 
     def setup_tray(self):
         """配置系统托盘"""
         self.tray = QSystemTrayIcon(self)
-        # 使用系统默认图标，实际建议替换为 self.tray.setIcon(QIcon("icon.ico"))
-        self.tray.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
+        # 使用指定的SVG图标作为系统托盘图标
+        # 获取资源文件路径，支持 PyInstaller 打包
+        import sys
+        if hasattr(sys, '_MEIPASS'):
+            # 打包后的环境
+            current_dir = sys._MEIPASS
+        else:
+            # 开发环境
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.join(current_dir, "assets", "public", "svg", "pyisland.svg")
+        if os.path.exists(icon_path):
+            self.tray.setIcon(QIcon(icon_path))
+        else:
+            # 如果图标文件不存在，使用系统默认图标作为后备
+            self.tray.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
+            print(f"警告: 系统托盘图标文件不存在: {icon_path}")
 
         # 创建菜单
         tray_menu = QMenu()
@@ -196,6 +264,7 @@ class IslandWindow(QMainWindow):
 
         # 改变 Flags 后必须显式调用 show()，否则窗口会消失
         self.show()
+        QTimer.singleShot(0, self.apply_native_window_fixes)
 
     def update_web_status(self, data):
         """处理状态变化及通知 (保持不变)"""
@@ -268,6 +337,40 @@ class IslandWindow(QMainWindow):
 
     def deep_clean_engine(self):
         self.web_view.page().runJavaScript("if(window.gc) { window.gc(); }")
+
+    def apply_native_window_fixes(self):
+        if sys.platform != "win32":
+            return
+
+        hwnd = int(self.winId())
+        dwmapi = getattr(ctypes.windll, "dwmapi", None)
+        if dwmapi is None:
+            return
+
+        DWMWA_WINDOW_CORNER_PREFERENCE = 33
+        DWMWA_BORDER_COLOR = 34
+        DWMWCP_DONOTROUND = 1
+        DWMWA_COLOR_NONE = 0xFFFFFFFE
+
+        try:
+            dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_WINDOW_CORNER_PREFERENCE,
+                ctypes.byref(ctypes.c_int(DWMWCP_DONOTROUND)),
+                ctypes.sizeof(ctypes.c_int),
+            )
+            dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_BORDER_COLOR,
+                ctypes.byref(ctypes.c_uint(DWMWA_COLOR_NONE)),
+                ctypes.sizeof(ctypes.c_uint),
+            )
+        except Exception:
+            pass
+
+    def cleanup(self):
+        self.worker.stop()
+        self.worker.wait()
 
 
 if __name__ == "__main__":

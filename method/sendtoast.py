@@ -108,11 +108,23 @@ def send_notification(title, message, duration=5, icon_path=None):
 
 def _get_default_icon():
     """获取默认图标路径"""
-    base = os.path.dirname(os.path.abspath(__file__))
-    ico = os.path.join(base, '..', 'assets', 'public', 'icon', 'pyisland.ico')
-    if os.path.exists(ico):
-        return ico
-    ico2 = os.path.join(base, '..', 'assets', 'public', 'icon', 'pyisland_64x64.ico')
-    if os.path.exists(ico2):
-        return ico2
+    import sys
+    if hasattr(sys, '_MEIPASS'):
+        # 打包后的环境
+        base = sys._MEIPASS
+        ico = os.path.join(base, 'assets', 'public', 'icon', 'pyisland.ico')
+        if os.path.exists(ico):
+            return ico
+        ico2 = os.path.join(base, 'assets', 'public', 'icon', 'pyisland_64x64.ico')
+        if os.path.exists(ico2):
+            return ico2
+    else:
+        # 开发环境
+        base = os.path.dirname(os.path.abspath(__file__))
+        ico = os.path.join(base, '..', 'assets', 'public', 'icon', 'pyisland.ico')
+        if os.path.exists(ico):
+            return ico
+        ico2 = os.path.join(base, '..', 'assets', 'public', 'icon', 'pyisland_64x64.ico')
+        if os.path.exists(ico2):
+            return ico2
     return None
