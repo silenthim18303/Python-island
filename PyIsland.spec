@@ -2,11 +2,14 @@
 
 
 a = Analysis(
-    ['E:\\PythonPro\\pyislandWeb\\pyisland2.py'],
-    pathex=[],
+    ['E:\pyisland\Python-island\pyisland2.py'],
+    pathex=['E:\pyisland\Python-island'],
     binaries=[],
-    datas=[('E:\\PythonPro\\pyislandWeb\\icon', 'icon'), ('E:\\PythonPro\\pyislandWeb\\island.html', '.'), ('E:\\PythonPro\\pyislandWeb\\method', 'pyislandWeb/method')],
-    hiddenimports=[],
+    datas=[
+        ('E:\pyisland\Python-island\assets', 'assets'),
+        ('E:\pyisland\Python-island\method', 'method')
+    ],
+    hiddenimports=['win10toast', 'win11toast', 'wmi', 'windows_bluetooth_watcher'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -36,5 +39,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
-    icon=['E:\\PythonPro\\pyislandWeb\\icon\\battery.png'],
+    icon=['E:\pyisland\Python-island\assets\public\icon\pyisland.ico'],
 )
