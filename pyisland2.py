@@ -12,12 +12,17 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QUrl, QTimer, QPropertyAnimation, QEasingCurve, QRect, QThread, Signal, QObject, Slot
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEngineSettings, QWebEnginePage
 import subprocess
+import platform
+import pyautogui
+import time
+
 
 # 导入你的检测工具类 (请确保路径正确)
 try:
     from method.getbattery import BatteryChecker
     from method.getinternet import InternetChecker
     from method.sendtoast import send_startup_notification
+    from method.health import start_health_reminders
     import windows_bluetooth_watcher as wbw
 except ImportError:
     # 防止因缺少自定义模块导致演示代码无法运行
@@ -82,7 +87,7 @@ class PyIslandBridge(QObject):
 
     @Slot(str)
     def openWindowsSettings(self, setting_type):
-        """打开Windows设置页面
+        """打开Windows设置页面 / 通知中心
 
         Args:
             setting_type (str): 设置类型，如 'network', 'bluetooth', 'battery', 'notifications'
@@ -91,34 +96,56 @@ class PyIslandBridge(QObject):
             'network': 'ms-settings:network',
             'bluetooth': 'ms-settings:bluetooth',
             'battery': 'ms-settings:batterysaver',
-            'notifications': 'ms-settings:notifications'
+            # notifications 不再跳设置页，下面会单独处理
         }
 
+        # ====================== 核心修改：打开通知中心 ======================
+        if setting_type == "notifications":
+            try:
+                # 判断系统版本
+                win_ver = platform.release()
+
+                if win_ver == "10":
+                    # Win10：Win+A 打开通知中心
+                    pyautogui.hotkey("win", "a")
+                elif win_ver == "11":
+                    # Win11：Win+N 打开通知中心
+                    pyautogui.hotkey("win", "n")
+                else:
+                    print("不支持的Windows版本")
+
+                time.sleep(0.1)
+                return
+            except Exception as e:
+                print(f"打开通知中心失败: {e}")
+                return
+        # =================================================================
+
+        # 其他设置（网络/蓝牙/电池）保持原来逻辑不变
         if setting_type in settings_map:
             try:
-                # 使用subprocess替代os.startfile，提高可靠性
-                import subprocess
-                # 使用explorer.exe打开URI，这在所有Windows版本上都更可靠
-                subprocess.run(['explorer.exe', settings_map[setting_type]], 
-                              shell=True, 
-                              check=False, 
-                              creationflags=subprocess.CREATE_NO_WINDOW)
+                subprocess.run(
+                    ['explorer.exe', settings_map[setting_type]],
+                    shell=True,
+                    check=False,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
             except Exception as e:
-                # 异常处理，确保即使失败也不会影响程序运行
                 print(f"打开设置失败: {e}")
-                # 作为后备方案，尝试使用os.startfile
                 try:
                     os.startfile(settings_map[setting_type])
                 except Exception as e2:
                     print(f"后备方案也失败: {e2}")
-                    # 当电池设置打开失败时（可能是台式机没有电池），尝试打开电源设置
+
                     if setting_type == 'battery':
                         try:
                             print("尝试打开电源设置作为替代")
-                            subprocess.run(['explorer.exe', 'ms-settings:powersleep'], 
-                                          shell=True, 
-                                          check=False, 
-                                          creationflags=subprocess.CREATE_NO_WINDOW)
+                            subprocess.run(
+                                ['explorer.exe', 'ms-settings:powersleep'],
+                                shell=True,
+                                check=False,
+                                creationflags=subprocess.CREATE_NO_WINDOW
+                            )
                         except Exception as e3:
                             print(f"打开电源设置也失败: {e3}")
                             try:
@@ -385,6 +412,12 @@ if __name__ == "__main__":
         "--no-sandbox "
         "--js-flags='--max-old-space-size=128 --expose-gc'"
     )
+
+    # 启动健康提醒
+    try:
+        start_health_reminders()
+    except Exception as e:
+        print(f"启动健康提醒失败: {e}")
 
     app = QApplication(sys.argv)
     # 统一设置应用退出时不自动关闭（防止主窗口隐藏时退出）

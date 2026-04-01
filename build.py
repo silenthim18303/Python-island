@@ -12,10 +12,9 @@ cmd = [
     "--onefile",  # 生成单个可执行文件
     "--windowed",  # 不显示控制台窗口
     "--uac-admin",  # 添加UAC权限
-    "--icon", os.path.join(project_root, "icon", "battery.png"),  # 使用电池图标
-    "--add-data", f"{os.path.join(project_root, 'icon')};icon",  # 添加图标文件夹
-    "--add-data", f"{os.path.join(project_root, 'island.html')};.",  # 添加HTML文件
-    "--add-data", f"{os.path.join(project_root, 'method')};pyislandWeb/method",  # 添加方法文件夹
+    "--icon", os.path.join(project_root, "assets", "public", "icon", "pyisland_64x64.ico"),  # 使用正确的图标路径
+    "--add-data", f"{os.path.join(project_root, 'assets')};assets",  # 添加整个assets文件夹
+    "--add-data", f"{os.path.join(project_root, 'method')};method",  # 添加方法文件夹
     "--name", "PyIsland",  # 可执行文件名称
     os.path.join(project_root, "pyisland2.py")  # 入口文件
 ]

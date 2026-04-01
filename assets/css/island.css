@@ -1,5 +1,5 @@
 :root {
-    --bg-color: rgba(10, 10, 10, 0.92);
+    --bg-color: rgba(10, 10, 10, 0.5);
     --accent-color: rgba(255, 255, 255, 0.9);
     --sub-color: rgba(255, 255, 255, 0.4);
     --collapsed-height: 36px;
@@ -20,9 +20,9 @@ body, html {
 
 .island {
     background: var(--bg-color);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    /*backdrop-filter: blur(25px);*/
+    /*-webkit-backdrop-filter: blur(25px);*/
+    border: 0.5px solid rgba(255, 255, 255, 0);
     border-radius: 20px;
     color: white;
     display: flex;
