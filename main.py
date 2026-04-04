@@ -655,6 +655,13 @@ def main() -> int:
     # 启动健康提醒
     start_health_reminders()
     
+    # 发送启动通知
+    try:
+        from method.sendtoast import send_startup_notification
+        send_startup_notification()
+    except Exception:
+        pass
+    
     # Qt 使用软件渲染，降低某些机型驱动兼容问题
     QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL)
     # Chromium 进程/扩展/内存限制参数

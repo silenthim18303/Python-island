@@ -1,0 +1,17 @@
+# PySide6 for GUI
+PySide6
+
+# Screen brightness control
+screen_brightness_control
+
+# Windows Bluetooth watcher
+windows_bluetooth_watcher
+
+# Windows WMI for battery information
+wmi
+
+# Windows 11 toast notifications
+win11toast
+
+# Windows 10 toast notifications
+win10toast
