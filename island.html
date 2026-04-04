@@ -1,0 +1,406 @@
+ <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <style>
+    /* 页面根节点：整个 WebView 画布 */
+    html, body {
+      margin: 0;
+      width: 95%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      animation: timeScale 0.5s ease forwards;
+      font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    }
+    /* #capsule：最外层胶囊容器（默认状态） */
+    #capsule {
+      width: 95%;
+      height: 100%;
+      border-radius: 20px;
+      background: rgba(20, 20, 20, 0.8);
+      color: #ffffff;
+      box-sizing: border-box;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      transition: border-radius 220ms ease, background 220ms ease;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+    /* #capsule.hovered：鼠标悬停后的胶囊样式 */
+    #capsule.hovered {
+      border-radius: 20px;
+      background: rgba(20, 20, 20, 0.8);
+    }
+    /* .page：通用页面容器（time-page / blank-page 共用） */
+    .page {
+      width: 100%;
+      height: 100%;
+    }
+    /* #time-page：默认显示的时间页面 */
+    #time-page {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      user-select: none;
+      animation: timeScale 0.5s ease forwards;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    #time-row {
+      width: 100%;
+      height: 45px;
+      flex: 0 0 45px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+    #status-panel {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 45px;
+      width: 100%;
+      padding: 0px 15px 0;
+      box-sizing: border-box;
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgba(255, 255, 255, 1);
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events: none;
+    }
+    #capsule.hovered #status-panel {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #hover-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 4px;
+      transform: translateX(-50%);
+      font-size: 14px;
+      line-height: 18px;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 0.5px;
+      opacity: 0;
+      transition: all 140ms ease;
+      cursor: pointer;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+    }
+    #capsule.hovered #hover-hint {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #status-row-top {
+      display: flex;
+      align-items: center;
+      gap: 80px;
+    }
+    #status-row-top .status-line {
+      flex: 1;
+      min-width: 0;
+    }
+    .status-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .icon-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 44px;
+    }
+    .icon-btn {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    .icon-btn-red {
+      background: rgba(255, 59, 48, 0.35);
+    }
+    .icon-btn-green {
+      background: rgba(52, 199, 89, 0.35);
+    }
+    .icon-btn-none {
+      background: transparent;
+    }
+    #right-icons {
+      justify-content: flex-end;
+    }
+    .status-icon {
+      width: 14px;
+      height: 14px;
+      display: block;
+      object-fit: contain;
+      opacity: 1;
+    }
+    #time {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      min-width: 92px;
+      text-align: center;
+    }
+      /* 时间缩放动画 */
+        @keyframes timeScale {
+      from {
+        transform: scale(0.5); /* 一开始缩到0.5倍 */
+        opacity: 0;
+      }
+      to {
+        transform: scale(1); /* 恢复正常大小 */
+        opacity: 1;
+      }
+    }
+
+
+    /* #blank-page：hover 时显示的空白页面 */
+    #blank-page {
+      display: none;
+      /* background: rgba(0, 0, 0, 0.08); */
+    }
+  </style>
+</head>
+<body>
+  <div id="capsule">
+    <div id="time-page" class="page">
+      <div id="time-row">
+        <div id="left-icons" class="icon-group">
+          <button id="wifi-btn" class="icon-btn icon-btn-none" type="button" aria-label="wifi">
+            <img class="status-icon" src="assets/image/wifi.png" alt="wifi">
+          </button>
+          <button id="bluetooth-btn" class="icon-btn icon-btn-none" type="button" aria-label="bluetooth">
+            <img class="status-icon" src="assets/image/bluetooth.png" alt="bluetooth">
+          </button>
+        </div>
+        <div id="time">00:00:00</div>
+        <div id="right-icons" class="icon-group">
+          <button id="battery-btn" class="icon-btn icon-btn-none" type="button" aria-label="battery">
+            <img class="status-icon" src="assets/image/battery.png" alt="battery">
+          </button>
+          <button id="notice-btn" class="icon-btn icon-btn-none" type="button" aria-label="notice">
+            <img class="status-icon" src="assets/image/notice.png" alt="notice">
+          </button>
+        </div>
+      </div>
+      <div id="status-panel">
+        <div id="status-row-top">
+          <div id="network-status" class="status-line">网络：检测中...</div>
+          <div id="battery-status" class="status-line">电池：检测中...</div>
+        </div>
+        <div id="bluetooth-status" class="status-line">蓝牙：检测中...</div>
+      </div>
+      <div id="hover-hint">&nbsp;&nbsp;&nbsp;&nbsp;点击展开&nbsp;&nbsp;&nbsp;&nbsp;</div> <!-- 空格确保与图标间距一致 -->
+    </div>
+    <div id="blank-page" class="page"></div>
+  </div>
+  <script>
+    // QWebChannel 注入的后端桥接对象
+    let bridge = null;
+    // hover 延迟触发定时器（避免窗口动画跟不上）
+    let hoverTimer = null;
+    // 当前是否已处于展开态
+    let hoverActive = false;
+    // 页面节点缓存，避免重复查询 DOM
+    const capsule = document.getElementById("capsule");
+    const timePage = document.getElementById("time-page");
+    const blankPage = document.getElementById("blank-page");
+    const timeNode = document.getElementById("time");
+    const wifiBtn = document.getElementById("wifi-btn");
+    const bluetoothBtn = document.getElementById("bluetooth-btn");
+    const batteryBtn = document.getElementById("battery-btn");
+    const noticeBtn = document.getElementById("notice-btn");
+    const hoverHint = document.getElementById("hover-hint");
+    const networkStatusNode = document.getElementById("network-status");
+    const batteryStatusNode = document.getElementById("battery-status");
+    const bluetoothStatusNode = document.getElementById("bluetooth-status");
+
+    // 根据 hover 状态切换“时间页/空白页”
+    function switchPage(hovered) {
+      timePage.style.display = "flex";
+      blankPage.style.display = "none";
+    }
+
+    // 暴露给 Python 调用：刷新时间文本
+    window.updateTime = function (value) {
+      timeNode.textContent = value;
+    };
+
+    window.updateBluetoothState = function (data) {
+      if (!bluetoothBtn) {
+        return;
+      }
+      window.bluetoothState = data;
+      if (data && data.status === "on") {
+        bluetoothBtn.className = "icon-btn icon-btn-green";
+      } else if (data && data.status === "error") {
+        bluetoothBtn.className = "icon-btn icon-btn-red";
+      } else {
+        bluetoothBtn.className = "icon-btn icon-btn-none";
+      }
+      if (data && Array.isArray(data.devices) && data.devices.length > 0) {
+        bluetoothBtn.title = data.devices.map((d) => `${d.name} (${d.status})`).join(", ");
+      } else if (data && data.status === "error") {
+        bluetoothBtn.title = "蓝牙状态异常";
+      } else {
+        bluetoothBtn.title = "未连接蓝牙设备";
+      }
+      if (bluetoothStatusNode) {
+        if (data && data.status === "error") {
+          bluetoothStatusNode.textContent = "蓝牙：状态异常";
+        } else if (data && Array.isArray(data.devices) && data.devices.length > 0) {
+          const connected = data.devices.filter((d) => String(d.status).toLowerCase() === "connected");
+          const source = connected.length > 0 ? connected : data.devices;
+          const names = source.map((d) => d.name).filter(Boolean);
+          bluetoothStatusNode.textContent = `蓝牙：${names.length > 0 ? names.join("、") : "已连接设备"}`;
+        } else {
+          bluetoothStatusNode.textContent = "蓝牙：未连接";
+        }
+      }
+    };
+
+    window.updateWifiState = function (data) {
+      if (!wifiBtn) {
+        return;
+      }
+      window.wifiState = data;
+      if (data && data.status === "on") {
+        wifiBtn.className = "icon-btn icon-btn-green";
+        wifiBtn.title = data.text || "已连接到互联网";
+      } else if (data && data.status === "error") {
+        wifiBtn.className = "icon-btn icon-btn-red";
+        wifiBtn.title = data.text || "网络状态异常";
+      } else {
+        wifiBtn.className = "icon-btn icon-btn-none";
+        wifiBtn.title = data && data.text ? data.text : "未连接到互联网";
+      }
+      if (networkStatusNode) {
+        if (data && data.status === "on") {
+          networkStatusNode.textContent = "网络：已连接";
+        } else if (data && data.status === "error") {
+          networkStatusNode.textContent = "网络：状态异常";
+        } else {
+          networkStatusNode.textContent = "网络：未连接";
+        }
+      }
+    };
+
+    window.updateBatteryState = function (data) {
+      if (!batteryBtn) {
+        return;
+      }
+      window.batteryState = data;
+      const statusText = data && data.status ? String(data.status) : "未知";
+      const levelText = data && data.level !== null && data.level !== undefined ? `${data.level}%` : "N/A";
+      const title = `状态: ${statusText} | 电量: ${levelText}`;
+      if (statusText === "error") {
+        batteryBtn.className = "icon-btn icon-btn-red";
+      } else if (statusText.includes("充电") || statusText.includes("接通") || statusText.includes("完全")) {
+        batteryBtn.className = "icon-btn icon-btn-green";
+      } else if (data && typeof data.level === "number" && data.level <= 20) {
+        batteryBtn.className = "icon-btn icon-btn-red";
+      } else {
+        batteryBtn.className = "icon-btn icon-btn-none";
+      }
+      batteryBtn.title = title;
+      if (batteryStatusNode) {
+        batteryStatusNode.textContent = `电池：${levelText}`;
+      }
+    };
+
+    function bindIconClicks() {
+      if (!bridge) {
+        return;
+      }
+      if (wifiBtn) {
+        wifiBtn.addEventListener("click", function () {
+          bridge.openWindowsSettings("network");
+        });
+      }
+      if (bluetoothBtn) {
+        bluetoothBtn.addEventListener("click", function () {
+          bridge.openWindowsSettings("bluetooth");
+        });
+      }
+      if (batteryBtn) {
+        batteryBtn.addEventListener("click", function () {
+          bridge.openWindowsSettings("battery");
+        });
+      }
+      if (noticeBtn) {
+        noticeBtn.addEventListener("click", function () {
+          bridge.openWindowsSettings("notifications");
+        });
+      }
+      if (hoverHint) {
+        hoverHint.addEventListener("click", function () {
+          bridge.openExpandedWindow();
+        });
+      }
+    }
+
+    // 建立 QWebChannel，拿到 pyisland 桥接对象
+    new QWebChannel(qt.webChannelTransport, function (channel) {
+      bridge = channel.objects.pyisland;
+      bindIconClicks();
+    });
+
+    // 鼠标进入：延迟触发展开，避免快进快出抖动
+    capsule.addEventListener("mouseenter", function () {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+      hoverTimer = setTimeout(function () {
+        hoverActive = true;
+        capsule.classList.add("hovered");
+        switchPage(true);
+        if (bridge) {
+          // 通知后端执行窗口展开动画
+          bridge.setHovered(true);
+        }
+      }, 150);
+    });
+
+    // 鼠标离开：取消待触发动画，若已展开则收起
+    capsule.addEventListener("mouseleave", function () {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+      }
+      if (hoverActive) {
+        hoverActive = false;
+        capsule.classList.remove("hovered");
+        switchPage(false);
+        if (bridge) {
+          // 通知后端执行窗口收起动画
+          bridge.setHovered(false);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    }
+    #panel {
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      background: rgba(20, 20, 20, 1);
+      box-sizing: border-box;
+      position: relative;
+      border: none;
+      outline: none;
+      opacity: 0;
+      transform: translateY(10px) scale(0.96);
+      transition: opacity 180ms ease-out, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, transform;
+    }
+    #panel.entered {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    #additional-content {
+      position: absolute;
+      top: 35px;
+      left: 18px;
+      right: 18px;
+      color: rgba(255, 255, 255, 0.92);
+    }
+    .brightness-shell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .brightness-icon {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+    .brightness-track {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    #brightness-slider {
+      width: 100%;
+      height: 24px;
+      margin: 0;
+      --fill-percent: 50%;
+      background: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+    }
+    #brightness-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.94) var(--fill-percent), rgba(255, 255, 255, 0.14) var(--fill-percent), rgba(255, 255, 255, 0.14) 100%);
+    }
+    #brightness-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      margin-top: -6px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    }
+    #brightness-slider::-moz-range-track {
+      height: 6px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.94) var(--fill-percent), rgba(255, 255, 255, 0.14) var(--fill-percent), rgba(255, 255, 255, 0.14) 100%);
+    }
+    #brightness-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    }
+    .brightness-value {
+      min-width: 44px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    .footer-info {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .footer-logo {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      opacity: 1;
+    }
+    .footer-text {
+      min-width: 0;
+    }
+    .footer-link {
+      color: rgba(120, 190, 255, 0.96);
+      text-decoration: none;
+    }
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+    #close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 59, 48, 0.9);
+      cursor: pointer;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="panel">
+    <button id="close-btn" type="button" aria-label="close"></button>
+    <div id="additional-content">
+      <div class="brightness-shell">
+        <img class="brightness-icon" src="assets/image/light.png" alt="brightness">
+        <div class="brightness-track">
+          <input id="brightness-slider" type="range" min="0" max="100" value="50">
+        </div>
+        <div id="brightness-value" class="brightness-value">50%</div>
+      </div>
+    </div>
+    <div class="footer-info">
+      <img class="footer-logo" src="assets/svg/pyisland.svg" alt="pyisland">
+      <div class="footer-text">
+        当前版本：Pyside6-1.7.1，详细请见：
+        <a class="footer-link" href="https://www.pyisland.com" target="_blank">www.pyisland.com</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    let bridge = null;
+    const panel = document.getElementById("panel");
+    const brightnessSlider = document.getElementById("brightness-slider");
+    const brightnessValue = document.getElementById("brightness-value");
+    let brightnessTimer = null;
+
+    function normalizeBrightness(value) {
+      const parsedValue = parseInt(value, 10);
+      if (Number.isNaN(parsedValue)) {
+        return 50;
+      }
+      return Math.max(0, Math.min(100, parsedValue));
+    }
+
+    function renderBrightness(value) {
+      const normalizedValue = normalizeBrightness(value);
+      if (brightnessSlider) {
+        brightnessSlider.value = normalizedValue;
+        brightnessSlider.style.setProperty("--fill-percent", `${normalizedValue}%`);
+      }
+      if (brightnessValue) {
+        brightnessValue.textContent = `${normalizedValue}%`;
+      }
+    }
+
+    function queueBrightnessChange(value) {
+      const normalizedValue = normalizeBrightness(value);
+      renderBrightness(normalizedValue);
+      if (!bridge || !bridge.setBrightness) {
+        return;
+      }
+      if (brightnessTimer) {
+        clearTimeout(brightnessTimer);
+      }
+      brightnessTimer = setTimeout(function () {
+        bridge.setBrightness(normalizedValue);
+      }, 150);
+    }
+
+    window.playEntrance = function () {
+      if (!panel) {
+        return;
+      }
+      panel.classList.remove("entered");
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          panel.classList.add("entered");
+        });
+      });
+    };
+    
+    new QWebChannel(qt.webChannelTransport, function (channel) {
+      bridge = channel.objects.pyisland;
+      
+      const closeBtn = document.getElementById("close-btn");
+      closeBtn.addEventListener("click", function () {
+        if (bridge) {
+          bridge.closeExpandedWindow();
+        }
+      });
+
+      if (brightnessSlider) {
+        brightnessSlider.addEventListener("input", function () {
+          queueBrightnessChange(this.value);
+        });
+        brightnessSlider.addEventListener("change", function () {
+          queueBrightnessChange(this.value);
+        });
+      }
+
+      if (bridge && bridge.getBrightness) {
+        bridge.getBrightness(function (value) {
+          renderBrightness(value);
+        });
+      } else {
+        renderBrightness(50);
+      }
+    });
+
+    window.updateBrightness = function (value) {
+      renderBrightness(value);
+    };
+  </script>
+</body>
+</html>
