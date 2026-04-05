@@ -106,11 +106,43 @@
       letter-spacing: 0.2px;
       color: rgba(255, 255, 255, 0.88);
     }
+    .action-buttons {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+    }
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .action-button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+    .action-icon {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+    .action-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.92);
+    }
     .footer-info {
       position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 16px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -159,12 +191,22 @@
         </div>
         <div id="brightness-value" class="brightness-value">50%</div>
       </div>
+      <div class="action-buttons">
+        <div class="action-button" id="screenshot-btn">
+          <img class="action-icon" src="assets/image/screenshot.png" alt="screenshot">
+          <span class="action-text">截图</span>
+        </div>
+        <div class="action-button" id="sleep-btn">
+          <img class="action-icon" src="assets/image/sleep.png" alt="sleep">
+          <span class="action-text">睡眠</span>
+        </div>
+      </div>
     </div>
     <div class="footer-info">
       <img class="footer-logo" src="assets/svg/pyisland.svg" alt="pyisland">
       <div class="footer-text">
-        当前版本：Pyside6-1.7.1，详细请见：
-        <a class="footer-link" href="https://www.pyisland.com" target="_blank">www.pyisland.com</a>
+        当前版本：Pyisland-web 1.7.1（主分支）
+        <a class="footer-link" href="https://www.pyisland.com" target="_blank">官网：www.pyisland.com</a>
       </div>
     </div>
   </div>
@@ -174,6 +216,11 @@
     const brightnessSlider = document.getElementById("brightness-slider");
     const brightnessValue = document.getElementById("brightness-value");
     let brightnessTimer = null;
+    let lastScreenshotTime = 0;
+    const screenshotCooldown = 1000; // 1秒冷却时间
+    let isSleepMode = false;
+    let lastSleepTime = 0;
+    const sleepCooldown = 1000; // 1秒冷却时间
 
     function normalizeBrightness(value) {
       const parsedValue = parseInt(value, 10);
@@ -236,6 +283,72 @@
         });
         brightnessSlider.addEventListener("change", function () {
           queueBrightnessChange(this.value);
+        });
+      }
+
+      const screenshotBtn = document.getElementById("screenshot-btn");
+      if (screenshotBtn) {
+        screenshotBtn.addEventListener("click", function () {
+          const currentTime = Date.now();
+          if (currentTime - lastScreenshotTime < screenshotCooldown) {
+            return;
+          }
+          
+          lastScreenshotTime = currentTime;
+          if (bridge && bridge.takeScreenshot) {
+            // 禁用按钮，显示正在截图
+            screenshotBtn.style.opacity = "0.6";
+            screenshotBtn.style.pointerEvents = "none";
+            
+            bridge.takeScreenshot();
+            
+            // 1秒后恢复按钮状态
+            setTimeout(function() {
+              screenshotBtn.style.opacity = "1";
+              screenshotBtn.style.pointerEvents = "auto";
+            }, screenshotCooldown);
+          }
+        });
+      }
+
+      const sleepBtn = document.getElementById("sleep-btn");
+      if (sleepBtn) {
+        sleepBtn.addEventListener("click", function () {
+          const currentTime = Date.now();
+          if (currentTime - lastSleepTime < sleepCooldown) {
+            return;
+          }
+          
+          lastSleepTime = currentTime;
+          if (bridge && (bridge.startSleepMode || bridge.stopSleepMode)) {
+            // 禁用按钮，显示状态
+            sleepBtn.style.opacity = "0.6";
+            sleepBtn.style.pointerEvents = "none";
+            
+            if (isSleepMode) {
+              // 停止睡眠模式
+              if (bridge.stopSleepMode) {
+                bridge.stopSleepMode();
+                sleepBtn.querySelector('.action-text').textContent = "睡眠";
+                sleepBtn.style.background = "rgba(255, 255, 255, 0.08)";
+              }
+            } else {
+              // 开始睡眠模式
+              if (bridge.startSleepMode) {
+                bridge.startSleepMode();
+                sleepBtn.querySelector('.action-text').textContent = "退出";
+                sleepBtn.style.background = "rgba(52, 199, 89, 0.35)";
+              }
+            }
+            
+            isSleepMode = !isSleepMode;
+            
+            // 1秒后恢复按钮状态
+            setTimeout(function() {
+              sleepBtn.style.opacity = "1";
+              sleepBtn.style.pointerEvents = "auto";
+            }, sleepCooldown);
+          }
         });
       }
 

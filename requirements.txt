@@ -15,3 +15,15 @@ win11toast
 
 # Windows 10 toast notifications
 win10toast
+
+# Screenshot functionality
+pyautogui
+pillow
+
+# Volume control
+typing-extensions
+pycaw
+comtypes
+
+# Windows API access
+pywin32

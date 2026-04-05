@@ -8,6 +8,9 @@ PyIsland是一个基于Python和PySide6开发的桌面小工具，提供系统�
 - **屏幕亮度控制**：通过界面调整屏幕亮度
 - **健康提醒**：定时发送久坐提醒，关爱你的健康
 - **系统快捷操作**：快速打开系统设置（网络、蓝牙、电池等）
+- **截图功能**：一键截图并保存，支持自动打开保存文件夹
+- **录屏功能**：支持屏幕录制
+- **睡眠模式**：一键进入睡眠模式，自动调整亮度和音量
 - **美观界面**：透明置顶窗口，支持鼠标悬停展开/收起动画
 - **系统托盘**：最小化到系统托盘，随时访问
 
@@ -19,6 +22,11 @@ PyIsland是一个基于Python和PySide6开发的桌面小工具，提供系统�
 - **windows_bluetooth_watcher**：获取蓝牙设备信息
 - **wmi**：获取电池信息
 - **win11toast/win10toast**：发送系统通知
+- **pyautogui**：用于截图和屏幕录制
+- **pillow**：图像处理
+- **pycaw**：控制系统音量
+- **comtypes**：pycaw的依赖
+- **pywin32**：Windows API访问
 
 ## 安装步骤
 
@@ -51,9 +59,11 @@ PyIsland是一个基于Python和PySide6开发的桌面小工具，提供系统�
 
 1. **主界面**：桌面顶部会显示一个小窗口，显示当前时间和系统状态
 2. **悬停展开**：鼠标悬停在窗口上时，会展开显示更多信息
-3. **点击展开**：点击窗口会打开扩展窗口，可调整屏幕亮度
+3. **点击展开**：点击窗口会打开扩展窗口，可调整屏幕亮度、截图、录屏和进入睡眠模式
 4. **系统托盘**：右键点击系统托盘图标，可启用/禁用鼠标穿透或退出程序
 5. **快捷操作**：点击相应图标可快速打开系统设置
+6. **截图功能**：在扩展窗口中点击截图按钮，系统会自动截图并保存到C:\pyislandpng文件夹
+7. **睡眠模式**：在扩展窗口中点击睡眠模式按钮，系统会降低亮度、静音并开启护眼模式
 
 ## 系统要求
 
@@ -80,8 +90,14 @@ Python-island/
 │   ├── getbluetooth.py    # 蓝牙设备信息
 │   ├── getinternet.py     # 网络连接状态
 │   ├── health.py          # 健康提醒
-│   └── sendtoast.py       # 系统通知
+│   ├── sendtoast.py       # 系统通知
+│   ├── Screenshot.py      # 截图功能
+│   ├── ScreenRecord.py    # 录屏功能
+│   └── sleep.py           # 睡眠模式
 ├── assets/          # 资源文件
+│   ├── image/      # 图标文件
+│   ├── icon/       # 应用图标
+│   └── svg/        # SVG图标
 ├── requirements.txt # 依赖项
 └── .gitignore       # Git忽略文件
 ```
@@ -92,6 +108,11 @@ Python-island/
 - 图标库：https://www.iconfont.cn/
 - 官网：https://www.pyisland.com/
 - 文档站：https://docs.pyisland.com/
+
+## 图标资源
+本项目部分图标来自 [Iconfont (https://www.iconfont.cn/)](sslocal://flow/file_open?url=https%3A%2F%2Fwww.iconfont.cn%2F&flow_extra=eyJsaW5rX3R5cGUiOiJjb2RlX2ludGVycHJldGVyIn0=)，遵循其开源/商用授权协议。
+- Ant Design Icons: MIT License
+- 其他图标: 遵循 Iconfont 平台商用授权规则
 
 ## 许可证
 

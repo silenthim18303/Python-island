@@ -113,6 +113,9 @@ class ExpandedBridge(QObject):
         self._brightness_timer.setSingleShot(True)
         self._brightness_timer.timeout.connect(self._flush_brightness_change)
         self.brightness_apply_finished.connect(self._on_brightness_apply_finished)
+        # 截图防抖相关
+        self._last_screenshot_time = 0
+        self._screenshot_cooldown = 1000  # 1秒冷却时间
 
     @staticmethod
     def _load_brightness_service():
@@ -142,6 +145,100 @@ class ExpandedBridge(QObject):
         self._pending_brightness = max(0, min(100, int(value)))
         self._brightness_timer.start(150)
         return True
+
+    @Slot()
+    def takeScreenshot(self) -> None:
+        import time
+        current_time = time.time() * 1000  # 转换为毫秒
+        
+        # 检查冷却时间
+        if current_time - self._last_screenshot_time < self._screenshot_cooldown:
+            return
+        
+        self._last_screenshot_time = current_time
+        
+        # 在后台线程中执行截图操作
+        def execute_screenshot():
+            try:
+                import importlib
+                module = importlib.import_module("method.Screenshot")
+                if hasattr(module, "take_screenshot"):
+                    # 由于take_screenshot现在是异步函数，我们需要使用asyncio.run来执行
+                    import asyncio
+                    asyncio.run(module.take_screenshot())
+            except Exception as e:
+                print(f"截图失败: {e}")
+                # 发送失败通知
+                try:
+                    from method.sendtoast import send_notification
+                    send_notification("截图异常", f"截图过程中出现错误：{str(e)}")
+                except Exception:
+                    pass
+                pass
+        
+        # 创建并启动后台线程
+        import threading
+        threading.Thread(target=execute_screenshot, daemon=True).start()
+
+    @Slot()
+    def startSleepMode(self) -> None:
+        # 在后台线程中执行睡眠模式操作
+        def execute_sleep_mode():
+            try:
+                import importlib
+                module = importlib.import_module("method.sleep")
+                if hasattr(module, "start_sleep_mode"):
+                    result = module.start_sleep_mode()
+                    print(f"睡眠模式启动: {result}")
+                    # 发送成功通知
+                    try:
+                        from method.sendtoast import send_notification
+                        send_notification("睡眠模式", "睡眠模式已开启，亮度和音量已调整")
+                    except Exception:
+                        pass
+            except Exception as e:
+                print(f"睡眠模式启动失败: {e}")
+                # 发送失败通知
+                try:
+                    from method.sendtoast import send_notification
+                    send_notification("睡眠模式异常", f"睡眠模式启动失败：{str(e)}")
+                except Exception:
+                    pass
+                pass
+        
+        # 创建并启动后台线程
+        import threading
+        threading.Thread(target=execute_sleep_mode, daemon=True).start()
+
+    @Slot()
+    def stopSleepMode(self) -> None:
+        # 在后台线程中执行睡眠模式停止操作
+        def execute_stop_sleep_mode():
+            try:
+                import importlib
+                module = importlib.import_module("method.sleep")
+                if hasattr(module, "stop_sleep_mode"):
+                    result = module.stop_sleep_mode()
+                    print(f"睡眠模式停止: {result}")
+                    # 发送成功通知
+                    try:
+                        from method.sendtoast import send_notification
+                        send_notification("睡眠模式", "睡眠模式已关闭，已恢复原始状态")
+                    except Exception:
+                        pass
+            except Exception as e:
+                print(f"睡眠模式停止失败: {e}")
+                # 发送失败通知
+                try:
+                    from method.sendtoast import send_notification
+                    send_notification("睡眠模式异常", f"睡眠模式停止失败：{str(e)}")
+                except Exception:
+                    pass
+                pass
+        
+        # 创建并启动后台线程
+        import threading
+        threading.Thread(target=execute_stop_sleep_mode, daemon=True).start()
 
     def _flush_brightness_change(self) -> None:
         if self.brightness_service is None or self._pending_brightness is None:
@@ -231,11 +328,11 @@ class SystemStatusWorker(QThread):
     @staticmethod
     def _load_checkers():
         class FallbackInternetChecker:
-            def check_internet(self):
+            async def check_internet(self):
                 return "未连接到互联网"
 
         class FallbackBatteryChecker:
-            def check_battery(self):
+            async def check_battery(self):
                 return "未知", None
 
         try:
@@ -256,7 +353,8 @@ class SystemStatusWorker(QThread):
         internet_checker, battery_checker = self._load_checkers()
         while self.running:
             try:
-                wifi_raw = internet_checker.check_internet()
+                # 异步调用check_internet方法
+                wifi_raw = asyncio.run(internet_checker.check_internet())
                 wifi_data = {
                     "status": "on" if ("已连接" in str(wifi_raw) or "online" in str(wifi_raw).lower()) else "off",
                     "text": str(wifi_raw),
@@ -266,7 +364,8 @@ class SystemStatusWorker(QThread):
             self.wifi_updated.emit(wifi_data)
 
             try:
-                bat_status, bat_level = battery_checker.check_battery()
+                # 异步调用check_battery方法
+                bat_status, bat_level = asyncio.run(battery_checker.check_battery())
                 battery_data = {
                     "status": str(bat_status) if bat_status else "未知",
                     "level": bat_level if bat_level is not None else None,
@@ -274,6 +373,7 @@ class SystemStatusWorker(QThread):
             except Exception as e:
                 battery_data = {"status": "error", "level": None, "error": str(e)}
             self.battery_updated.emit(battery_data)
+
             time.sleep(STATUS_POLL_INTERVAL_SECONDS)
 
     def stop(self) -> None:
@@ -382,7 +482,7 @@ class IslandWindow(QWidget):
         super().__init__()
         # 小岛默认尺寸 / hover 展开尺寸
         self.small_size = (300, 45)
-        self.large_size = (300, 105)
+        self.large_size = (300, 125)
         self.top_margin = 16
         self._hovered = False
         self._native_fixed = False

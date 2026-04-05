@@ -1,7 +1,8 @@
 import subprocess
+import asyncio
 
 class BatteryChecker:
-    def check_battery(self):
+    async def check_battery(self):
         """获取电池信息
         
         Returns:
@@ -38,21 +39,19 @@ class BatteryChecker:
                     # 没有电池，可能是台式机
                     status = "插电"
             except ImportError:
-                result = subprocess.run(
-                    [
-                        "wmic",
-                        "path",
-                        "Win32_Battery",
-                        "get",
-                        "EstimatedChargeRemaining,BatteryStatus",
-                    ],
+                # 使用asyncio.create_subprocess_exec来异步执行
+                process = await asyncio.create_subprocess_exec(
+                    "wmic",
+                    "path",
+                    "Win32_Battery",
+                    "get",
+                    "EstimatedChargeRemaining,BatteryStatus",
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
-                    errors="ignore",
-                    creationflags=subprocess.CREATE_NO_WINDOW,
                 )
-                output = result.stdout
+                stdout, stderr = await process.communicate()
+                output = stdout
 
                 lines = output.strip().split("\n")[1:]
                 if lines and lines[0].strip():
