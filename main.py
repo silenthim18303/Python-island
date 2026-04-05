@@ -116,6 +116,11 @@ class ExpandedBridge(QObject):
         # 截图防抖相关
         self._last_screenshot_time = 0
         self._screenshot_cooldown = 1000  # 1秒冷却时间
+        # 亮度更新定时器
+        self._brightness_update_timer = QTimer(self)
+        self._brightness_update_timer.setInterval(2000)  # 每2秒更新一次
+        self._brightness_update_timer.timeout.connect(self._update_brightness)
+        self._brightness_update_timer.start()
 
     @staticmethod
     def _load_brightness_service():
@@ -267,6 +272,19 @@ class ExpandedBridge(QObject):
         self._brightness_in_flight = False
         if self._pending_brightness is not None:
             self._brightness_timer.start(80)
+
+    def _update_brightness(self) -> None:
+        """定期更新亮度值并发送到前端"""
+        if self.brightness_service is None:
+            return
+        try:
+            brightness_value = int(self.brightness_service.get_brightness())
+            # 发送亮度值到前端
+            if hasattr(self.window, 'web_view') and self.window.web_view:
+                js = f"if (typeof window.updateBrightness === 'function') window.updateBrightness({brightness_value});"
+                self.window.web_view.page().runJavaScript(js)
+        except Exception as e:
+            print(f"更新亮度失败: {e}")
 
 
 class BluetoothWorker(QThread):
