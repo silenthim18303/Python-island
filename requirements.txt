@@ -27,3 +27,9 @@ comtypes
 
 # Windows API access
 pywin32
+
+keyboard
+
+mss
+
+rich
