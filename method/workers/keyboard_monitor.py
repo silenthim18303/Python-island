@@ -4,7 +4,7 @@ import time
 import keyboard
 from PySide6.QtCore import QThread, Signal
 import importlib
-_ss = importlib.import_module("method.workers.screenshot.screenshot_with_key")
+_ss = importlib.import_module("method.screenshot.screenshot_with_key")
 ScreenshotOCR = getattr(_ss, "ScreenshotOCR")
 
 STATUS_POLL_INTERVAL_SECONDS = 2
