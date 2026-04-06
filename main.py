@@ -8,8 +8,6 @@ import platform
 import subprocess
 import sys
 import threading
-import time
-import asyncio
 
 # 导入健康提醒模块
 try:
@@ -33,14 +31,29 @@ except ImportError:
     def stop_health_reminders():
         pass
 
-from PySide6.QtCore import QEasingCurve, QObject, QPropertyAnimation, QRect, Qt, QThread, QTimer, QUrl, Signal, Slot
+from PySide6.QtCore import (
+    QEasingCurve,
+    QObject,
+    QPropertyAnimation,
+    QRect,
+    Qt,
+    QTimer,
+    QUrl,
+    Signal,
+    Slot
+)
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon, QVBoxLayout, QWidget
 
-STATUS_POLL_INTERVAL_SECONDS = 2
+
+from method.workers.bluetooth_woker import BluetoothWorker
+from method.workers.system_status_worker import SystemStatusWorker
+from method.workers.keyboard_monitor import KeyboardMonitor
+
+
 EXPANDED_CONTENT_DELAY_MS = 360
 
 
@@ -287,116 +300,6 @@ class ExpandedBridge(QObject):
             print(f"更新亮度失败: {e}")
 
 
-class BluetoothWorker(QThread):
-    bluetooth_updated = Signal(dict)
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.running = True
-
-    @staticmethod
-    def _load_bluetooth_getter():
-        try:
-            module = importlib.import_module("method.getbluetooth")
-            getter = getattr(module, "get_bluetooth_devices", None)
-            if getter is not None:
-                return getter
-        except Exception:
-            pass
-
-        async def fallback():
-            return []
-
-        return fallback
-
-    def run(self) -> None:
-        getter = self._load_bluetooth_getter()
-        while self.running:
-            try:
-                devices_raw = asyncio.run(getter())
-                devices = []
-                connected_count = 0
-                for item in devices_raw:
-                    name = getattr(item, "name", "")
-                    status = str(getattr(item, "status", "Unknown"))
-                    if status.lower() == "connected":
-                        connected_count += 1
-                    devices.append({"name": name, "status": status})
-                payload = {
-                    "status": "on" if connected_count > 0 else "off",
-                    "devices": devices,
-                }
-            except Exception:
-                payload = {"status": "error", "devices": []}
-            self.bluetooth_updated.emit(payload)
-            time.sleep(STATUS_POLL_INTERVAL_SECONDS)
-
-    def stop(self) -> None:
-        self.running = False
-
-
-class SystemStatusWorker(QThread):
-    wifi_updated = Signal(dict)
-    battery_updated = Signal(dict)
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.running = True
-
-    @staticmethod
-    def _load_checkers():
-        class FallbackInternetChecker:
-            async def check_internet(self):
-                return "未连接到互联网"
-
-        class FallbackBatteryChecker:
-            async def check_battery(self):
-                return "未知", None
-
-        try:
-            internet_module = importlib.import_module("method.getinternet")
-            internet_checker_cls = getattr(internet_module, "InternetChecker", FallbackInternetChecker)
-        except Exception:
-            internet_checker_cls = FallbackInternetChecker
-
-        try:
-            battery_module = importlib.import_module("method.getbattery")
-            battery_checker_cls = getattr(battery_module, "BatteryChecker", FallbackBatteryChecker)
-        except Exception:
-            battery_checker_cls = FallbackBatteryChecker
-
-        return internet_checker_cls(), battery_checker_cls()
-
-    def run(self) -> None:
-        internet_checker, battery_checker = self._load_checkers()
-        while self.running:
-            try:
-                # 异步调用check_internet方法
-                wifi_raw = asyncio.run(internet_checker.check_internet())
-                wifi_data = {
-                    "status": "on" if ("已连接" in str(wifi_raw) or "online" in str(wifi_raw).lower()) else "off",
-                    "text": str(wifi_raw),
-                }
-            except Exception as e:
-                wifi_data = {"status": "error", "text": f"检测异常: {e}"}
-            self.wifi_updated.emit(wifi_data)
-
-            try:
-                # 异步调用check_battery方法
-                bat_status, bat_level = asyncio.run(battery_checker.check_battery())
-                battery_data = {
-                    "status": str(bat_status) if bat_status else "未知",
-                    "level": bat_level if bat_level is not None else None,
-                }
-            except Exception as e:
-                battery_data = {"status": "error", "level": None, "error": str(e)}
-            self.battery_updated.emit(battery_data)
-
-            time.sleep(STATUS_POLL_INTERVAL_SECONDS)
-
-    def stop(self) -> None:
-        self.running = False
-
 
 class ExpandedWindow(QWidget):
     def __init__(self, main_window: "IslandWindow") -> None:
@@ -575,6 +478,7 @@ class IslandWindow(QWidget):
         self.system_status_worker = SystemStatusWorker()
         self.system_status_worker.wifi_updated.connect(self.update_wifi_state)
         self.system_status_worker.battery_updated.connect(self.update_battery_state)
+        self.keyboard_monitor = KeyboardMonitor()
         QTimer.singleShot(1200, self.start_background_workers)
 
         # 应用退出时执行收尾清理
@@ -623,6 +527,8 @@ class IslandWindow(QWidget):
             self.bluetooth_worker.start()
         if hasattr(self, "system_status_worker") and not self.system_status_worker.isRunning():
             self.system_status_worker.start()
+        if hasattr(self, "keyboard_monitor") and not self.keyboard_monitor.isRunning():
+            self.keyboard_monitor.start()
 
     def apply_native_window_fixes(self) -> None:
         apply_native_window_fixes(self)
