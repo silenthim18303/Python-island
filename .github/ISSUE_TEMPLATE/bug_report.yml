@@ -1,11 +1,11 @@
 name: Bug Report
-description: Report a reproducible problem in eIsland
+description: Report a reproducible problem
 title: "[Bug]: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping us improve eIsland. Please fill in the details below.
+        Thanks for helping us improve our project. Please fill in the details below.
 
   - type: textarea
     id: summary
