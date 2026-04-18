@@ -1,0 +1,4 @@
+PySide6
+vosk
+PyAudio
+pyinstaller

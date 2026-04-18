@@ -1,0 +1,1 @@
+"""Flash Capsule application package."""

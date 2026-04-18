@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Py</title>
+  <link rel="stylesheet" href="./capsule.css" />
+</head>
+<body>
+  <main id="capsule" class="capsule">
+    <section id="drag-handle" class="header">
+      <div class="title">待办事项</div>
+      <div id="state-label" class="state">点击展开</div>
+      <button id="toggle-btn" class="toggle" type="button">展开</button>
+    </section>
+
+    <section id="content" class="content">
+      <div class="desc">快速记录想法，点击添加即可进入列表</div>
+
+      <section class="composer">
+        <input id="memo-input" type="text" placeholder="输入备忘录内容..." maxlength="120" />
+        <button id="add-btn" class="add-btn" type="button">添加</button>
+        <button id="voice-btn" class="voice-btn" type="button">语音输入</button>
+        <button id="clear-btn" class="clear-btn" type="button">一键清空</button>
+      </section>
+
+      <ul id="memo-list" class="list"></ul>
+    </section>
+
+    <div class="shortcut-hint">按下 Ctrl + Alt + Y 开启语音</div>
+  </main>
+
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script src="./capsule.js"></script>
+</body>
+</html>

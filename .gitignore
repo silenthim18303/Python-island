@@ -1,0 +1,57 @@
+# 虚拟环境
+.venv/
+env/
+venv/
+
+# PyInstaller 构建文件
+build/
+dist/
+*.spec
+
+# Python 编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+logs/
+
+# 其他临时文件
+*.tmp
+*.temp
+
+# 打包生成的可执行文件
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 测试相关
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+coverage.xml
+
+# 构建脚本生成的文件
+build_release.bat.bak
