@@ -154,7 +154,7 @@ class CapsuleWindow(QWidget):
         self._drag_start_pos = QPoint()
         self._voice_worker = None
 
-        self.setWindowTitle("闪念胶囊")
+        self.setWindowTitle("速记胶囊")
         self.setWindowFlags(
             Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.NoDropShadowWindowHint | Qt.Tool
         )
@@ -174,7 +174,7 @@ class CapsuleWindow(QWidget):
         if TRAY_ICON_FILE.exists():
             self.tray_icon.setIcon(QIcon(str(TRAY_ICON_FILE)))
 
-        self.tray_icon.setToolTip("闪念胶囊")
+        self.tray_icon.setToolTip("速记胶囊")
 
         tray_menu = QMenu(self)
         show_action = QAction("显示", self)
