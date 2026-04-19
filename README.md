@@ -160,6 +160,3 @@ dist\FlashCapsule\FlashCapsule.exe
 - 文件拖拽只记录路径，不复制文件本体
 - 图片超过 `50MB` 会被拒绝保存
 
-## License
-
-如果你准备开源发布，可以在这里补充正式许可证信息，例如 `MIT`。
