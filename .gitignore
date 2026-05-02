@@ -9,6 +9,5 @@ target/
 .windsurf/
 .agent/
 claude-psmux-team/
-debug-run.bat
 release.md
 

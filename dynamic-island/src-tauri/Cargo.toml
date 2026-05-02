@@ -1,6 +1,6 @@
 [package]
 name = "dynamic-island"
-version = "0.8.3"
+version = "0.8.4"
 description = "a dynamic island for windows"
 authors = ["Coding_w", "cXp1r"]
 edition = "2021"
