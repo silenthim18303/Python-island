@@ -1,0 +1,66 @@
+//
+//  IslandView.swift
+//  MacIsland
+//
+//  Created by GeminiMortal on 2026/6/1.
+//
+
+import SwiftUI
+
+// MARK: - Island View
+
+/// 灵动岛主视图
+struct IslandView: View {
+    @StateObject private var store = IslandStore()
+    @EnvironmentObject var musicService: SystemMusicService
+    @EnvironmentObject var lyricsService: LyricsService
+    @EnvironmentObject var timerService: TimerService
+    @EnvironmentObject var clipboardService: ClipboardService
+    @EnvironmentObject var hotkeyService: HotkeyService
+
+    var body: some View {
+        CapsuleShell(store: store)
+            .animation(
+                store.settings.springAnimation
+                    ? .spring(response: store.settings.animationSpeed.duration, dampingFraction: 0.75)
+                    : .easeInOut(duration: store.settings.animationSpeed.duration),
+                value: store.state
+            )
+            .onChange(of: store.state) { _, newState in
+                syncWindowSize(for: newState)
+            }
+            .onChange(of: hotkeyService.isAccessibilityGranted) { _, granted in
+                // 权限从「未授予」变为「已授予」时，通知用户快捷键已可用
+                if granted {
+                    store.setNotification(title: "⌨️ 快捷键已启用", body: "⌥⌘I/P/←/→ 现在可用")
+                }
+            }
+            .onPreferenceChange(HeightPreferenceKey.self) { height in
+                guard IslandLayout.isHeightAdaptive(store.state) else { return }
+                IslandWindowManager.shared.updateHeight(height)
+            }
+            .onAppear {
+                store.bindLyricsService(lyricsService)
+                store.bindMusicService(musicService)
+                store.bindTimerService(timerService)
+                store.bindClipboardService(clipboardService)
+                IslandWindowManager.shared.onCollapse = { store.setIdle() }
+
+                // 启动后检查辅助功能权限，不足时以通知态提醒用户
+                if !hotkeyService.isAccessibilityGranted {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        store.setNotification(title: "⌨️ 快捷键不可用", body: "请在设置中授权辅助功能权限")
+                    }
+                }
+            }
+    }
+
+    // MARK: - Private Methods
+
+    private func syncWindowSize(for state: IslandState) {
+        DispatchQueue.main.async {
+            let size = IslandLayout.size(for: state)
+            IslandWindowManager.shared.resize(to: size, state: state)
+        }
+    }
+}
