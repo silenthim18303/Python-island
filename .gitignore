@@ -1,0 +1,26 @@
+# macOS 系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Xcode 缓存、用户配置、编译产物
+build/
+DerivedData/
+*.xcworkspace
+!*.xcodeproj
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.userstate
+xcuserdata/
+*.log
+*.bak
+*.swp
+
+# 其他常见
+node_modules/
+dist/
+.env
+*.tmp
