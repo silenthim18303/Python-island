@@ -10,20 +10,65 @@ import AppKit
 
 // MARK: - Window Size Configuration
 
-/// 各形态的窗口尺寸与圆角布局
+/// 各形态的窗口尺寸与圆角布局（响应式，基于当前屏幕尺寸动态计算）
 enum IslandLayout {
+
+    // MARK: - Screen Helpers
+
+    /// 当前屏幕宽度
+    private static var screenW: CGFloat {
+        (NSScreen.main ?? NSScreen.screens[0]).frame.width
+    }
+
+    /// 当前屏幕高度
+    private static var screenH: CGFloat {
+        (NSScreen.main ?? NSScreen.screens[0]).frame.height
+    }
+
+    /// 限制值不超出屏幕比例上限
+    private static func clamped(_ value: CGFloat, maxRatio: CGFloat) -> CGFloat {
+        min(value, screenW * maxRatio)
+    }
+
+    // MARK: - Fixed Base Values
+
     static let idleHeight: CGFloat = 30
     static let compactIdleWidth: CGFloat = 180
-    static let hover = CGSize(width: 300, height: 80)
-    static let expanded = CGSize(width: 420, height: 280)
-    static let maxExpand = CGSize(width: 600, height: 480)
-    static let notification = CGSize(width: 340, height: 80)
 
-    /// 横向态每侧内容区宽度（左右各占一侧，中间让出刘海）
-    static let wideSideWidth: CGFloat = 96
+    /// 横向态每侧内容区宽度（基于刘海宽度比例）
+    static var wideSideWidth: CGFloat {
+        min(NotchInfo.width * 0.15, 100)
+    }
 
-    /// 无刘海机型的横向态中间留白
-    static let wideNoNotchGap: CGFloat = 180
+    /// 无刘海机型的横向态中间留白（屏幕宽度的 15%）
+    static var wideNoNotchGap: CGFloat {
+        screenW * 0.15
+    }
+
+    // MARK: - Responsive Sizes
+
+    /// hover 尺寸 — 宽度不超过屏幕 25%
+    static var hover: CGSize {
+        CGSize(width: clamped(340, maxRatio: 0.25), height: 80)
+    }
+
+    /// expanded 尺寸 — 宽度不超过屏幕 35%
+    static var expanded: CGSize {
+        CGSize(width: clamped(460, maxRatio: 0.35), height: 280)
+    }
+
+    /// maxExpand 尺寸 — 宽度不超过屏幕 50%，高度不超过屏幕 60%
+    static var maxExpand: CGSize {
+        CGSize(
+            width: clamped(660, maxRatio: 0.5),
+            height: min(520, screenH * 0.6)
+        )
+    }
+
+    /// notification 尺寸 — 宽度不超过屏幕 28%
+    static var notification: CGSize {
+        CGSize(width: clamped(380, maxRatio: 0.28), height: 80)
+    }
 
     /// 空闲态尺寸 — 固定紧凑居中，高度统一为刘海物理高度
     static var idle: CGSize {
@@ -34,6 +79,8 @@ enum IslandLayout {
     static var wideSize: CGSize {
         CGSize(width: NotchInfo.width + wideSideWidth * 2, height: NotchInfo.height)
     }
+
+    // MARK: - State Queries
 
     /// 根据形态获取目标尺寸（自适应态返回的高度为最小高度）
     static func size(for state: IslandState) -> CGSize {
@@ -50,12 +97,12 @@ enum IslandLayout {
     /// 该形态是否按内容自适应高度（宽度恒定，仅高度随内容变化）
     static func isHeightAdaptive(_ state: IslandState) -> Bool {
         switch state {
-        case .hover, .notification: return true
+        case .hover, .notification, .expanded: return true
         default: return false
         }
     }
 
-    /// 根据形态获取圆角半径
+    /// 根据形态获取圆角半径（按高度比例缩放）
     static func cornerRadius(for state: IslandState) -> CGFloat {
         switch state {
         case .idle:
@@ -63,9 +110,9 @@ enum IslandLayout {
         case .lyrics, .countdown:
             return wideSize.height / 2.0
         case .hover, .notification:
-            return 20
+            return size(for: state).height * 0.4
         case .expanded, .maxExpand:
-            return 22
+            return Theme.Radius.lg
         }
     }
 }
@@ -85,7 +132,7 @@ enum NotchInfo {
         return top > 0 ? top : IslandLayout.idleHeight
     }
 
-    /// 刘海宽度（无刘海机型回退为预设留白）
+    /// 刘海宽度（无刘海机型回退为屏幕比例留白）
     static var width: CGFloat {
         guard let screen = NSScreen.main, screen.safeAreaInsets.top > 0 else {
             return IslandLayout.wideNoNotchGap

@@ -13,11 +13,11 @@ import Combine
 final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
     @Published private(set) var detectedURLs: [DetectedURL] = []
     var isEnabled: Bool = true
+    var urlDetectMode: ClipboardUrlDetectMode = .httpHttps
+    var blacklistedDomains: Set<String> = []
 
     private var pollTimer: Timer?
     private var lastClipboardText: String = ""
-    /// 用户自定义域名黑名单 — TODO: 预留，待接入设置 UI / 持久化（当前无写入入口，恒为空）
-    private var blacklist: Set<String> = []
     private var onNotification: ((String, String) -> Void)?
     private let session: URLSession
 
@@ -80,7 +80,15 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
     // MARK: - URL Extraction
 
     private func extractUrls(from text: String) -> [String] {
-        let pattern = "https?://[^\\s<>\"{}|\\\\^`\\[\\]]+"
+        let pattern: String
+        switch urlDetectMode {
+        case .httpsOnly:
+            pattern = "https://[^\\s<>\"{}|\\\\^`\\[\\]]+"
+        case .httpHttps:
+            pattern = "https?://[^\\s<>\"{}|\\\\^`\\[\\]]+"
+        case .domainOnly:
+            pattern = "[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.[a-zA-Z]{2,}(?:/[^\\s<>\"{}]*)?"
+        }
         guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
             return []
         }
@@ -88,19 +96,22 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
         let matches = regex.matches(in: text, range: range)
         return matches.compactMap { match -> String? in
             guard let r = Range(match.range, in: text) else { return nil }
-            return String(text[r])
+            let matched = String(text[r])
+            if urlDetectMode == .domainOnly && !matched.hasPrefix("http") {
+                return "https://\(matched)"
+            }
+            return matched
         }
     }
 
     // MARK: - Blacklist
 
-    /// 命中用户域名黑名单则跳过该链接（精确匹配或子域匹配）。
-    /// 注：当前 `blacklist` 无写入入口恒为空，此判断暂为预留逻辑。
+    /// 命中用户域名黑名单则跳过该链接（精确匹配或子域匹配）
     private func isBlacklisted(_ urlString: String) -> Bool {
         guard let host = hostname(urlString) else { return false }
         let lower = host.lowercased()
-        if blacklist.contains(lower) { return true }
-        for domain in blacklist {
+        if blacklistedDomains.contains(lower) { return true }
+        for domain in blacklistedDomains {
             if lower.hasSuffix(".\(domain)") { return true }
         }
         return false

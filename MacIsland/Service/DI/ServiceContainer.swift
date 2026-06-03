@@ -46,11 +46,19 @@ final class ServiceContainer {
         self.hotkey.onNextTrack = { [weak self] in self?.music.nextTrack() }
         self.hotkey.onPreviousTrack = { [weak self] in self?.music.previousTrack() }
 
-        // 剪贴板开关 — 以 AppSettings 为单一数据源，初始化并订阅变化同步给服务
+        // 剪贴板配置 — 以 AppSettings 为单一数据源，初始化并订阅变化同步给服务
         let settings = AppSettings.shared
         self.clipboard.isEnabled = settings.clipboardEnabled
+        self.clipboard.urlDetectMode = settings.clipboardUrlDetectMode
+        self.clipboard.blacklistedDomains = settings.blacklistedDomains
         settings.$clipboardEnabled
             .sink { [weak self] in self?.clipboard.isEnabled = $0 }
+            .store(in: &cancellables)
+        settings.$clipboardUrlDetectMode
+            .sink { [weak self] in self?.clipboard.urlDetectMode = $0 }
+            .store(in: &cancellables)
+        settings.$blacklistedDomains
+            .sink { [weak self] in self?.clipboard.blacklistedDomains = $0 }
             .store(in: &cancellables)
     }
 

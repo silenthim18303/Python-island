@@ -8,6 +8,16 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Activatable Panel
+
+/// 支持键盘输入的 NSPanel — 在需要时可以成为 key window
+private class ActivatablePanel: NSPanel {
+    var canBecomeKeyCustom = false
+
+    override var canBecomeKey: Bool { canBecomeKeyCustom }
+    override var canBecomeMain: Bool { false }
+}
+
 // MARK: - Island Window Manager
 
 /// 灵动岛窗口管理器
@@ -22,6 +32,11 @@ final class IslandWindowManager {
     /// 折叠回调 — 由 IslandView 注册，菜单调用 collapse() 时触发岛回到 idle
     var onCollapse: (() -> Void)?
 
+    /// 设置窗口透明度 (0.0 ~ 1.0)
+    func setOpacity(_ opacity: Double) {
+        panel?.alphaValue = CGFloat(opacity)
+    }
+
     private init() {}
 
     // MARK: - Window Lifecycle
@@ -32,7 +47,7 @@ final class IslandWindowManager {
         let size = IslandLayout.idle
         let frame = calculateFrame(for: size, state: .idle)
 
-        let panel = NSPanel(
+        let panel = ActivatablePanel(
             contentRect: frame,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
@@ -48,10 +63,18 @@ final class IslandWindowManager {
     }
 
     func resize(to size: CGSize, state: IslandState, animated: Bool = true) {
-        guard let panel = panel else { return }
+        guard let panel = panel as? ActivatablePanel else { return }
         let stateChanged = currentState != state
         currentState = state
         if stateChanged { lastAdaptiveHeight = 0 }
+
+        // 展开态/最大展开态需要键盘输入（待办、便签等），允许面板激活
+        let needsKey: Bool
+        switch state {
+        case .expanded, .maxExpand: needsKey = true
+        default: needsKey = false
+        }
+        panel.canBecomeKeyCustom = needsKey
 
         // 自适应态：宽度固定，高度沿用上次测量值（由 updateHeight 驱动），避免在此重置高度
         let effectiveSize = IslandLayout.isHeightAdaptive(state)
@@ -62,8 +85,9 @@ final class IslandWindowManager {
         let cornerRadius = IslandLayout.cornerRadius(for: state)
 
         if animated {
+            let duration = AppSettings.shared.animationSpeed.duration
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.35
+                context.duration = duration
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 panel.animator().setFrame(newFrame, display: true)
             }
@@ -82,8 +106,9 @@ final class IslandWindowManager {
         lastAdaptiveHeight = clamped
 
         let newFrame = calculateFrame(for: CGSize(width: width, height: clamped), state: currentState)
+        let duration = AppSettings.shared.animationSpeed.duration * 0.7
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.25
+            context.duration = duration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             panel.animator().setFrame(newFrame, display: true)
         }
@@ -141,7 +166,7 @@ final class IslandWindowManager {
 
         panel.contentView = hostingView
         panel.contentView?.wantsLayer = true
-        panel.contentView?.layer?.cornerRadius = size.height / 2.0
+        panel.contentView?.layer?.cornerRadius = IslandLayout.cornerRadius(for: .idle)
         panel.contentView?.layer?.masksToBounds = true
     }
 

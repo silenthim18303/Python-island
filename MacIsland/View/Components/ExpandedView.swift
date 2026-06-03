@@ -31,8 +31,18 @@ struct ExpandedView: View {
         VStack(spacing: 0) {
             headerBar
             tabBar
-            tabContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ScrollView {
+                tabContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .onAppear {
+            // 读取来源形态指定的初始 Tab（如从倒计时态展开时自动切到工具）
+            if let tabName = store.expandedInitialTab,
+               let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
+                selectedTab = tab
+                store.expandedInitialTab = nil
+            }
         }
     }
 
@@ -40,6 +50,17 @@ struct ExpandedView: View {
 
     private var headerBar: some View {
         HStack {
+            // 展开到 MaxExpand
+            Button { store.setMaxExpand() } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white.opacity(0.5))
+                    .frame(width: 20, height: 20)
+                    .background(Circle().fill(.white.opacity(0.1)))
+            }
+            .buttonStyle(.plain)
+            .help("展开更多功能")
+
             Spacer()
 
             Capsule()
@@ -194,65 +215,47 @@ struct ExpandedView: View {
 
     private var musicTab: some View {
         VStack(spacing: 0) {
-            if musicService.hasMedia {
-                // 专辑封面 + 歌曲信息（紧凑横向布局）
-                HStack(spacing: 12) {
-                    albumArtSmall
-                    songInfoCompact
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-
-                Spacer().frame(height: 10)
-
-                // 可拖拽进度条
-                DraggableProgressView(
-                    progress: musicService.info.progress,
-                    elapsed: musicService.info.formattedElapsed,
-                    duration: musicService.info.formattedDuration,
-                    totalDuration: musicService.info.duration,
-                    onSeek: { fraction in
-                        musicService.seek(to: fraction * musicService.info.duration)
-                    }
-                )
-                .padding(.horizontal, 20)
-
-                Spacer().frame(height: 10)
-
-                // 播放控制
-                musicPlaybackControls
-
-                Spacer().frame(height: 8)
-
-                // 音量 + Shuffle / Repeat（紧凑一行）
-                HStack(spacing: 12) {
-                    shuffleRepeatCompact
-
-                    Spacer()
-
-                    VolumeControlView(volume: musicService.info.volume) { newVolume in
-                        musicService.setVolume(newVolume)
-                    }
-                }
-                .padding(.horizontal, 20)
-
-            } else {
-                // 未播放状态
-                Spacer()
-                Image(systemName: "music.note")
-                    .font(.system(size: 32))
-                    .foregroundColor(.white.opacity(0.3))
-
-                Text("未在播放")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
-
-                Text("播放音乐后将在此显示")
-                    .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.3))
+            // 专辑封面 + 歌曲信息（始终显示，无播放时为空占位）
+            HStack(spacing: 12) {
+                albumArtSmall
+                songInfoCompact
                 Spacer()
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+
+            Spacer().frame(height: 10)
+
+            // 可拖拽进度条（无播放时显示 0%）
+            DraggableProgressView(
+                progress: musicService.info.progress,
+                elapsed: musicService.info.formattedElapsed,
+                duration: musicService.info.formattedDuration,
+                totalDuration: musicService.info.duration,
+                onSeek: { fraction in
+                    musicService.seek(to: fraction * musicService.info.duration)
+                }
+            )
+            .padding(.horizontal, 20)
+
+            Spacer().frame(height: 10)
+
+            // 播放控制（始终可用）
+            musicPlaybackControls
+
+            Spacer().frame(height: 8)
+
+            // 音量 + Shuffle / Repeat（始终显示）
+            HStack(spacing: 12) {
+                shuffleRepeatCompact
+
+                Spacer()
+
+                VolumeControlView(volume: musicService.info.volume) { newVolume in
+                    musicService.setVolume(newVolume)
+                }
+            }
+            .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -421,30 +424,7 @@ struct ExpandedView: View {
     // MARK: - Monitor Tab
 
     private var monitorTab: some View {
-        VStack(spacing: 14) {
-            MonitorRow(
-                icon: "cpu",
-                label: "CPU",
-                value: String(format: "%.1f%%", monitorService.stats.cpuUsage),
-                percent: monitorService.stats.cpuUsage / 100
-            )
-
-            MonitorRow(
-                icon: "memorychip",
-                label: "内存",
-                value: String(format: "%.1f / %.1f GB", monitorService.stats.memoryUsed, monitorService.stats.memoryTotal),
-                percent: monitorService.stats.memoryPercent / 100
-            )
-
-            MonitorRow(
-                icon: "internaldrive",
-                label: "磁盘",
-                value: String(format: "%.0f / %.0f GB", monitorService.stats.diskUsed, monitorService.stats.diskTotal),
-                percent: monitorService.stats.diskPercent / 100
-            )
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        RunCatMonitorView(stats: monitorService.stats)
     }
 
     // MARK: - Helper

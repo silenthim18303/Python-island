@@ -8,6 +8,12 @@
 import SwiftUI
 import Combine
 
+// MARK: - Notifications
+
+extension Notification.Name {
+    static let openIslandSettings = Notification.Name("openIslandSettings")
+}
+
 // MARK: - Island Store
 
 /// 灵动岛状态管理
@@ -16,6 +22,11 @@ final class IslandStore: ObservableObject {
     // MARK: Published Properties
 
     @Published private(set) var state: IslandState = .idle
+
+    /// 展开态初始 Tab（由 setExpanded() 根据来源形态设置，ExpandedView.onAppear 消费后清空）
+    @Published var expandedInitialTab: String?
+    /// 最大展开态初始 Tab（由外部通知设置，MaxExpandView.onAppear 消费后清空）
+    @Published var maxExpandInitialTab: String?
 
     /// 共享设置（动画速度 / 弹簧动画）— 设置窗口与岛共用同一数据源
     let settings = AppSettings.shared
@@ -27,7 +38,7 @@ final class IslandStore: ObservableObject {
     private let idleDelay: TimeInterval = 4.0
     private var musicSubscriptions = Set<AnyCancellable>()
     private var wasPlaying: Bool = false
-    private var wasCountingDown: Bool = false
+    private var wasCountdownActive: Bool = false
     private weak var lyricsService: LyricsService?
     private weak var timerService: TimerService?
     private weak var clipboardService: ClipboardService?
@@ -49,23 +60,22 @@ final class IslandStore: ObservableObject {
             }
         }
 
-        // 倒计时自动状态机：running 时进入横向倒计时态（优先于歌词），结束/重置后
-        // 回到歌词（音乐在播）或空闲。wasCountingDown 记录上一次 running，用于只在
-        // running 状态翻转的边沿触发切换，避免每秒 tick 都重复进入。
+        // 倒计时自动状态机：歌词优先于倒计时。倒计时后台运行，仅在空闲态时
+        // 切入倒计时缩小态；歌词态不被倒计时抢占。
         service.$countdown
             .receive(on: RunLoop.main)
             .sink { [weak self] data in
                 guard let self = self else { return }
-                let running = data.state == .running
-                // 进入：仅当从非 running 翻转为 running，且当前处于可被覆盖的缩小态
-                if running && !self.wasCountingDown && (self.state == .idle || self.state == .lyrics) {
+                let active = data.state == .running || data.state == .completed
+                // 进入：仅从空闲态切入（不抢占歌词态）
+                if active && !self.wasCountdownActive && self.state == .idle {
                     self.setCountdown()
                 }
-                // 退出：倒计时结束/暂停且当前仍停留在倒计时态
-                if !running && self.wasCountingDown && self.state == .countdown {
+                // 退出：倒计时回到 idle（重置）且当前仍在倒计时态
+                if !active && self.wasCountdownActive && self.state == .countdown {
                     self.wasPlaying ? self.setLyrics() : self.setIdle()
                 }
-                self.wasCountingDown = running
+                self.wasCountdownActive = active
             }
             .store(in: &musicSubscriptions)
     }
@@ -80,6 +90,18 @@ final class IslandStore: ObservableObject {
         }
     }
 
+    /// 监听外部通知，打开设置标签
+    func listenForNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: .openIslandSettings,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.setMaxExpand()
+            self?.maxExpandInitialTab = "设置"
+        }
+    }
+
     /// Bind music service for auto-lyrics state transitions
     func bindMusicService(_ musicService: SystemMusicService) {
         musicService.$hasMedia
@@ -89,8 +111,8 @@ final class IslandStore: ObservableObject {
                 guard let self = self else { return }
                 let isPlaying = hasMedia && info.isPlaying
 
-                // Music started playing while idle -> switch to lyrics
-                if isPlaying && !self.wasPlaying && self.state == .idle {
+                // Music started playing while idle or countdown -> switch to lyrics（歌词优先）
+                if isPlaying && !self.wasPlaying && (self.state == .idle || self.state == .countdown) {
                     self.setLyrics()
                 }
                 // Music stopped while in lyrics -> switch to idle
@@ -133,6 +155,10 @@ final class IslandStore: ObservableObject {
     }
 
     func setExpanded() {
+        // 从倒计时态展开时，自动切到工具 Tab
+        if state == .countdown {
+            expandedInitialTab = "工具"
+        }
         previousState = state
         cancelIdleTimer()
         animate(to: .expanded)

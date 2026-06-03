@@ -39,12 +39,19 @@ struct IslandView: View {
                 guard IslandLayout.isHeightAdaptive(store.state) else { return }
                 IslandWindowManager.shared.updateHeight(height)
             }
+            .onChange(of: store.settings.islandOpacity) { _, newValue in
+                IslandWindowManager.shared.setOpacity(newValue)
+            }
             .onAppear {
                 store.bindLyricsService(lyricsService)
                 store.bindMusicService(musicService)
                 store.bindTimerService(timerService)
                 store.bindClipboardService(clipboardService)
+                store.listenForNotifications()
                 IslandWindowManager.shared.onCollapse = { store.setIdle() }
+
+                // 应用透明度设置
+                IslandWindowManager.shared.setOpacity(store.settings.islandOpacity)
 
                 // 启动后检查辅助功能权限，不足时以通知态提醒用户
                 if !hotkeyService.isAccessibilityGranted {
@@ -58,9 +65,7 @@ struct IslandView: View {
     // MARK: - Private Methods
 
     private func syncWindowSize(for state: IslandState) {
-        DispatchQueue.main.async {
-            let size = IslandLayout.size(for: state)
-            IslandWindowManager.shared.resize(to: size, state: state)
-        }
+        let size = IslandLayout.size(for: state)
+        IslandWindowManager.shared.resize(to: size, state: state)
     }
 }
