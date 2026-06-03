@@ -62,37 +62,18 @@ struct TimerView: View {
 
 private struct PomodoroSection: View {
     @ObservedObject var timerService: TimerService
+    @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
         let data = timerService.pomodoro
 
         VStack(spacing: 8) {
-            // Progress ring + time
-            HStack(spacing: 14) {
-                PomodoroRing(progress: data.progress, phase: data.phase)
-                    .frame(width: 52, height: 52)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(data.formattedTime)
-                        .font(.system(size: 22, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.white)
-
-                    Text(data.phase.rawValue)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(phaseColor(data.phase).opacity(0.8))
-                }
-
-                Spacer()
-
-                // Completed count
-                VStack(spacing: 2) {
-                    Text("\(data.completedCount)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                    Text("完成")
-                        .font(.system(size: 9))
-                        .foregroundColor(.white.opacity(0.4))
-                }
+            if data.running {
+                // 运行中：进度环 + 时间 + 完成数
+                runningUI(data: data)
+            } else {
+                // 未运行：阶段选择 + 时长调整
+                idleUI(data: data)
             }
 
             // Controls
@@ -115,6 +96,123 @@ private struct PomodoroSection: View {
                     timerService.skipPomodoro()
                 }
             }
+        }
+        // 空闲态下设置变化时同步剩余时间
+        .onChange(of: settings.pomodoroWorkMinutes) { _ in syncDurationIfIdle(.work) }
+        .onChange(of: settings.pomodoroShortBreakMinutes) { _ in syncDurationIfIdle(.shortBreak) }
+        .onChange(of: settings.pomodoroLongBreakMinutes) { _ in syncDurationIfIdle(.longBreak) }
+    }
+
+    /// 设置变化时同步当前选中阶段的剩余时间
+    private func syncDurationIfIdle(_ changedPhase: PomodoroPhase) {
+        guard !timerService.pomodoro.running else { return }
+        guard timerService.pomodoro.phase == changedPhase else { return }
+        timerService.selectPomodoroPhase(changedPhase)
+    }
+
+    // MARK: - 运行中 UI
+
+    private func runningUI(data: PomodoroData) -> some View {
+        HStack(spacing: 14) {
+            PomodoroRing(progress: data.progress, phase: data.phase)
+                .frame(width: 52, height: 52)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(data.formattedTime)
+                    .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+
+                Text(data.phase.rawValue)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(phaseColor(data.phase).opacity(0.8))
+            }
+
+            Spacer()
+
+            VStack(spacing: 2) {
+                Text("\(data.completedCount)")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text("完成")
+                    .font(.system(size: 9))
+                    .foregroundColor(.white.opacity(0.4))
+            }
+        }
+    }
+
+    // MARK: - 未运行 UI（阶段选择 + 时长调整）
+
+    private func idleUI(data: PomodoroData) -> some View {
+        VStack(spacing: 6) {
+            // 阶段选择器：专注 / 短休 / 长休
+            phasePicker(data: data)
+
+            // 选中阶段的时长调整
+            switch data.phase {
+            case .work:
+                durationRow(title: "专注", color: .red, value: $settings.pomodoroWorkMinutes, range: 1...120)
+            case .shortBreak:
+                durationRow(title: "短休", color: .green, value: $settings.pomodoroShortBreakMinutes, range: 1...30)
+            case .longBreak:
+                durationRow(title: "长休", color: .blue, value: $settings.pomodoroLongBreakMinutes, range: 1...60)
+            }
+        }
+    }
+
+    /// 阶段轮选器
+    private func phasePicker(data: PomodoroData) -> some View {
+        HStack(spacing: 2) {
+            ForEach(PomodoroPhase.allCases, id: \.self) { phase in
+                let selected = data.phase == phase
+                let color = phaseColor(phase)
+                let minutes: Int = {
+                    switch phase {
+                    case .work: return settings.pomodoroWorkMinutes
+                    case .shortBreak: return settings.pomodoroShortBreakMinutes
+                    case .longBreak: return settings.pomodoroLongBreakMinutes
+                    }
+                }()
+
+                Button {
+                    timerService.selectPomodoroPhase(phase)
+                } label: {
+                    VStack(spacing: 2) {
+                        Text(phase.rawValue)
+                            .font(.system(size: 10, weight: selected ? .bold : .medium))
+                        Text("\(minutes)分钟")
+                            .font(.system(size: 8, design: .monospaced))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule().fill(selected ? color.opacity(0.3) : Color.white.opacity(0.05))
+                    )
+                    .overlay(
+                        Capsule().stroke(selected ? color.opacity(0.5) : Color.clear, lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(selected ? .white : .white.opacity(0.5))
+            }
+        }
+        .padding(.horizontal, 2)
+    }
+
+    /// 时长调整行（纯 StepperField）
+    private func durationRow(title: String, color: Color, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(color.opacity(0.8))
+                .frame(width: 28, alignment: .leading)
+
+            Text("分钟")
+                .font(.system(size: 9))
+                .foregroundColor(.white.opacity(0.35))
+
+            Spacer()
+
+            StepperField(value: value, range: range, label: "min")
         }
     }
 
@@ -162,7 +260,6 @@ private struct PomodoroRing: View {
 
 private struct CountdownSection: View {
     @ObservedObject var timerService: TimerService
-    @State private var editing = false
     @State private var inputH = 0
     @State private var inputM = 5
     @State private var inputS = 0
@@ -171,10 +268,21 @@ private struct CountdownSection: View {
         let data = timerService.countdown
 
         VStack(spacing: 8) {
-            if data.state == .idle && !editing {
+            if data.state == .idle {
+                // 空闲态：预设 + StepperField + 直接开始
                 countdownInput
+            } else if data.state == .completed {
+                // 时间到提示
+                VStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.green)
+                    Text("时间到！")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
             } else {
-                Text(data.state == .idle ? data.formattedInput : data.formattedRemaining)
+                Text(data.formattedRemaining)
                     .font(.system(size: 24, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white)
 
@@ -188,22 +296,9 @@ private struct CountdownSection: View {
             HStack(spacing: 12) {
                 switch data.state {
                 case .idle:
-                    if editing {
-                        TimerButton(title: "开始", icon: "play.fill") {
-                            timerService.setCountdownInput(hours: inputH, minutes: inputM, seconds: inputS)
-                            timerService.startCountdown()
-                            editing = false
-                        }
-                        TimerButton(title: "取消", icon: "xmark") {
-                            editing = false
-                        }
-                    } else {
-                        TimerButton(title: "设置", icon: "slider.horizontal.3") {
-                            inputH = data.inputHours
-                            inputM = data.inputMinutes
-                            inputS = data.inputSeconds
-                            editing = true
-                        }
+                    TimerButton(title: "开始", icon: "play.fill") {
+                        timerService.setCountdownInput(hours: inputH, minutes: inputM, seconds: inputS)
+                        timerService.startCountdown()
                     }
                 case .running:
                     TimerButton(title: "暂停", icon: "pause.fill") {
@@ -211,7 +306,6 @@ private struct CountdownSection: View {
                     }
                     TimerButton(title: "重置", icon: "arrow.counterclockwise") {
                         timerService.resetCountdown()
-                        editing = false
                     }
                 case .paused:
                     TimerButton(title: "继续", icon: "play.fill") {
@@ -219,7 +313,10 @@ private struct CountdownSection: View {
                     }
                     TimerButton(title: "重置", icon: "arrow.counterclockwise") {
                         timerService.resetCountdown()
-                        editing = false
+                    }
+                case .completed:
+                    TimerButton(title: "重置", icon: "arrow.counterclockwise") {
+                        timerService.resetCountdown()
                     }
                 }
             }
@@ -227,12 +324,32 @@ private struct CountdownSection: View {
     }
 
     private var countdownInput: some View {
-        HStack(spacing: 4) {
-            StepperField(value: $inputH, range: 0...23, label: "时")
-            Text(":").foregroundColor(.white.opacity(0.5))
-            StepperField(value: $inputM, range: 0...59, label: "分")
-            Text(":").foregroundColor(.white.opacity(0.5))
-            StepperField(value: $inputS, range: 0...59, label: "秒")
+        VStack(spacing: 8) {
+            // 常用预设按钮
+            HStack(spacing: 6) {
+                ForEach([1, 3, 5, 10, 15, 25, 30], id: \.self) { min in
+                    Button {
+                        inputH = 0; inputM = min; inputS = 0
+                    } label: {
+                        Text("\(min)m")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(.white.opacity(0.08)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // 时:分:秒 StepperField
+            HStack(spacing: 4) {
+                StepperField(value: $inputH, range: 0...23, label: "时")
+                Text(":").foregroundColor(.white.opacity(0.5))
+                StepperField(value: $inputM, range: 0...59, label: "分")
+                Text(":").foregroundColor(.white.opacity(0.5))
+                StepperField(value: $inputS, range: 0...59, label: "秒")
+            }
         }
     }
 }
@@ -244,31 +361,65 @@ private struct StepperField: View {
     let range: ClosedRange<Int>
     let label: String
 
-    var body: some View {
-        VStack(spacing: 2) {
-            Button {
-                value = min(value + 1, range.upperBound)
-            } label: {
-                Image(systemName: "chevron.up")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(.white.opacity(0.5))
-            }
-            .buttonStyle(.plain)
+    @State private var isPressingUp = false
+    @State private var isPressingDown = false
+    @State private var repeatTimer: Timer?
 
+    var body: some View {
+        VStack(spacing: 1) {
+            // 上按钮（点击 + 长按连续递增）
+            Image(systemName: "chevron.up")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.white.opacity(isPressingUp ? 0.9 : 0.5))
+                .frame(width: 32, height: 22)
+                .contentShape(Rectangle())
+                .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                    handlePress(pressing: pressing, isUp: true)
+                }, perform: {})
+
+            // 数字
             Text(String(format: "%02d", value))
                 .font(.system(size: 16, weight: .semibold, design: .monospaced))
                 .foregroundColor(.white)
                 .frame(width: 28)
 
-            Button {
-                value = max(value - 1, range.lowerBound)
-            } label: {
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(.white.opacity(0.5))
-            }
-            .buttonStyle(.plain)
+            // 下按钮（点击 + 长按连续递减）
+            Image(systemName: "chevron.down")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.white.opacity(isPressingDown ? 0.9 : 0.5))
+                .frame(width: 32, height: 22)
+                .contentShape(Rectangle())
+                .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                    handlePress(pressing: pressing, isUp: false)
+                }, perform: {})
         }
+    }
+
+    private func handlePress(pressing: Bool, isUp: Bool) {
+        if pressing {
+            if isUp { isPressingUp = true; increment() }
+            else { isPressingDown = true; decrement() }
+            // 300ms 后开始连续触发（每秒 10 次）
+            repeatTimer?.invalidate()
+            repeatTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
+                repeatTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+                    isUp ? increment() : decrement()
+                }
+            }
+        } else {
+            isPressingUp = false
+            isPressingDown = false
+            repeatTimer?.invalidate()
+            repeatTimer = nil
+        }
+    }
+
+    private func increment() {
+        value = value >= range.upperBound ? range.lowerBound : value + 1
+    }
+
+    private func decrement() {
+        value = value <= range.lowerBound ? range.upperBound : value - 1
     }
 }
 

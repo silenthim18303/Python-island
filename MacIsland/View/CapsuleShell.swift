@@ -51,7 +51,7 @@ struct CapsuleShell: View {
         )
         .clipShape(capsuleShape)
         .contentShape(capsuleShape)
-        .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 4)
+        .shadow(color: .black.opacity(stateShadow.opacity), radius: stateShadow.radius, x: 0, y: stateShadow.y)
         .onHover { handleHover($0) }
         .onTapGesture { handleTap() }
     }
@@ -106,28 +106,28 @@ struct CapsuleShell: View {
             Color.black
                 .overlay(
                     Capsule()
-                        .stroke(.white.opacity(0.08), lineWidth: 0.5)
+                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
                 )
 
         case .hover, .expanded, .maxExpand:
             VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(.white.opacity(0.12), lineWidth: 0.5)
+                        .stroke(.white.opacity(Theme.FillOpacity.strong), lineWidth: 0.5)
                 )
 
         case .notification:
             VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(.white.opacity(0.1), lineWidth: 0.5)
+                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
                 )
 
         case .lyrics, .countdown:
             Color.black.opacity(0.7)
                 .overlay(
                     Capsule()
-                        .stroke(.white.opacity(0.08), lineWidth: 0.5)
+                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
                 )
         }
     }
@@ -170,6 +170,29 @@ struct CapsuleShell: View {
             return AnyShape(Capsule())
         default:
             return AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        }
+    }
+
+    // MARK: - Shadow Config
+
+    private struct ShadowConfig {
+        let opacity: Double
+        let radius: CGFloat
+        let y: CGFloat
+    }
+
+    private var stateShadow: ShadowConfig {
+        switch store.state {
+        case .idle:
+            return ShadowConfig(opacity: 0.3, radius: 8, y: 2)
+        case .hover, .notification:
+            return ShadowConfig(opacity: 0.35, radius: 12, y: 4)
+        case .expanded:
+            return ShadowConfig(opacity: 0.4, radius: 16, y: 6)
+        case .maxExpand:
+            return ShadowConfig(opacity: 0.45, radius: 20, y: 8)
+        case .lyrics, .countdown:
+            return ShadowConfig(opacity: 0.25, radius: 10, y: 3)
         }
     }
 }

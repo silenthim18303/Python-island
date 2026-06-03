@@ -18,10 +18,6 @@ struct MacIslandApp: App {
             MenuBarView()
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-        }
     }
 }
 
@@ -127,13 +123,17 @@ struct MenuBarView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 4)
 
-            // 设置
-            SettingsLink {
+            // 设置（打开灵动岛设置标签）
+            Button {
+                IslandWindowManager.shared.show()
+                // 通过通知让 IslandStore 切到 MaxExpand + 设置标签
+                NotificationCenter.default.post(name: .openIslandSettings, object: nil)
+            } label: {
                 HStack {
                     Image(systemName: "gearshape")
                         .frame(width: 16)
 
-                    Text("设置…")
+                    Text("设置")
 
                     Spacer()
                 }

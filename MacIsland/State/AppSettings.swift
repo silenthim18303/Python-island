@@ -29,6 +29,62 @@ final class AppSettings: ObservableObject {
         didSet { Self.saveHotkeyBindings(hotkeyBindings, defaults: defaults) }
     }
 
+    // MARK: - 番茄钟配置
+
+    /// 专注时长（分钟）
+    @Published var pomodoroWorkMinutes: Int {
+        didSet { defaults.set(pomodoroWorkMinutes, forKey: Keys.pomodoroWorkMinutes) }
+    }
+    /// 短休时长（分钟）
+    @Published var pomodoroShortBreakMinutes: Int {
+        didSet { defaults.set(pomodoroShortBreakMinutes, forKey: Keys.pomodoroShortBreakMinutes) }
+    }
+    /// 长休时长（分钟）
+    @Published var pomodoroLongBreakMinutes: Int {
+        didSet { defaults.set(pomodoroLongBreakMinutes, forKey: Keys.pomodoroLongBreakMinutes) }
+    }
+    /// 长休间隔（每完成 N 个番茄后进入长休）
+    @Published var pomodoroLongBreakInterval: Int {
+        didSet { defaults.set(pomodoroLongBreakInterval, forKey: Keys.pomodoroLongBreakInterval) }
+    }
+
+    // MARK: - 剪贴板配置
+
+    /// URL 检测模式
+    @Published var clipboardUrlDetectMode: ClipboardUrlDetectMode {
+        didSet { defaults.set(clipboardUrlDetectMode.rawValue, forKey: Keys.clipboardUrlDetectMode) }
+    }
+    /// 域名黑名单
+    @Published var blacklistedDomains: Set<String> {
+        didSet {
+            if let data = try? JSONEncoder().encode(Array(blacklistedDomains)) {
+                defaults.set(data, forKey: Keys.blacklistedDomains)
+            }
+        }
+    }
+
+    // MARK: - 外观
+
+    /// 灵动岛透明度 (0.0 ~ 1.0)
+    @Published var islandOpacity: Double {
+        didSet { defaults.set(islandOpacity, forKey: Keys.islandOpacity) }
+    }
+    /// 开机自启动
+    @Published var launchAtLogin: Bool {
+        didSet { defaults.set(launchAtLogin, forKey: Keys.launchAtLogin) }
+    }
+
+    // MARK: - 久坐提醒
+
+    /// 久坐提醒是否启用
+    @Published var breakReminderEnabled: Bool {
+        didSet { defaults.set(breakReminderEnabled, forKey: Keys.breakReminderEnabled) }
+    }
+    /// 久坐提醒间隔（分钟）
+    @Published var breakReminderMinutes: Int {
+        didSet { defaults.set(breakReminderMinutes, forKey: Keys.breakReminderMinutes) }
+    }
+
     private let defaults = UserDefaults.standard
 
     private enum Keys {
@@ -36,6 +92,16 @@ final class AppSettings: ObservableObject {
         static let springAnimation = "springAnimation"
         static let clipboardEnabled = "clipboardEnabled"
         static let hotkeyBindings = "hotkeyBindings"
+        static let pomodoroWorkMinutes = "pomodoroWorkMinutes"
+        static let pomodoroShortBreakMinutes = "pomodoroShortBreakMinutes"
+        static let pomodoroLongBreakMinutes = "pomodoroLongBreakMinutes"
+        static let pomodoroLongBreakInterval = "pomodoroLongBreakInterval"
+        static let clipboardUrlDetectMode = "clipboardUrlDetectMode"
+        static let blacklistedDomains = "blacklistedDomains"
+        static let islandOpacity = "islandOpacity"
+        static let launchAtLogin = "launchAtLogin"
+        static let breakReminderEnabled = "breakReminderEnabled"
+        static let breakReminderMinutes = "breakReminderMinutes"
     }
 
     private init() {
@@ -44,6 +110,28 @@ final class AppSettings: ObservableObject {
         springAnimation = defaults.object(forKey: Keys.springAnimation) as? Bool ?? true
         clipboardEnabled = defaults.object(forKey: Keys.clipboardEnabled) as? Bool ?? true
         hotkeyBindings = Self.loadHotkeyBindings(defaults: defaults)
+        pomodoroWorkMinutes = defaults.object(forKey: Keys.pomodoroWorkMinutes) as? Int ?? 25
+        pomodoroShortBreakMinutes = defaults.object(forKey: Keys.pomodoroShortBreakMinutes) as? Int ?? 5
+        pomodoroLongBreakMinutes = defaults.object(forKey: Keys.pomodoroLongBreakMinutes) as? Int ?? 15
+        pomodoroLongBreakInterval = defaults.object(forKey: Keys.pomodoroLongBreakInterval) as? Int ?? 4
+
+        // 剪贴板配置
+        clipboardUrlDetectMode = (defaults.string(forKey: Keys.clipboardUrlDetectMode))
+            .flatMap(ClipboardUrlDetectMode.init) ?? .httpHttps
+        if let data = defaults.data(forKey: Keys.blacklistedDomains),
+           let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            blacklistedDomains = Set(decoded)
+        } else {
+            blacklistedDomains = []
+        }
+
+        // 外观
+        islandOpacity = defaults.object(forKey: Keys.islandOpacity) as? Double ?? 1.0
+        launchAtLogin = defaults.object(forKey: Keys.launchAtLogin) as? Bool ?? false
+
+        // 久坐提醒
+        breakReminderEnabled = defaults.object(forKey: Keys.breakReminderEnabled) as? Bool ?? false
+        breakReminderMinutes = defaults.object(forKey: Keys.breakReminderMinutes) as? Int ?? 60
     }
 
     // MARK: - Hotkey Bindings Persistence

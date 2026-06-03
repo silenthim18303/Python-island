@@ -9,22 +9,30 @@ import SwiftUI
 
 // MARK: - Lyrics View
 
-/// 歌词态视图 — 紧凑胶囊：显示当前歌词行 / 歌名 + 歌手 + 音波动画
+/// 歌词态视图 — 横向绕刘海胶囊：封面 + 歌词居中 + 进度/音波
 struct LyricsView: View {
     @ObservedObject var store: IslandStore
     @EnvironmentObject var musicService: SystemMusicService
     @EnvironmentObject var lyricsService: LyricsService
 
     var body: some View {
-        WideNotchLayout {
-            // 左侧：封面 + 歌词行 / 歌曲信息
-            HStack(spacing: Theme.Spacing.xs) {
-                musicIcon
-                centerContent
-            }
-        } trailing: {
+        // 自定义布局：左封面 + 中歌词(居中覆盖刘海区) + 右音波
+        HStack(spacing: 0) {
+            // 左侧：封面图标
+            musicIcon
+                .padding(.leading, Theme.Spacing.sm)
+
+            Spacer(minLength: Theme.Spacing.xs)
+
+            // 中间：歌词行居中显示
+            centerContent
+                .lineLimit(1)
+
+            Spacer(minLength: Theme.Spacing.xs)
+
             // 右侧：进度 + 音波动画
             rightSection
+                .padding(.trailing, Theme.Spacing.sm)
         }
     }
 
@@ -56,14 +64,13 @@ struct LyricsView: View {
 
             if !lyrics.lines.isEmpty,
                let activeIndex = lyrics.activeLineIndex(at: elapsed) {
-                // Show synced lyrics line
-                Text(lyrics.lines[activeIndex].text)
-                    .font(.system(size: Theme.FontSize.caption, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
-                    .lineLimit(1)
-                    .id(activeIndex)
-                    .transition(.opacity)
-                    .animation(.easeInOut(duration: 0.2), value: activeIndex)
+                // 当前歌词行（超长时自动滚动）
+                MarqueeText(
+                    text: lyrics.lines[activeIndex].text,
+                    font: .system(size: Theme.FontSize.caption, weight: .semibold),
+                    color: .white.opacity(0.9)
+                )
+                .id(activeIndex)
             } else {
                 // Fallback: show song title + artist
                 HStack(spacing: Theme.Spacing.xs) {

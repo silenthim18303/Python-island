@@ -8,6 +8,7 @@
 import SwiftUI
 import ApplicationServices
 import Combine
+import ServiceManagement
 
 // MARK: - Settings View
 
@@ -24,7 +25,7 @@ struct SettingsView: View {
             AboutSettingsView()
                 .tabItem { Label("关于", systemImage: "info.circle") }
         }
-        .frame(width: 420, height: 280)
+        .frame(width: 420, height: 360)
     }
 }
 
@@ -32,11 +33,26 @@ struct SettingsView: View {
 
 private struct GeneralSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
+    @State private var newDomain: String = ""
 
     var body: some View {
         Form {
-            Section("功能开关") {
-                Toggle("剪贴板链接检测", isOn: $settings.clipboardEnabled)
+            Section("外观") {
+                LanguageSettingsView()
+
+                Toggle("开机自启动", isOn: $settings.launchAtLogin)
+                    .onChange(of: settings.launchAtLogin) { _, newValue in
+                        setLaunchAtLogin(newValue)
+                    }
+
+                HStack {
+                    Text("灵动岛透明度")
+                    Spacer()
+                    Text("\(Int(settings.islandOpacity * 100))%")
+                        .foregroundColor(.secondary)
+                        .monospacedDigit()
+                }
+                Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
             }
 
             Section("动画") {
@@ -49,8 +65,76 @@ private struct GeneralSettingsView: View {
 
                 Toggle("弹簧动画", isOn: $settings.springAnimation)
             }
+
+            Section("剪贴板") {
+                Toggle("链接检测", isOn: $settings.clipboardEnabled)
+
+                Picker("URL 检测模式", selection: $settings.clipboardUrlDetectMode) {
+                    Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
+                    Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
+                    Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
+                }
+
+                // 域名黑名单
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("域名黑名单")
+                        .font(.headline)
+
+                    if settings.blacklistedDomains.isEmpty {
+                        Text("暂无黑名单域名")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
+                            HStack {
+                                Text(domain)
+                                    .font(.callout)
+                                Spacer()
+                                Button {
+                                    settings.blacklistedDomains.remove(domain)
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    HStack {
+                        TextField("输入域名，如 example.com", text: $newDomain)
+                            .textFieldStyle(.roundedBorder)
+                        Button("添加") {
+                            let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+                                .lowercased()
+                                .replacingOccurrences(of: "https://", with: "")
+                                .replacingOccurrences(of: "http://", with: "")
+                                .replacingOccurrences(of: "/", with: "")
+                            if !domain.isEmpty {
+                                settings.blacklistedDomains.insert(domain)
+                                newDomain = ""
+                            }
+                        }
+                        .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
         }
         .formStyle(.grouped)
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        if #available(macOS 13.0, *) {
+            do {
+                if enabled {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                print("Login Item 设置失败: \(error)")
+            }
+        }
     }
 }
 
