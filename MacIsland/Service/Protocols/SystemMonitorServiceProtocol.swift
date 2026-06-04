@@ -27,6 +27,8 @@ struct SystemStats {
     let cpuSystem: Double
     let cpuUser: Double
     let cpuIdle: Double
+    let cpuCoreCount: Int
+    let cpuTemperature: Double  // °C, 0 表示不可用
 
     // 内存
     let memoryUsed: Double
@@ -59,6 +61,7 @@ struct SystemStats {
 
     static let empty = SystemStats(
         cpuUsage: 0, cpuSystem: 0, cpuUser: 0, cpuIdle: 100,
+        cpuCoreCount: 0, cpuTemperature: 0,
         memoryUsed: 0, memoryTotal: 0, memoryPercent: 0, memoryPressure: 0,
         memoryApp: 0, memoryWired: 0, memoryCompressed: 0,
         diskUsed: 0, diskTotal: 0, diskPercent: 0,

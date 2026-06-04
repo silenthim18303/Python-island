@@ -17,6 +17,7 @@ struct IslandView: View {
     @EnvironmentObject var timerService: TimerService
     @EnvironmentObject var clipboardService: ClipboardService
     @EnvironmentObject var hotkeyService: HotkeyService
+    @State private var lastReportedHeight: CGFloat = 0
 
     var body: some View {
         CapsuleShell(store: store)
@@ -37,6 +38,9 @@ struct IslandView: View {
             }
             .onPreferenceChange(HeightPreferenceKey.self) { height in
                 guard IslandLayout.isHeightAdaptive(store.state) else { return }
+                // 防抖：高度变化超过 2pt 才更新，避免布局递归
+                guard abs(height - lastReportedHeight) > 2 else { return }
+                lastReportedHeight = height
                 IslandWindowManager.shared.updateHeight(height)
             }
             .onChange(of: store.settings.islandOpacity) { _, newValue in

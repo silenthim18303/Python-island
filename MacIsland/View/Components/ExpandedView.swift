@@ -424,7 +424,7 @@ struct ExpandedView: View {
     // MARK: - Monitor Tab
 
     private var monitorTab: some View {
-        RunCatMonitorView(stats: monitorService.stats)
+        RunCatMonitorView()
     }
 
     // MARK: - Helper

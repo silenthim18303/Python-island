@@ -17,6 +17,7 @@ struct MaxExpandView: View {
     @StateObject private var eventStore = EventStore.shared
     @StateObject private var alarmStore = AlarmStore.shared
     @StateObject private var bookmarkStore = BookmarkStore.shared
+    @StateObject private var wallpaperStore = WallpaperStore.shared
     @State private var selectedTab: Tab = .todo
 
     // MARK: - Tab Definition
@@ -27,6 +28,7 @@ struct MaxExpandView: View {
         case event = "倒数日"
         case alarm = "闹钟"
         case bookmark = "书签"
+        case wallpaper = "壁纸"
         case ai = "AI"
         case settings = "设置"
         case toolbox = "工具"
@@ -139,6 +141,7 @@ struct MaxExpandView: View {
         case .event: eventContent
         case .alarm: alarmContent
         case .bookmark: bookmarkContent
+        case .wallpaper: wallpaperContent
         case .ai: aiContent
         case .settings: settingsContent
         case .toolbox: toolboxContent
@@ -175,25 +178,16 @@ struct MaxExpandView: View {
         BookmarkListView(store: bookmarkStore)
     }
 
+    // MARK: - Wallpaper Content
+
+    private var wallpaperContent: some View {
+        WallpaperView(store: wallpaperStore)
+    }
+
     // MARK: - AI Content
 
     private var aiContent: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "brain.head.profile")
-                .font(.system(size: 36))
-                .foregroundColor(.white.opacity(0.2))
-
-            Text("AI 助手")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white.opacity(0.5))
-
-            Text("集成 Claude / DeepSeek 等 AI 模型\n支持对话、工具调用、语音输入")
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.3))
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
+        AIChatView()
     }
 
     // MARK: - Settings Content
@@ -217,6 +211,7 @@ struct MaxExpandView: View {
         case .event: return "calendar.badge.clock"
         case .alarm: return "alarm"
         case .bookmark: return "bookmark.fill"
+        case .wallpaper: return "photo.fill"
         case .ai: return "brain.head.profile"
         case .settings: return "gearshape.fill"
         case .toolbox: return "wrench.and.screwdriver.fill"

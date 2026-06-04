@@ -22,6 +22,8 @@
 	<string>MacIsland 需要控制音乐播放器以实现播放/暂停、切歌和实时进度显示</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>qweather.com</key>

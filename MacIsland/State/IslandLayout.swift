@@ -70,7 +70,17 @@ enum IslandLayout {
         CGSize(width: clamped(380, maxRatio: 0.28), height: 80)
     }
 
-    /// 空闲态尺寸 — 固定紧凑居中，高度统一为刘海物理高度
+    /// 空闲态尺寸 — 无内容时紧凑，有计时器/歌词时自动扩展宽度
+    static func idleSize(hasTimer: Bool, hasLyrics: Bool) -> CGSize {
+        let height = NotchInfo.height
+        if hasTimer || hasLyrics {
+            // 有内容时扩展宽度，但不超过屏幕 30%
+            return CGSize(width: clamped(380, maxRatio: 0.30), height: height)
+        }
+        return CGSize(width: compactIdleWidth, height: height)
+    }
+
+    /// 空闲态尺寸（无内容时的默认值）
     static var idle: CGSize {
         CGSize(width: compactIdleWidth, height: NotchInfo.height)
     }

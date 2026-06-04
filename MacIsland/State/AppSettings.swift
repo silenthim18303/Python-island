@@ -69,6 +69,10 @@ final class AppSettings: ObservableObject {
     @Published var islandOpacity: Double {
         didSet { defaults.set(islandOpacity, forKey: Keys.islandOpacity) }
     }
+    /// 壁纸透明度 (0.0 ~ 1.0)，独立于灵动岛整体透明度
+    @Published var wallpaperOpacity: Double {
+        didSet { defaults.set(wallpaperOpacity, forKey: Keys.wallpaperOpacity) }
+    }
     /// 开机自启动
     @Published var launchAtLogin: Bool {
         didSet { defaults.set(launchAtLogin, forKey: Keys.launchAtLogin) }
@@ -85,6 +89,31 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(breakReminderMinutes, forKey: Keys.breakReminderMinutes) }
     }
 
+    // MARK: - 歌词
+
+    /// 歌词源偏好（netease/qqmusic/kugou/lrclib/auto）
+    @Published var preferredLyricsSource: String {
+        didSet { defaults.set(preferredLyricsSource, forKey: Keys.preferredLyricsSource) }
+    }
+
+    // MARK: - 天气
+
+    /// 手动城市名（空=自动定位）
+    @Published var weatherManualCity: String {
+        didSet { defaults.set(weatherManualCity, forKey: Keys.weatherManualCity) }
+    }
+    /// 手动 locationID
+    @Published var weatherManualLocationID: String {
+        didSet { defaults.set(weatherManualLocationID, forKey: Keys.weatherManualLocationID) }
+    }
+
+    // MARK: - 壁纸存储
+
+    /// 自定义壁纸存储路径（空=使用默认 Application Support 路径）
+    @Published var customWallpaperPath: String {
+        didSet { defaults.set(customWallpaperPath, forKey: Keys.customWallpaperPath) }
+    }
+
     private let defaults = UserDefaults.standard
 
     private enum Keys {
@@ -99,9 +128,14 @@ final class AppSettings: ObservableObject {
         static let clipboardUrlDetectMode = "clipboardUrlDetectMode"
         static let blacklistedDomains = "blacklistedDomains"
         static let islandOpacity = "islandOpacity"
+        static let wallpaperOpacity = "wallpaperOpacity"
         static let launchAtLogin = "launchAtLogin"
         static let breakReminderEnabled = "breakReminderEnabled"
         static let breakReminderMinutes = "breakReminderMinutes"
+        static let preferredLyricsSource = "preferredLyricsSource"
+        static let weatherManualCity = "weatherManualCity"
+        static let weatherManualLocationID = "weatherManualLocationID"
+        static let customWallpaperPath = "customWallpaperPath"
     }
 
     private init() {
@@ -127,11 +161,22 @@ final class AppSettings: ObservableObject {
 
         // 外观
         islandOpacity = defaults.object(forKey: Keys.islandOpacity) as? Double ?? 1.0
+        wallpaperOpacity = defaults.object(forKey: Keys.wallpaperOpacity) as? Double ?? 1.0
         launchAtLogin = defaults.object(forKey: Keys.launchAtLogin) as? Bool ?? false
 
         // 久坐提醒
         breakReminderEnabled = defaults.object(forKey: Keys.breakReminderEnabled) as? Bool ?? false
         breakReminderMinutes = defaults.object(forKey: Keys.breakReminderMinutes) as? Int ?? 60
+
+        // 歌词
+        preferredLyricsSource = defaults.string(forKey: Keys.preferredLyricsSource) ?? "auto"
+
+        // 天气
+        weatherManualCity = defaults.string(forKey: Keys.weatherManualCity) ?? ""
+        weatherManualLocationID = defaults.string(forKey: Keys.weatherManualLocationID) ?? ""
+
+        // 壁纸存储
+        customWallpaperPath = defaults.string(forKey: Keys.customWallpaperPath) ?? ""
     }
 
     // MARK: - Hotkey Bindings Persistence

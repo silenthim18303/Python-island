@@ -12,6 +12,8 @@ import Combine
 
 extension Notification.Name {
     static let openIslandSettings = Notification.Name("openIslandSettings")
+    static let sheetPresented = Notification.Name("sheetPresented")
+    static let sheetDismissed = Notification.Name("sheetDismissed")
 }
 
 // MARK: - Island Store
@@ -36,7 +38,23 @@ final class IslandStore: ObservableObject {
     private var previousState: IslandState = .idle
     private var idleTimer: AnyCancellable?
     private let idleDelay: TimeInterval = 4.0
+    /// sheet 显示时暂停空闲计时
+    var isSheetPresented = false
+    /// 系统面板（NSOpenPanel 等）显示时暂停空闲计时（静态，供任意视图设置）
+    static var isPanelPresented = false
+    /// 当前实例的面板状态（与静态同步）
+    var isPanelPresented: Bool { Self.isPanelPresented }
     private var musicSubscriptions = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        NotificationCenter.default.addObserver(forName: .sheetPresented, object: nil, queue: .main) { [weak self] _ in
+            self?.isSheetPresented = true
+        }
+        NotificationCenter.default.addObserver(forName: .sheetDismissed, object: nil, queue: .main) { [weak self] _ in
+            self?.isSheetPresented = false
+        }
+    }
     private var wasPlaying: Bool = false
     private var wasCountdownActive: Bool = false
     private weak var lyricsService: LyricsService?
