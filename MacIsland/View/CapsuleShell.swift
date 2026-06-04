@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVKit
 
 // MARK: - Capsule Shell
 
@@ -13,6 +14,12 @@ import SwiftUI
 /// 仿 NotchNookIsland：透明背景穿透点击，内容区 onHover 统一处理交互
 struct CapsuleShell: View {
     @ObservedObject var store: IslandStore
+    @ObservedObject private var wallpaperStore = WallpaperStore.shared
+    @ObservedObject private var settings = AppSettings.shared
+    @EnvironmentObject var timerService: TimerService
+    @EnvironmentObject var musicService: SystemMusicService
+    @EnvironmentObject var lyricsService: LyricsService
+    @State private var isDragOver = false
 
     var body: some View {
         ZStack {
@@ -22,12 +29,12 @@ struct CapsuleShell: View {
             // 内容区域 — 接受命中测试
             contentWithInteraction
         }
-        .frame(width: IslandLayout.size(for: store.state).width)
+        .frame(width: currentSize.width)
         .frame(
-            height: isHeightAdaptive ? nil : IslandLayout.size(for: store.state).height
+            height: isHeightAdaptive ? nil : currentSize.height
         )
         .frame(
-            minHeight: isHeightAdaptive ? IslandLayout.size(for: store.state).height : nil,
+            minHeight: isHeightAdaptive ? currentSize.height : nil,
             alignment: .center
         )
     }
@@ -36,12 +43,34 @@ struct CapsuleShell: View {
         IslandLayout.isHeightAdaptive(store.state)
     }
 
+    /// 当前形态的目标尺寸，空闲态根据内容动态调整宽度
+    private var currentSize: CGSize {
+        switch store.state {
+        case .idle:
+            let hasTimer = timerService.pomodoro.running || timerService.countdown.state == .running
+            let hasLyrics = musicService.hasMedia && !lyricsService.currentLyrics.lines.isEmpty
+            return IslandLayout.idleSize(hasTimer: hasTimer, hasLyrics: hasLyrics)
+        default:
+            return IslandLayout.size(for: store.state)
+        }
+    }
+
     // MARK: - Content with Interaction
 
     @ViewBuilder
     private var contentWithInteraction: some View {
+        let size = currentSize
         ZStack {
+            // 背景遮罩（有壁纸时换为半透明暗色）
             backgroundView
+            // 壁纸层 — 精确约束到胶囊尺寸，防止图片溢出推走工具栏
+            wallpaperLayer
+                .allowsHitTesting(false)
+                .opacity(settings.wallpaperOpacity)
+                .frame(width: size.width, height: size.height)
+                .scaledToFill()
+                .clipped()
+            // UI 内容最上层
             stateContent
         }
         .background(
@@ -53,12 +82,16 @@ struct CapsuleShell: View {
         .contentShape(capsuleShape)
         .shadow(color: .black.opacity(stateShadow.opacity), radius: stateShadow.radius, x: 0, y: stateShadow.y)
         .onHover { handleHover($0) }
+        .onDrop(of: [.fileURL], isTargeted: $isDragOver) { _ in true }
         .onTapGesture { handleTap() }
     }
 
     // MARK: - Hover Handling
 
     private func handleHover(_ hovering: Bool) {
+        // 拖拽期间忽略 hover 事件，防止灵动岛收起
+        if isDragOver { return }
+
         switch store.state {
         case .idle, .lyrics, .countdown:
             if hovering { store.setHover() }
@@ -74,6 +107,11 @@ struct CapsuleShell: View {
             if hovering {
                 store.cancelIdleTimer()
             } else {
+                // 窗口有键盘焦点、sheet/面板显示、或刚交互过（输入中）时不自动收起
+                let recentlyInteracted = Date().timeIntervalSince(IslandWindowManager.shared.lastInteraction) < 2.0
+                if IslandWindowManager.shared.isKeyWindow || store.isSheetPresented || store.isPanelPresented || recentlyInteracted {
+                    return
+                }
                 store.startIdleTimer(delay: 1.5)
             }
 
@@ -129,6 +167,22 @@ struct CapsuleShell: View {
                     Capsule()
                         .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
                 )
+        }
+    }
+
+    // MARK: - Wallpaper Layer
+
+    @ViewBuilder
+    private var wallpaperLayer: some View {
+        if let wallpaper = wallpaperStore.activeWallpaper,
+           wallpaper.fileExists {
+            if wallpaper.isVideo {
+                VideoWallpaperView(url: wallpaper.fileURL!)
+                    .scaledToFill()
+            } else {
+                WallpaperImageView(url: wallpaper.fileURL!)
+                    .scaledToFill()
+            }
         }
     }
 
@@ -231,5 +285,128 @@ struct VisualEffectBlur: NSViewRepresentable {
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.material = material
         nsView.blendingMode = blendingMode
+    }
+}
+
+// MARK: - Video Wallpaper View
+
+/// 动态视频壁纸
+struct VideoWallpaperView: NSViewRepresentable {
+    let url: URL
+
+    func makeNSView(context: Context) -> AVPlayerView {
+        let view = AVPlayerView()
+        let player = AVPlayer(url: url)
+        player.actionAtItemEnd = .none
+        player.preventsDisplaySleepDuringVideoPlayback = false
+        view.player = player
+        view.controlsStyle = .none
+        view.showsFullScreenToggleButton = false
+        view.showsSharingServiceButton = false
+        view.videoGravity = .resizeAspectFill
+
+        // 循环播放
+        NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: player.currentItem,
+            queue: .main
+        ) { _ in
+            player.seek(to: .zero)
+            player.play()
+        }
+
+        player.play()
+        return view
+    }
+
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {}
+}
+
+// MARK: - Wallpaper Image View
+
+/// 异步加载 + 缓存壁纸图片，避免全分辨率加载卡死
+struct WallpaperImageView: View {
+    let url: URL
+    @State private var image: NSImage?
+    @State private var isLoading = true
+
+    var body: some View {
+        Group {
+            if let image = image {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else if isLoading {
+                Color.clear
+            }
+        }
+        .onAppear { loadResized() }
+        .onChange(of: url) { _, _ in loadResized() }
+    }
+
+    private func loadResized() {
+        isLoading = true
+        let targetURL = url
+
+        // 缓存 key = 文件路径 + 修改时间
+        let cacheKey = "\(targetURL.path)_resized"
+        if let cached = ImageCache.shared.get(cacheKey) {
+            image = cached
+            isLoading = false
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard let source = CGImageSourceCreateWithURL(targetURL as CFURL, nil) else {
+                DispatchQueue.main.async { isLoading = false }
+                return
+            }
+
+            // 目标尺寸：窗口最大 660pt，2x 分辨率 = 1320px
+            let maxDimension: CGFloat = 1320
+            let downsampleOptions: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageIfAbsent: true,
+                kCGImageSourceThumbnailMaxPixelSize: maxDimension,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceShouldCacheImmediately: true,
+            ]
+
+            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, downsampleOptions as CFDictionary) else {
+                DispatchQueue.main.async { isLoading = false }
+                return
+            }
+
+            let resized = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+            ImageCache.shared.set(cacheKey, image: resized)
+
+            DispatchQueue.main.async {
+                image = resized
+                isLoading = false
+            }
+        }
+    }
+}
+
+// MARK: - Image Cache
+
+/// 简单内存图片缓存
+final class ImageCache {
+    static let shared = ImageCache()
+    private var cache = NSCache<NSString, NSImage>()
+    private init() {
+        cache.countLimit = 5
+        cache.totalCostLimit = 100 * 1024 * 1024 // 100MB
+    }
+
+    func get(_ key: String) -> NSImage? {
+        cache.object(forKey: key as NSString)
+    }
+
+    func set(_ key: String, image: NSImage) {
+        cache.setObject(image, forKey: key as NSString)
+    }
+
+    func clear() {
+        cache.removeAllObjects()
     }
 }

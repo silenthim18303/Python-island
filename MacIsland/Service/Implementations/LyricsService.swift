@@ -56,9 +56,15 @@ final class LyricsService: LyricsServiceProtocol, ObservableObject {
         let primaryProvider = detectProvider()
         print("[Lyrics] Fetching lyrics for \"\(title)\" by \(artist), provider: \(primaryProvider?.rawValue ?? "auto")")
 
-        // 选源策略：把当前播放器对应的歌词源排到首位，其余作为兜底依次尝试；
-        // 未识别到播放器时按 Provider 默认顺序全量尝试。
+        // 选源策略：用户偏好 > 播放器匹配 > 默认顺序
+        let preferred = AppSettings.shared.preferredLyricsSource
         let providers: [Provider] = {
+            // 用户手动指定了歌词源
+            if preferred != "auto", let pref = Provider(rawValue: preferred) {
+                let others = Provider.allCases.filter { $0 != pref }
+                return [pref] + others
+            }
+            // 按播放器匹配
             if let primary = primaryProvider {
                 let others = Provider.allCases.filter { $0 != primary }
                 return [primary] + others

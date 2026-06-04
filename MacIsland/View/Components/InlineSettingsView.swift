@@ -16,6 +16,7 @@ import ServiceManagement
 struct InlineSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @State private var newDomain = ""
+    @State private var communityUsername = UserDefaults.standard.string(forKey: "communityUploadUsername") ?? ""
     @State private var selectedSection: SettingSection = .general
     @State private var accessibilityGranted = AXIsProcessTrusted()
     @State private var recordingAction: HotkeyAction?
@@ -29,7 +30,6 @@ struct InlineSettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 分段选择器
             Picker("", selection: $selectedSection) {
                 ForEach(SettingSection.allCases, id: \.self) { section in
                     Text(section.rawValue).tag(section)
@@ -38,7 +38,6 @@ struct InlineSettingsView: View {
             .pickerStyle(.segmented)
             .padding(.bottom, Theme.Spacing.sm)
 
-            // 内容
             ScrollView {
                 switch selectedSection {
                 case .general: generalSection
@@ -53,7 +52,6 @@ struct InlineSettingsView: View {
 
     private var generalSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            // 外观
             settingsGroup("外观") {
                 settingsRow("语言") {
                     LanguageSettingsView()
@@ -83,9 +81,64 @@ struct InlineSettingsView: View {
                     Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
                         .tint(.white.opacity(0.5))
                 }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("壁纸透明度")
+                            .font(.system(size: Theme.FontSize.caption))
+                            .foregroundColor(.textSecondary)
+                        Spacer()
+                        Text("\(Int(settings.wallpaperOpacity * 100))%")
+                            .font(.system(size: Theme.FontSize.caption))
+                            .foregroundColor(.textTertiary)
+                            .monospacedDigit()
+                    }
+                    Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
+                        .tint(.white.opacity(0.5))
+                }
             }
 
-            // 动画
+            settingsGroup("壁纸存储") {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("存储路径")
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textSecondary)
+
+                    HStack(spacing: 6) {
+                        TextField("默认路径", text: $settings.customWallpaperPath)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: Theme.FontSize.caption2, design: .monospaced))
+                            .foregroundColor(.textPrimary)
+                            .padding(6)
+                            .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+
+                        Button {
+                            selectWallpaperPath()
+                        } label: {
+                            Image(systemName: "folder")
+                                .font(.system(size: 12))
+                                .foregroundColor(.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    if settings.customWallpaperPath.isEmpty {
+                        Text("默认：Application Support/MacIsland/Wallpapers")
+                            .font(.system(size: Theme.FontSize.caption2))
+                            .foregroundColor(.textQuaternary)
+                    } else {
+                        HStack(spacing: 4) {
+                            Button("恢复默认") {
+                                settings.customWallpaperPath = ""
+                            }
+                            .font(.system(size: Theme.FontSize.caption2))
+                            .foregroundColor(.accentColor)
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+
             settingsGroup("动画") {
                 settingsRow("动画速度") {
                     Picker("", selection: $settings.animationSpeed) {
@@ -104,7 +157,6 @@ struct InlineSettingsView: View {
                 }
             }
 
-            // 剪贴板
             settingsGroup("剪贴板") {
                 settingsRow("链接检测") {
                     Toggle("", isOn: $settings.clipboardEnabled)
@@ -121,7 +173,6 @@ struct InlineSettingsView: View {
                     .frame(width: 120)
                 }
 
-                // 域名黑名单
                 VStack(alignment: .leading, spacing: 6) {
                     Text("域名黑名单")
                         .font(.system(size: Theme.FontSize.caption, weight: .medium))
@@ -176,6 +227,72 @@ struct InlineSettingsView: View {
                     }
                 }
             }
+
+            settingsGroup("歌词") {
+                settingsRow("歌词源") {
+                    Picker("", selection: $settings.preferredLyricsSource) {
+                        Text("自动").tag("auto")
+                        Text("网易云").tag("netease")
+                        Text("QQ 音乐").tag("qqmusic")
+                        Text("酷狗").tag("kugou")
+                        Text("LRCLIB").tag("lrclib")
+                    }
+                    .frame(width: 100)
+                }
+            }
+
+            settingsGroup("天气") {
+                settingsRow("手动城市") {
+                    TextField("自动定位", text: $settings.weatherManualCity)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textPrimary)
+                        .frame(width: 100)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                }
+
+                if !settings.weatherManualCity.isEmpty {
+                    settingsRow("Location ID") {
+                        TextField("101010100", text: $settings.weatherManualLocationID)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: Theme.FontSize.caption))
+                            .foregroundColor(.textPrimary)
+                            .frame(width: 100)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                            .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                    }
+                }
+
+                if !settings.weatherManualCity.isEmpty {
+                    Button("清除手动设置") {
+                        settings.weatherManualCity = ""
+                        settings.weatherManualLocationID = ""
+                    }
+                    .font(.system(size: Theme.FontSize.caption2))
+                    .foregroundColor(.textTertiary)
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // 社区
+            settingsGroup("社区") {
+                settingsRow("上传用户名") {
+                    TextField("设置用户名", text: $communityUsername)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textPrimary)
+                        .frame(width: 100)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                        .onSubmit {
+                            UserDefaults.standard.set(communityUsername, forKey: "communityUploadUsername")
+                        }
+                }
+            }
         }
         .padding(.top, Theme.Spacing.sm)
     }
@@ -184,7 +301,6 @@ struct InlineSettingsView: View {
 
     private var shortcutsSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            // 权限状态
             if !accessibilityGranted {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -221,7 +337,6 @@ struct InlineSettingsView: View {
                 }
             }
 
-            // 快捷键列表
             settingsGroup("全局快捷键") {
                 ForEach(HotkeyAction.allCases, id: \.self) { action in
                     InlineHotkeyRow(
@@ -317,6 +432,22 @@ struct InlineSettingsView: View {
                 print("Login Item 设置失败: \(error)")
             }
         }
+    }
+
+    private func selectWallpaperPath() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.message = "选择壁纸存储目录"
+
+        IslandStore.isPanelPresented = true
+        let result = panel.runModal()
+        IslandStore.isPanelPresented = false
+
+        guard result == .OK, let url = panel.url else { return }
+        settings.customWallpaperPath = url.path
     }
 }
 

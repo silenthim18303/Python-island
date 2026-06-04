@@ -32,7 +32,18 @@ final class ServiceContainer {
         mediaKeySender: MediaKeySenderProtocol? = nil,
         systemMonitor: SystemMonitorProtocol? = nil
     ) {
-        self.weather = QWeatherService(config: weatherConfig ?? .autoDetect(locationID: "101010100"))
+        // 天气配置：优先手动城市 > 默认自动定位
+        let weatherCfg: QWeatherConfig
+        if !AppSettings.shared.weatherManualCity.isEmpty && !AppSettings.shared.weatherManualLocationID.isEmpty {
+            weatherCfg = .fixed(
+                locationID: AppSettings.shared.weatherManualLocationID,
+                cityName: AppSettings.shared.weatherManualCity,
+                districtName: ""
+            )
+        } else {
+            weatherCfg = weatherConfig ?? .autoDetect(locationID: "101010100")
+        }
+        self.weather = QWeatherService(config: weatherCfg)
         self.music = SystemMusicService(mediaKeySender: mediaKeySender ?? DefaultMediaKeySender())
         self.monitor = SystemMonitorServiceImpl(monitor: systemMonitor ?? DefaultSystemMonitor())
         self.lyrics = LyricsService()

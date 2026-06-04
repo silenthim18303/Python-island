@@ -35,7 +35,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         let locationInfo = await fetchLocationInfo()
 
         guard let locInfo = locationInfo else {
-            await setError("获取位置失败")
+            setError("获取位置失败")
             return
         }
 
@@ -46,7 +46,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         let (now, forecast) = await (nowResult, forecastResult)
 
         guard let nowData = now else {
-            await setError("获取天气失败")
+            setError("获取天气失败")
             return
         }
 
@@ -189,7 +189,6 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         }
     }
 
-    @MainActor
     private func setError(_ message: String) {
         print("[Weather] \(message)")
         weather = WeatherData(

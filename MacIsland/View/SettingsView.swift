@@ -53,6 +53,15 @@ private struct GeneralSettingsView: View {
                         .monospacedDigit()
                 }
                 Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
+
+                HStack {
+                    Text("壁纸透明度")
+                    Spacer()
+                    Text("\(Int(settings.wallpaperOpacity * 100))%")
+                        .foregroundColor(.secondary)
+                        .monospacedDigit()
+                }
+                Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
             }
 
             Section("动画") {

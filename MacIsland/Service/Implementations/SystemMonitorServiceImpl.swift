@@ -9,7 +9,6 @@ import Foundation
 import Combine
 import Network
 import IOKit
-import IOKit.ps
 
 /// 系统监控服务实现
 final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableObject {
@@ -33,11 +32,12 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
     }
 
     func startMonitoring() {
-        // 系统资源轮询
-        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+        // 系统资源轮询（0.5秒间隔，快速响应）
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             DispatchQueue.main.async { self?.update() }
         }
-        update()
+        // 初始调用也在主线程，确保线程一致
+        DispatchQueue.main.async { self.update() }
 
         // 网络变化监听
         startNetworkMonitor()
@@ -126,22 +126,16 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
     // MARK: - Battery
 
     private func getBatteryInfo() -> (level: Double, isCharging: Bool, maxCapacity: Double, cycleCount: Int, temperature: Double) {
-        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef],
-              let first = sources.first
-        else {
-            return (100, false, 100, 0, 0)
-        }
+        // 使用 IOKit Registry API 直接读取，避免 NSSecureCoding XPC 警告
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPMPowerSource"))
+        guard service != IO_OBJECT_NULL else { return (100, false, 100, 0, 0) }
+        defer { IOObjectRelease(service) }
 
-        guard let desc = IOPSGetPowerSourceDescription(snapshot, first)?.takeUnretainedValue() as? [String: Any] else {
-            return (100, false, 100, 0, 0)
-        }
-
-        let level = (desc[kIOPSCurrentCapacityKey] as? NSNumber)?.doubleValue ?? 100
-        let maxCap = (desc[kIOPSMaxCapacityKey] as? NSNumber)?.doubleValue ?? 100
-        let isCharging = (desc[kIOPSIsChargingKey] as? NSNumber)?.boolValue ?? false
-        let cycleCount = (desc["CycleCount"] as? NSNumber)?.intValue ?? 0
-        let temperature = (desc["Temperature"] as? NSNumber)?.doubleValue ?? 0
+        let level = IORegistryEntryCreateCFProperty(service, "CurrentCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Double ?? 100
+        let maxCap = IORegistryEntryCreateCFProperty(service, "MaxCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Double ?? 100
+        let isCharging = (IORegistryEntryCreateCFProperty(service, "IsCharging" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Bool) ?? false
+        let cycleCount = (IORegistryEntryCreateCFProperty(service, "CycleCount" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int) ?? 0
+        let temperature = (IORegistryEntryCreateCFProperty(service, "Temperature" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Double) ?? 0
 
         return (level, isCharging, maxCap, cycleCount, temperature > 0 ? temperature / 10.0 : 0)
     }
@@ -211,6 +205,8 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
             cpuSystem: cpuDetail.system,
             cpuUser: cpuDetail.user,
             cpuIdle: cpuDetail.idle,
+            cpuCoreCount: monitor.cpuCoreCount(),
+            cpuTemperature: monitor.cpuTemperature(),
             memoryUsed: memUsed,
             memoryTotal: memTotal,
             memoryPercent: memTotal > 0 ? memUsed / memTotal * 100 : 0,
@@ -241,55 +237,68 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
 protocol SystemMonitorProtocol {
     func cpuUsageDetail() -> (total: Double, system: Double, user: Double, idle: Double)
     func cpuUsage() -> Double
+    func cpuCoreCount() -> Int
+    func cpuTemperature() -> Double
     func memoryUsage() -> (used: Double, total: Double)
     func diskUsage() -> (used: Double, total: Double)
 }
 
 // MARK: - Default System Monitor
 
-struct DefaultSystemMonitor: SystemMonitorProtocol {
+final class DefaultSystemMonitor: SystemMonitorProtocol {
+    private var prevTicks: (user: UInt64, system: UInt64, idle: UInt64, nice: UInt64)?
+    private var lastCheckTime: Date?
+
     func cpuUsage() -> Double {
         cpuUsageDetail().total
     }
 
     func cpuUsageDetail() -> (total: Double, system: Double, user: Double, idle: Double) {
-        var numCPUs: natural_t = 0
-        var cpuInfo: processor_info_array_t?
-        var numCPUInfo: mach_msg_type_number_t = 0
-
-        guard host_processor_info(mach_host_self(), HOST_CPU_LOAD_INFO, &numCPUs, &cpuInfo, &numCPUInfo) == KERN_SUCCESS,
-              let cpuInfo = cpuInfo else { return (0, 0, 0, 100) }
-
-        defer {
-            vm_deallocate(mach_task_self_, vm_address_t(bitPattern: cpuInfo), vm_size_t(Int(numCPUInfo) * MemoryLayout<integer_t>.size))
+        guard let ticks = readCPUTicks() else {
+            return (0, 0, 0, 100)
         }
 
-        var totalSystem: Double = 0
-        var totalUser: Double = 0
-        var totalIdle: Double = 0
-        var totalNice: Double = 0
-
-        for i in 0..<Int(numCPUs) {
-            let offset = Int(CPU_STATE_MAX) * i
-            let user = Double(cpuInfo[offset + Int(CPU_STATE_USER)])
-            let system = Double(cpuInfo[offset + Int(CPU_STATE_SYSTEM)])
-            let idle = Double(cpuInfo[offset + Int(CPU_STATE_IDLE)])
-            let nice = Double(cpuInfo[offset + Int(CPU_STATE_NICE)])
-            totalSystem += system
-            totalUser += user
-            totalIdle += idle
-            totalNice += nice
+        let now = Date()
+        guard let prev = prevTicks, let lastTime = lastCheckTime,
+              now.timeIntervalSince(lastTime) > 0.05 else {
+            // 首次或间隔太短：快速双读
+            prevTicks = ticks
+            lastCheckTime = now
+            Thread.sleep(forTimeInterval: 0.05)
+            guard let t2 = readCPUTicks() else { return (0, 0, 0, 100) }
+            let du = t2.user - ticks.user, ds = t2.system - ticks.system
+            let di = t2.idle - ticks.idle, dn = t2.nice - ticks.nice
+            let dt = du + ds + di + dn
+            prevTicks = t2; lastCheckTime = Date()
+            guard dt > 0 else { return (0, 0, 0, 100) }
+            return (Double(du+ds+dn)/Double(dt)*100, Double(ds)/Double(dt)*100, Double(du)/Double(dt)*100, Double(di)/Double(dt)*100)
         }
 
-        let total = totalSystem + totalUser + totalIdle + totalNice
-        guard total > 0 else { return (0, 0, 0, 100) }
+        let du = ticks.user - prev.user, ds = ticks.system - prev.system
+        let di = ticks.idle - prev.idle, dn = ticks.nice - prev.nice
+        let dt = du + ds + di + dn
+        prevTicks = ticks; lastCheckTime = now
+        guard dt > 0 else { return (0, 0, 0, 100) }
+        let total = Double(du+ds+dn)/Double(dt)*100
+        print("[CPU] \(String(format: "%.1f", total))% (sys=\(String(format: "%.1f", Double(ds)/Double(dt)*100)) user=\(String(format: "%.1f", Double(du)/Double(dt)*100)))")
+        return (total, Double(ds)/Double(dt)*100, Double(du)/Double(dt)*100, Double(di)/Double(dt)*100)
+    }
 
-        let n = Double(numCPUs)
+    /// 读取 CPU ticks（host_statistics + HOST_CPU_LOAD_INFO，兼容 Apple Silicon）
+    private func readCPUTicks() -> (user: UInt64, system: UInt64, idle: UInt64, nice: UInt64)? {
+        var size = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info>.size / MemoryLayout<integer_t>.size)
+        var data = host_cpu_load_info()
+        let result = withUnsafeMutablePointer(to: &data) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
+                host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &size)
+            }
+        }
+        guard result == KERN_SUCCESS else { return nil }
         return (
-            (totalUser + totalSystem + totalNice) / total * 100,
-            totalSystem / total * 100,
-            totalUser / total * 100,
-            totalIdle / total * 100
+            user: UInt64(data.cpu_ticks.0),     // CPU_STATE_USER
+            system: UInt64(data.cpu_ticks.1),   // CPU_STATE_SYSTEM
+            idle: UInt64(data.cpu_ticks.2),     // CPU_STATE_IDLE
+            nice: UInt64(data.cpu_ticks.3)      // CPU_STATE_NICE
         )
     }
 
@@ -321,5 +330,51 @@ struct DefaultSystemMonitor: SystemMonitorProtocol {
         let totalGB = totalSize.doubleValue / 1_073_741_824
         let freeGB = freeSize.doubleValue / 1_073_741_824
         return (totalGB - freeGB, totalGB)
+    }
+
+    func cpuCoreCount() -> Int {
+        var size: size_t = 0
+        var len: size_t = MemoryLayout<size_t>.size
+        guard sysctlbyname("hw.ncpu", &size, &len, nil, 0) == 0 else { return 0 }
+        return Int(size)
+    }
+
+    func cpuTemperature() -> Double {
+        // 通过 IOKit SMC 读取 CPU 温度传感器（TC0P = CPU Proximity）
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSMC"))
+        guard service != IO_OBJECT_NULL else { return 0 }
+        defer { IOObjectRelease(service) }
+
+        let key: [UInt8] = [0x54, 0x43, 0x30, 0x50] // "TC0P"
+        let inputStruct: [UInt8] = [
+            0x00, 0x08, 0x00, 0x00,  // command type: read
+            0x00, 0x00, 0x00, 0x00,
+            0x53, 0x47, 0x4E, 0x45,  // "SGNE" - signature
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+        ]
+
+        // 简化方案：直接通过 IORegistryEntry 读取已知的温度 key
+        // 如果 SMC 方法不可用，返回 0
+        var input = inputStruct
+        var output = [UInt8](repeating: 0, count: 40)
+        var outputSize = output.count
+
+        let result = IOConnectCallStructMethod(
+            service,
+            UInt32(2), // kSMCReadKey
+            &input,
+            input.count,
+            &output,
+            &outputSize
+        )
+
+        guard result == KERN_SUCCESS, outputSize >= 20 else { return 0 }
+
+        // 温度值在 output 的 bytes 12..15（float32 little-endian）
+        let tempBytes = output[12..<16]
+        let temp = tempBytes.withUnsafeBytes { $0.load(as: Float32.self) }
+        return temp > 0 && temp < 150 ? Double(temp) : 0
     }
 }

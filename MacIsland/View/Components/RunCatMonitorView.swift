@@ -9,81 +9,114 @@ import SwiftUI
 
 // MARK: - RunCat Monitor View
 
-/// 紧凑系统监控视图 — 2列网格 + 全宽网络
+/// 紧凑系统监控视图 — 2×2 网络 + 全宽网络，所有卡片统一高度
 struct RunCatMonitorView: View {
-    let stats: SystemStats
+    @EnvironmentObject var monitor: SystemMonitorServiceImpl
     @State private var animateProgress = false
+
+    private var stats: SystemStats { monitor.stats }
 
     var body: some View {
         VStack(spacing: Theme.Spacing.xs) {
             // 2列网格：CPU + 内存
             HStack(spacing: Theme.Spacing.xs) {
-                compactCard(
-                    icon: "cpu", color: .blue,
-                    title: "CPU", value: String(format: "%.1f%%", stats.cpuUsage),
-                    rows: [
-                        ("系统", String(format: "%.1f%%", stats.cpuSystem)),
-                        ("用户", String(format: "%.1f%%", stats.cpuUser)),
-                    ],
-                    percent: stats.cpuUsage / 100, barColor: .blue
-                )
-                compactCard(
-                    icon: "memorychip", color: .purple,
-                    title: "内存", value: String(format: "%.1f%%", stats.memoryPercent),
-                    rows: [
-                        ("App", String(format: "%.1fG", stats.memoryApp)),
-                        ("压缩", String(format: "%.1fG", stats.memoryCompressed)),
-                    ],
-                    percent: stats.memoryPercent / 100, barColor: .purple
-                )
+                cpuCard
+                memoryCard
             }
 
             // 2列网格：储存 + 电池
             HStack(spacing: Theme.Spacing.xs) {
-                compactCard(
-                    icon: "internaldrive", color: .green,
-                    title: "储存", value: String(format: "%.1f%%", stats.diskPercent),
-                    rows: [
-                        ("已用", String(format: "%.0fG", stats.diskUsed)),
-                        ("空闲", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
-                    ],
-                    percent: stats.diskPercent / 100, barColor: .green
-                )
-                compactCard(
-                    icon: batteryIcon, color: batteryColor,
-                    title: "电池", value: String(format: "%.0f%%", stats.batteryLevel),
-                    rows: [
-                        ("容量", String(format: "%.0f%%", stats.batteryMaxCapacity)),
-                        ("循环", "\(stats.batteryCycleCount)"),
-                    ],
-                    percent: stats.batteryLevel / 100, barColor: batteryColor
-                )
+                diskCard
+                batteryCard
             }
 
             // 全宽网络
-            networkRow
+            networkCard
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .onAppear { withAnimation(.easeOut(duration: 0.5)) { animateProgress = true } }
     }
 
-    // MARK: - Compact Card
+    // MARK: - CPU Card（核心数/温度合入标题行）
 
-    private func compactCard(
+    private var cpuCard: some View {
+        unifiedCard(
+            icon: "cpu", color: .blue,
+            title: "CPU", value: String(format: "%.1f%%", stats.cpuUsage),
+            subtitle: stats.cpuTemperature > 0
+                ? "\(stats.cpuCoreCount)核 \(Int(stats.cpuTemperature))°C"
+                : "\(stats.cpuCoreCount)核",
+            rows: [
+                ("系统", String(format: "%.1f%%", stats.cpuSystem)),
+                ("用户", String(format: "%.1f%%", stats.cpuUser)),
+            ],
+            percent: stats.cpuUsage / 100, barColor: .blue
+        )
+    }
+
+    // MARK: - Memory Card
+
+    private var memoryCard: some View {
+        unifiedCard(
+            icon: "memorychip", color: .purple,
+            title: "内存", value: String(format: "%.1f%%", stats.memoryPercent),
+            subtitle: String(format: "%.1fG / %.0fG", stats.memoryUsed, stats.memoryTotal),
+            rows: [
+                ("App", String(format: "%.1fG", stats.memoryApp)),
+                ("压缩", String(format: "%.1fG", stats.memoryCompressed)),
+            ],
+            percent: stats.memoryPercent / 100, barColor: .purple
+        )
+    }
+
+    // MARK: - Disk Card
+
+    private var diskCard: some View {
+        unifiedCard(
+            icon: "internaldrive", color: .green,
+            title: "储存", value: String(format: "%.1f%%", stats.diskPercent),
+            subtitle: String(format: "%.0fG / %.0fG", stats.diskUsed, stats.diskTotal),
+            rows: [
+                ("已用", String(format: "%.0fG", stats.diskUsed)),
+                ("空闲", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
+            ],
+            percent: stats.diskPercent / 100, barColor: .green
+        )
+    }
+
+    // MARK: - Battery Card
+
+    private var batteryCard: some View {
+        unifiedCard(
+            icon: batteryIcon, color: batteryColor,
+            title: "电池", value: String(format: "%.0f%%", stats.batteryLevel),
+            subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
+            rows: [
+                ("容量", String(format: "%.0f%%", stats.batteryMaxCapacity)),
+                ("循环", "\(stats.batteryCycleCount)次"),
+            ],
+            percent: stats.batteryLevel / 100, barColor: batteryColor
+        )
+    }
+
+    // MARK: - Unified Card（统一尺寸卡片）
+
+    private func unifiedCard(
         icon: String, color: Color,
         title: String, value: String,
+        subtitle: String,
         rows: [(String, String)],
         percent: Double, barColor: Color
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            // 标题行
+        VStack(alignment: .leading, spacing: 0) {
+            // 标题行：图标 + 标题 + 数值
             HStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 11))
+                    .font(.system(size: 10))
                     .foregroundColor(color)
                 Text(title)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.textPrimary)
                 Spacer()
                 Text(value)
@@ -91,20 +124,28 @@ struct RunCatMonitorView: View {
                     .foregroundColor(color)
             }
 
-            // 详情行
+            // 副标题行（核心数/总量等）
+            Text(subtitle)
+                .font(.system(size: 8, weight: .medium))
+                .foregroundColor(.textQuaternary)
+                .padding(.top, 1)
+
+            Spacer(minLength: 2)
+
+            // 详情行 — 固定 2 行
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 HStack {
-                    if !row.0.isEmpty {
-                        Text(row.0)
-                            .font(.system(size: 9))
-                            .foregroundColor(.textQuaternary)
-                        Spacer()
-                    }
+                    Text(row.0)
+                        .font(.system(size: 8))
+                        .foregroundColor(.textQuaternary)
+                    Spacer()
                     Text(row.1)
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 8, design: .monospaced))
                         .foregroundColor(.textTertiary)
                 }
             }
+
+            Spacer(minLength: 2)
 
             // 进度条
             GeometryReader { geo in
@@ -117,61 +158,67 @@ struct RunCatMonitorView: View {
                         .animation(.easeOut(duration: 0.6), value: animateProgress)
                 }
             }
-            .frame(height: 3)
+            .frame(height: 2)
         }
-        .padding(6)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .frame(minHeight: 68)
         .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
     }
 
-    // MARK: - Network Row
+    // MARK: - Network Card（与卡片风格统一）
 
-    private var networkRow: some View {
+    private var networkCard: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Image(systemName: stats.networkConnected ? "globe" : "globe.badge.xmark")
-                .font(.system(size: 12))
-                .foregroundColor(stats.networkConnected ? .cyan : .red)
-                .frame(width: 16)
+            // 左侧：图标 + 标题 + 类型
+            HStack(spacing: 5) {
+                Image(systemName: stats.networkConnected ? "globe" : "globe.badge.xmark")
+                    .font(.system(size: 11))
+                    .foregroundColor(stats.networkConnected ? .cyan : .red)
 
-            Text("网络")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.textPrimary)
+                Text("网络")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.textPrimary)
 
-            if stats.networkConnected {
-                Text(stats.networkType.rawValue)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.cyan)
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 1)
-                    .background(Capsule().fill(.cyan.opacity(0.15)))
+                if stats.networkConnected {
+                    Text(stats.networkType.rawValue)
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundColor(.cyan)
+                        .padding(.horizontal, 3)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(.cyan.opacity(0.15)))
+                }
             }
 
             Spacer()
 
+            // 中间：IP
             if !stats.localIP.isEmpty {
                 Text(stats.localIP)
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(.system(size: 8, design: .monospaced))
                     .foregroundColor(.textQuaternary)
             }
 
+            // 右侧：上下行速度
             VStack(alignment: .trailing, spacing: 1) {
-                HStack(spacing: 3) {
+                HStack(spacing: 2) {
                     Image(systemName: "arrow.up")
-                        .font(.system(size: 7))
+                        .font(.system(size: 6))
                     Text(formatSpeed(stats.uploadSpeed))
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 8, design: .monospaced))
                 }
                 .foregroundColor(.textTertiary)
 
-                HStack(spacing: 3) {
+                HStack(spacing: 2) {
                     Image(systemName: "arrow.down")
-                        .font(.system(size: 7))
+                        .font(.system(size: 6))
                     Text(formatSpeed(stats.downloadSpeed))
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 8, design: .monospaced))
                 }
                 .foregroundColor(.textTertiary)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 7)
         .padding(.vertical, 5)
         .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
     }

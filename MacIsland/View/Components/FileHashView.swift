@@ -100,7 +100,11 @@ struct FileHashView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        IslandStore.isPanelPresented = true
+        let result = panel.runModal()
+        IslandStore.isPanelPresented = false
+
+        guard result == .OK, let url = panel.url else { return }
         filePath = url.path
         computeHashes(for: url)
     }

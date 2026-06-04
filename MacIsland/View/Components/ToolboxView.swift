@@ -28,7 +28,7 @@ struct ToolboxView: View {
             switch self {
             case .fileSearch: return "magnifyingglass"
             case .clipboard: return "doc.on.clipboard"
-            case .fileHash: return "hash"
+            case .fileHash: return "number.square"
             case .encoding: return "character.textbox"
             case .translate: return "globe"
             case .mokugyo: return "circle.inset.filled"

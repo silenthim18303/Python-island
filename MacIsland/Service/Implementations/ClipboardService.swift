@@ -83,9 +83,11 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
         let pattern: String
         switch urlDetectMode {
         case .httpsOnly:
-            pattern = "https://[^\\s<>\"{}|\\\\^`\\[\\]]+"
+            // 匹配 https:// 开头的 URL，同时匹配裸域名
+            pattern = "https://[^\\s<>\"{}|\\\\^`\\[\\]]+|[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.(?:com|net|org|io|cn|co|dev|app|xyz|me|cc|tv|info|biz|ai|top|vip)(?:/[^\\s<>\"{}]*)?"
         case .httpHttps:
-            pattern = "https?://[^\\s<>\"{}|\\\\^`\\[\\]]+"
+            // 匹配 http/https URL，同时匹配裸域名
+            pattern = "https?://[^\\s<>\"{}|\\\\^`\\[\\]]+|[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.(?:com|net|org|io|cn|co|dev|app|xyz|me|cc|tv|info|biz|ai|top|vip)(?:/[^\\s<>\"{}]*)?"
         case .domainOnly:
             pattern = "[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.[a-zA-Z]{2,}(?:/[^\\s<>\"{}]*)?"
         }
@@ -97,7 +99,7 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
         return matches.compactMap { match -> String? in
             guard let r = Range(match.range, in: text) else { return nil }
             let matched = String(text[r])
-            if urlDetectMode == .domainOnly && !matched.hasPrefix("http") {
+            if !matched.hasPrefix("http") {
                 return "https://\(matched)"
             }
             return matched
