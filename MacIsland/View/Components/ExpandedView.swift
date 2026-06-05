@@ -173,12 +173,12 @@ struct ExpandedView: View {
             WeatherCard(
                 icon: "wind",
                 temp: String(format: "%.0f km/h", weatherService.weather.windSpeed),
-                desc: "风速"
+                desc: L10n.weatherWind
             )
             WeatherCard(
                 icon: "humidity.fill",
                 temp: "\(weatherService.weather.humidity)%",
-                desc: "湿度"
+                desc: L10n.weatherHumidity
             )
         }
     }

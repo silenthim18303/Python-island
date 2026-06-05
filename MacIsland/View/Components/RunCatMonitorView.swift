@@ -79,7 +79,7 @@ struct RunCatMonitorView: View {
             subtitle: String(format: "%.0fG / %.0fG", stats.diskUsed, stats.diskTotal),
             rows: [
                 ("Used", String(format: "%.0fG", stats.diskUsed)),
-                ("空闲", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
+                ("Idle", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
             ],
             percent: stats.diskPercent / 100, barColor: .green
         )
@@ -93,8 +93,8 @@ struct RunCatMonitorView: View {
             title: L10n.monitorBattery, value: String(format: "%.0f%%", stats.batteryLevel),
             subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
             rows: [
-                ("容量", String(format: "%.0f%%", stats.batteryMaxCapacity)),
-                ("循环", "\(stats.batteryCycleCount)次"),
+                ("Capacity", String(format: "%.0f%%", stats.batteryMaxCapacity)),
+                ("Cycles", "\(stats.batteryCycleCount)次"),
             ],
             percent: stats.batteryLevel / 100, barColor: batteryColor
         )
@@ -176,7 +176,7 @@ struct RunCatMonitorView: View {
                     .font(.system(size: 11))
                     .foregroundColor(stats.networkConnected ? .cyan : .red)
 
-                Text("网络")
+                Text(L10n.monitorNetwork)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.textPrimary)
 

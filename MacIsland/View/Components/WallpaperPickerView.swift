@@ -259,7 +259,7 @@ struct WallpaperPickerView: View {
         let validVideoExts = ["mp4", "mov", "m4v"]
 
         guard validImageExts.contains(ext) || validVideoExts.contains(ext) else {
-            errorMessage = "不支持的文件格式: .\(ext)"
+            errorMessage = L10n.error
             showError = true
             return
         }
@@ -267,7 +267,7 @@ struct WallpaperPickerView: View {
         // 检查文件大小（限制 100MB）
         if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let size = attrs[.size] as? Int, size > 100 * 1024 * 1024 {
-            errorMessage = "文件过大，最大支持 100MB"
+            errorMessage = L10n.error
             showError = true
             return
         }

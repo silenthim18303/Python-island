@@ -131,7 +131,7 @@ struct AIChatView: View {
                 Text(L10n.aiApiKey)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
-                SecureField("sk-... 或留空", text: $ai.apiKey)
+                SecureField(L10n.aiApiKey, text: $ai.apiKey)
                     .textFieldStyle(.plain)
                     .font(.system(size: 12))
                     .foregroundColor(.textPrimary)
@@ -151,7 +151,7 @@ struct AIChatView: View {
                     .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
             }
 
-            Button("测试连接") {
+            Button(L10n.ok) {
                 Task {
                     await ai.checkConnection()
                     if ai.isConnected { showConfig = false }
@@ -165,7 +165,7 @@ struct AIChatView: View {
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("支持:")
+                Text(L10n.aiProtocol)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.textTertiary)
                 VStack(alignment: .leading, spacing: 2) {
@@ -178,7 +178,7 @@ struct AIChatView: View {
                 }
             }
 
-            Text("有 API Key → OpenAI 兼容协议（/v1/chat/completions）\n无 API Key → Ollama 协议（/api/chat）")
+            Text(L10n.aiProtocol)
                 .font(.system(size: 10))
                 .foregroundColor(.textQuaternary)
                 .multilineTextAlignment(.center)
@@ -197,18 +197,18 @@ struct AIChatView: View {
                 .font(.system(size: 40))
                 .foregroundColor(.white.opacity(0.15))
 
-            Text("AI 助手")
+            Text(L10n.aiTitle)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white.opacity(0.4))
 
             if !ai.isConnected {
-                Text("请先配置 AI 服务\n点击右上角 ⚙ 按钮")
+                Text(L10n.aiNoConfig)
                     .font(.system(size: 12))
                     .foregroundColor(.textQuaternary)
                     .multilineTextAlignment(.center)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("快速开始 (Ollama):")
+                    Text(L10n.aiQuickStart)
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.textTertiary)
                     Text("brew install ollama && ollama pull llama3")
@@ -218,7 +218,7 @@ struct AIChatView: View {
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.fillSubtle))
             } else {
-                Text("发送消息开始对话\n\(ai.availableModels.count) 个可用模型")
+                Text("\(L10n.aiSend) \(ai.availableModels.count) \(L10n.aiModels)")
                     .font(.system(size: 12))
                     .foregroundColor(.textQuaternary)
                     .multilineTextAlignment(.center)
@@ -240,7 +240,7 @@ struct AIChatView: View {
                     if ai.isGenerating {
                         HStack(spacing: 6) {
                             ProgressView().controlSize(.small)
-                            Text("思考中…")
+                            Text(L10n.aiThinking)
                                 .font(.system(size: 11))
                                 .foregroundColor(.textQuaternary)
                         }
@@ -299,7 +299,7 @@ struct AIChatView: View {
 
     private var inputBar: some View {
         HStack(spacing: 8) {
-            TextField("输入消息…", text: $inputText, axis: .vertical)
+            TextField(L10n.aiPlaceholder, text: $inputText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .foregroundColor(.textPrimary)
