@@ -14,14 +14,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 26.5+ |
 | --- | --- |
-| 版本 | v1.3.0 |
+| 版本 | v1.4.0 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v1.3.0)](https://github.com/MacIsland/MacIsland/releases/download/v1.3.0/MacIsland_v1.3.0.dmg)
+[📥 下载最新版本 (v1.4.0)](https://github.com/MacIsland/MacIsland/releases/download/v1.4.0/MacIsland_v1.4.0.dmg)
 
 ## 项目结构
 
