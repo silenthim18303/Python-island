@@ -47,8 +47,8 @@ struct WallpaperPickerView: View {
         .padding(Theme.Spacing.lg)
         .frame(width: 420)
         .background(Color.black.ignoresSafeArea())
-        .alert("错误", isPresented: $showError) {
-            Button("确定") { }
+        .alert(L10n.error, isPresented: $showError) {
+            Button(L10n.ok) { }
         } message: {
             Text(errorMessage)
         }
@@ -58,7 +58,7 @@ struct WallpaperPickerView: View {
 
     private var headerBar: some View {
         HStack {
-            Text("选择壁纸")
+            Text(L10n.wallpaperSelect)
                 .font(.system(size: Theme.FontSize.headline, weight: .bold))
                 .foregroundColor(.textPrimary)
             Spacer()
@@ -113,11 +113,11 @@ struct WallpaperPickerView: View {
                 .scaleEffect(isDragOver ? 1.1 : 1.0)
                 .animation(.spring(response: 0.3), value: isDragOver)
 
-            Text(isDragOver ? "释放以添加" : "拖拽文件到此处")
+            Text(isDragOver ? L10n.wallpaperAdd : L10n.wallpaperSelectHint)
                 .font(.system(size: Theme.FontSize.body, weight: .medium))
                 .foregroundColor(isDragOver ? .blue : .textSecondary)
 
-            Text("或点击下方按钮选择")
+            Text(L10n.wallpaperSelectHint)
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textQuaternary)
 

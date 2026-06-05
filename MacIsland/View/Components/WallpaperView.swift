@@ -24,8 +24,8 @@ struct WallpaperView: View {
     @State private var selectedLocalWallpaper: WallpaperItem?
 
     enum Section: String, CaseIterable {
-        case local = "本地"
-        case community = "社区"
+        case local = "local"
+        case community = "community"
     }
 
     private var uploadUsername: String {
@@ -54,9 +54,9 @@ struct WallpaperView: View {
             case .community: WallpaperCommunityView(store: store)
             }
         }
-        .alert("上传到社区", isPresented: $showUploadConfirm) {
-            Button("取消", role: .cancel) { }
-            Button("上传") {
+        .alert(L10n.wallpaperUpload, isPresented: $showUploadConfirm) {
+            Button(L10n.cancel, role: .cancel) { }
+            Button(L10n.wallpaperUpload) {
                 if let target = uploadTarget {
                     performUpload(target)
                 }
@@ -443,7 +443,7 @@ struct LocalWallpaperDetailSheet: View {
             NotificationCenter.default.post(name: .sheetDismissed, object: nil)
         }
         .alert("确认删除", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) { }
+            Button(L10n.cancel, role: .cancel) { }
             Button("删除", role: .destructive) {
                 store.deleteWallpaper(wallpaper)
                 dismiss()
@@ -451,9 +451,9 @@ struct LocalWallpaperDetailSheet: View {
         } message: {
             Text("确定要删除「\(wallpaper.name)」吗？")
         }
-        .alert("上传到社区", isPresented: $showUploadConfirm) {
-            Button("取消", role: .cancel) { }
-            Button("上传") {
+        .alert(L10n.wallpaperUpload, isPresented: $showUploadConfirm) {
+            Button(L10n.cancel, role: .cancel) { }
+            Button(L10n.wallpaperUpload) {
                 isUploading = true
                 Task {
                     if let url = wallpaper.fileURL {

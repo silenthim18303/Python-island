@@ -27,8 +27,8 @@ struct WallpaperCommunityView: View {
     @State private var selectedWallpaper: CommunityWallpaper?
 
     enum Filter: String, CaseIterable {
-        case all = "全部"
-        case mine = "我的"
+        case all = "all"
+        case mine = "mine"
     }
 
     private var uploadUsername: String {
@@ -50,7 +50,7 @@ struct WallpaperCommunityView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // 标题栏
             HStack {
-                Text("社区壁纸")
+                Text(L10n.wallpaperCommunity)
                     .font(.system(size: Theme.FontSize.caption, weight: .semibold))
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -62,7 +62,7 @@ struct WallpaperCommunityView: View {
                             Text(code)
                                 .font(.system(size: 16, weight: .bold, design: .monospaced))
                                 .foregroundColor(Color.appAccent)
-                            Text("请在浏览器中输入此代码")
+                            Text(L10n.wallpaperGitHubLogin)
                                 .font(.system(size: 9))
                                 .foregroundColor(.textQuaternary)
                         }
@@ -123,7 +123,7 @@ struct WallpaperCommunityView: View {
                     }
                     Spacer()
                     if filter == .mine {
-                        Text("\(filteredWallpapers.count) 个")
+                        Text("\(filteredWallpapers.count) \(L10n.count)")
                             .font(.system(size: 9))
                             .foregroundColor(.textQuaternary)
                     }
