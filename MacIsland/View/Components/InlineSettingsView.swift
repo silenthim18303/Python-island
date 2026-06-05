@@ -21,7 +21,16 @@ struct InlineSettingsView: View {
     @State private var searchQuery = ""
     @State private var accessibilityGranted = AXIsProcessTrusted()
     @State private var recordingAction: HotkeyAction?
+    @State private var conflictAlert: InlineConflictAlert?
     private let pollTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+
+    /// 冲突弹窗数据
+    private struct InlineConflictAlert: Identifiable {
+        let id = UUID()
+        let newAction: HotkeyAction
+        let conflictAction: HotkeyAction
+        let combo: KeyCombo
+    }
 
     private var isSearching: Bool {
         !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -511,11 +520,7 @@ struct InlineSettingsView: View {
                         binding: settings.hotkeyBindings[action] ?? KeyCombo.defaultBindings[action]!,
                         isRecording: recordingAction == action
                     ) { combo in
-                        if let conflict = settings.hotkeyBindings.first(where: { $0.key != action && $0.value == combo }) {
-                            settings.hotkeyBindings[conflict.key] = settings.hotkeyBindings[action]
-                        }
-                        settings.hotkeyBindings[action] = combo
-                        recordingAction = nil
+                        handleInlineCapture(action: action, combo: combo)
                     } onStartRecording: {
                         recordingAction = action
                     }
@@ -529,6 +534,35 @@ struct InlineSettingsView: View {
                 .foregroundColor(.textTertiary)
                 .buttonStyle(.plain)
             }
+        }
+        .alert(item: $conflictAlert) { alert in
+            Alert(
+                title: Text("快捷键冲突"),
+                message: Text("「\(alert.combo.displayString)」已被「\(alert.conflictAction.displayName)」使用。"),
+                primaryButton: .default(Text("交换")) {
+                    let oldBinding = settings.hotkeyBindings[alert.newAction]
+                    settings.hotkeyBindings[alert.newAction] = alert.combo
+                    settings.hotkeyBindings[alert.conflictAction] = oldBinding
+                    recordingAction = nil
+                },
+                secondaryButton: .cancel(Text("取消")) {
+                    recordingAction = nil
+                }
+            )
+        }
+    }
+
+    /// 处理快捷键捕获 — 检测冲突并弹窗
+    private func handleInlineCapture(action: HotkeyAction, combo: KeyCombo) {
+        if let conflictEntry = settings.hotkeyBindings.first(where: { $0.key != action && $0.value == combo }) {
+            conflictAlert = InlineConflictAlert(
+                newAction: action,
+                conflictAction: conflictEntry.key,
+                combo: combo
+            )
+        } else {
+            settings.hotkeyBindings[action] = combo
+            recordingAction = nil
         }
     }
 
@@ -730,12 +764,13 @@ private class InlineKeyRecorderNSView: NSView {
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
         wantsLayer = true
-        layer?.cornerRadius = 4
+        layer?.cornerRadius = 5
+        layer?.borderWidth = 1.5
         updateVisual()
     }
 
@@ -745,12 +780,30 @@ private class InlineKeyRecorderNSView: NSView {
         if isRecording {
             label.stringValue = "按下…"
             label.textColor = .controlAccentColor
-            layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+            layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
+            layer?.borderColor = NSColor.controlAccentColor.withAlphaComponent(0.5).cgColor
+            startPulse()
         } else {
             label.stringValue = displayString
             label.textColor = .labelColor
             layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+            layer?.borderColor = NSColor.clear.cgColor
+            stopPulse()
         }
+    }
+
+    private func startPulse() {
+        let pulse = CABasicAnimation(keyPath: "borderColor")
+        pulse.fromValue = NSColor.controlAccentColor.withAlphaComponent(0.3).cgColor
+        pulse.toValue = NSColor.controlAccentColor.withAlphaComponent(0.8).cgColor
+        pulse.duration = 0.8
+        pulse.autoreverses = true
+        pulse.repeatCount = .infinity
+        layer?.add(pulse, forKey: "pulseBorder")
+    }
+
+    private func stopPulse() {
+        layer?.removeAnimation(forKey: "pulseBorder")
     }
 
     override var acceptsFirstResponder: Bool { true }
