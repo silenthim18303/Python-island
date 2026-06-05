@@ -61,16 +61,16 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .appearance:    return "外观"
-        case .wallpaper:     return "壁纸"
-        case .animation:     return "动画"
-        case .clipboard:     return "剪贴板"
-        case .music:         return "音乐与歌词"
-        case .weather:       return "天气"
-        case .notifications: return "通知中心"
-        case .community:     return "社区"
-        case .shortcuts:     return "快捷键"
-        case .about:         return "关于"
+        case .appearance:    return L10n.settingsAppearance
+        case .wallpaper:     return L10n.wallpaperTitle
+        case .animation:     return L10n.settingsAnimation
+        case .clipboard:     return L10n.settingsClipboard
+        case .music:         return L10n.musicLyrics
+        case .weather:       return L10n.weatherTitle
+        case .notifications: return L10n.notifCenter
+        case .community:     return L10n.settingsCommunity
+        case .shortcuts:     return L10n.settingsShortcuts
+        case .about:         return L10n.settingsAbout
         }
     }
 
