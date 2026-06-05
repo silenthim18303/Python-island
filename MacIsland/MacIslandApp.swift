@@ -12,12 +12,19 @@ import SwiftUI
 @main
 struct MacIslandApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @ObservedObject private var settings = AppSettings.shared
 
     var body: some Scene {
         MenuBarExtra("MacIsland", systemImage: "circle.fill") {
             MenuBarView()
+                .preferredColorScheme(settings.appearanceMode.colorScheme)
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsView()
+                .preferredColorScheme(settings.appearanceMode.colorScheme)
+        }
     }
 }
 
@@ -40,6 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 创建灵动岛窗口
         IslandWindowManager.shared.createWindow(
             content: ContentView()
+                .environmentObject(AppSettings.shared)
                 .environmentObject(serviceContainer.weather)
                 .environmentObject(serviceContainer.music)
                 .environmentObject(serviceContainer.monitor)
@@ -68,6 +76,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 /// 菜单栏控制视图
 struct MenuBarView: View {
+    @ObservedObject private var settings = AppSettings.shared
     @State private var isVisible = true
 
     var body: some View {
@@ -76,7 +85,7 @@ struct MenuBarView: View {
             HStack {
                 Image(systemName: "circle.fill")
                     .font(.system(size: 8))
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color.appAccent)
 
                 Text("MacIsland")
                     .font(.system(size: 13, weight: .semibold))

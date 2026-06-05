@@ -12,6 +12,7 @@ import SwiftUI
 /// 闹钟列表视图
 struct AlarmListView: View {
     @ObservedObject var store: AlarmStore
+    @ObservedObject private var settings = AppSettings.shared
 
     @State private var showAddAlarm = false
     @State private var newLabel = ""
@@ -136,7 +137,7 @@ struct AlarmListView: View {
                             .font(.system(size: Theme.FontSize.caption2, weight: .medium))
                             .foregroundColor(newRepeatDays.contains(day) ? .white : .textTertiary)
                             .frame(width: 24, height: 24)
-                            .background(Circle().fill(newRepeatDays.contains(day) ? Color.accentColor : Color.fillSubtle))
+                            .background(Circle().fill(newRepeatDays.contains(day) ? Color.appAccent : Color.fillSubtle))
                     }
                     .buttonStyle(.plain)
                 }
@@ -203,7 +204,7 @@ struct AlarmListView: View {
                         ForEach(Weekday.allCases) { day in
                             Text(day.shortLabel)
                                 .font(.system(size: 8))
-                                .foregroundColor(item.repeatDays.contains(day) ? .accentColor : .textQuaternary)
+                                .foregroundColor(item.repeatDays.contains(day) ? Color.appAccent : .textQuaternary)
                         }
                     }
                 }

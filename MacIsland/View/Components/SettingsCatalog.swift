@@ -89,7 +89,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     /// 搜索关键词（含中英文别名），用于分类标题级匹配
     private var keywords: [String] {
         switch self {
-        case .appearance: return ["外观", "透明度", "语言", "自启", "appearance", "opacity", "language"]
+        case .appearance: return ["外观", "透明度", "语言", "自启", "深色", "浅色", "主题", "强调色", "颜色", "appearance", "opacity", "language", "theme", "dark", "light", "accent", "color"]
         case .wallpaper:  return ["壁纸", "存储", "路径", "wallpaper", "path"]
         case .animation:  return ["动画", "弹簧", "速度", "animation", "spring", "speed"]
         case .clipboard:  return ["剪贴板", "链接", "url", "黑名单", "clipboard", "link"]

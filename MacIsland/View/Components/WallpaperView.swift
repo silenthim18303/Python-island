@@ -14,6 +14,7 @@ import UniformTypeIdentifiers
 /// 壁纸管理主界面
 struct WallpaperView: View {
     @ObservedObject var store: WallpaperStore
+    @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var github = GitHubService.shared
     @State private var selectedSection: Section = .local
     @State private var uploadTarget: WallpaperItem?
@@ -290,6 +291,7 @@ struct VideoThumbnailView: NSViewRepresentable {
 struct LocalWallpaperDetailSheet: View {
     let wallpaper: WallpaperItem
     @ObservedObject var store: WallpaperStore
+    @ObservedObject private var settings = AppSettings.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
     @State private var showUploadConfirm = false
@@ -387,7 +389,7 @@ struct LocalWallpaperDetailSheet: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                            .background(Capsule().fill(Color.accentColor))
+                            .background(Capsule().fill(Color.appAccent))
                     }
                     .buttonStyle(.plain)
                 }

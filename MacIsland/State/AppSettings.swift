@@ -8,6 +8,45 @@
 import SwiftUI
 import Combine
 
+// MARK: - Appearance Mode
+
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system = "system"
+    case light  = "light"
+    case dark   = "dark"
+    var id: String { rawValue }
+    var displayName: String {
+        switch self { case .system: return "跟随系统"; case .light: return "浅色"; case .dark: return "深色" }
+    }
+    var systemImage: String {
+        switch self { case .system: return "circle.lefthalf.filled"; case .light: return "sun.max"; case .dark: return "moon" }
+    }
+    var colorScheme: ColorScheme? {
+        switch self { case .system: return nil; case .light: return .light; case .dark: return .dark }
+    }
+}
+
+// MARK: - Accent Color Option
+
+enum AccentColorOption: String, CaseIterable, Identifiable {
+    case blue, purple, pink, red, orange, yellow, green, teal, indigo
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .blue: return "蓝色"; case .purple: return "紫色"; case .pink: return "粉色"
+        case .red: return "红色"; case .orange: return "橙色"; case .yellow: return "黄色"
+        case .green: return "绿色"; case .teal: return "青色"; case .indigo: return "靛蓝"
+        }
+    }
+    var color: Color {
+        switch self {
+        case .blue: return .blue; case .purple: return .purple; case .pink: return .pink
+        case .red: return .red; case .orange: return .orange; case .yellow: return .yellow
+        case .green: return .green; case .teal: return .teal; case .indigo: return .indigo
+        }
+    }
+}
+
 // MARK: - App Settings
 
 /// 全局共享设置 — UserDefaults 持久化，灵动岛与设置窗口共用同一数据源
@@ -65,6 +104,14 @@ final class AppSettings: ObservableObject {
 
     // MARK: - 外观
 
+    /// 外观模式（深色/浅色/跟随系统）
+    @Published var appearanceMode: AppAppearance {
+        didSet { defaults.set(appearanceMode.rawValue, forKey: Keys.appearanceMode) }
+    }
+    /// 强调色
+    @Published var accentColorOption: AccentColorOption {
+        didSet { defaults.set(accentColorOption.rawValue, forKey: Keys.accentColorOption) }
+    }
     /// 灵动岛透明度 (0.0 ~ 1.0)
     @Published var islandOpacity: Double {
         didSet { defaults.set(islandOpacity, forKey: Keys.islandOpacity) }
@@ -117,6 +164,8 @@ final class AppSettings: ObservableObject {
     private let defaults = UserDefaults.standard
 
     private enum Keys {
+        static let appearanceMode = "appearanceMode"
+        static let accentColorOption = "accentColorOption"
         static let animationSpeed = "animationSpeed"
         static let springAnimation = "springAnimation"
         static let clipboardEnabled = "clipboardEnabled"
@@ -139,6 +188,10 @@ final class AppSettings: ObservableObject {
     }
 
     private init() {
+        appearanceMode = (defaults.string(forKey: Keys.appearanceMode))
+            .flatMap(AppAppearance.init) ?? .dark
+        accentColorOption = (defaults.string(forKey: Keys.accentColorOption))
+            .flatMap(AccentColorOption.init) ?? .blue
         animationSpeed = (defaults.string(forKey: Keys.animationSpeed))
             .flatMap(AnimationSpeed.init) ?? .medium
         springAnimation = defaults.object(forKey: Keys.springAnimation) as? Bool ?? true

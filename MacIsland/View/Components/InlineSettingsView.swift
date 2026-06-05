@@ -176,6 +176,20 @@ struct InlineSettingsView: View {
     private var appearanceSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             settingsGroup("外观") {
+                describedRow("appearanceMode") {
+                    Picker("", selection: $settings.appearanceMode) {
+                        ForEach(AppAppearance.allCases) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 100)
+                }
+
+                describedRow("accentColor") {
+                    InlineAccentColorPicker(selection: $settings.accentColorOption)
+                }
+
                 describedRow("language") {
                     LanguageSettingsView()
                         .environment(\.colorScheme, .dark)
@@ -240,7 +254,7 @@ struct InlineSettingsView: View {
                             settings.customWallpaperPath = ""
                         }
                         .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(Color.appAccent)
                         .buttonStyle(.plain)
                     }
                 }
@@ -756,5 +770,28 @@ private class InlineKeyRecorderNSView: NSView {
         if flags.contains(.shift)   { parts += "⇧" }
         if flags.contains(.command) { parts += "⌘" }
         label.stringValue = parts.isEmpty ? "按下…" : parts
+    }
+}
+
+// MARK: - Inline Accent Color Picker
+
+private struct InlineAccentColorPicker: View {
+    @Binding var selection: AccentColorOption
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(AccentColorOption.allCases) { option in
+                Button { selection = option } label: {
+                    Circle()
+                        .fill(option.color)
+                        .frame(width: 16, height: 16)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.white.opacity(selection == option ? 0.9 : 0), lineWidth: 2)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 }
