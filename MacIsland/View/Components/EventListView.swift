@@ -35,11 +35,11 @@ struct EventListView: View {
                 .foregroundColor(.white.opacity(0.15))
                 .padding(.top, 20)
 
-            Text("倒数日")
+            Text(L10n.eventTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("追踪重要日期：纪念日、生日、节日、考试")
+            Text(L10n.eventTrack)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
                 .multilineTextAlignment(.center)
@@ -47,7 +47,7 @@ struct EventListView: View {
             Button {
                 showAddEvent = true
             } label: {
-                Label("添加事件", systemImage: "plus")
+                Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
@@ -65,7 +65,7 @@ struct EventListView: View {
     private var eventListView: some View {
         VStack(spacing: Theme.Spacing.sm) {
             HStack {
-                Text("\(store.items.count) 个事件")
+                Text("\(store.items.count) \(L10n.count)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
@@ -93,25 +93,25 @@ struct EventListView: View {
 
     private var addEventForm: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            TextField("事件名称", text: $newTitle)
+            TextField(L10n.eventName, text: $newTitle)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body))
                 .foregroundColor(.textPrimary)
 
             HStack(spacing: Theme.Spacing.sm) {
-                Picker("类型", selection: $newType) {
+                Picker(L10n.eventTitle, selection: $newType) {
                     ForEach(EventType.allCases) { type in
                         Text(type.rawValue).tag(type)
                     }
                 }
                 .pickerStyle(.menu)
 
-                DatePicker("目标日期", selection: $newDate, displayedComponents: .date)
+                DatePicker(L10n.eventDate, selection: $newDate, displayedComponents: .date)
                     .labelsHidden()
             }
 
             HStack {
-                Button("取消") {
+                Button(L10n.cancel) {
                     showAddEvent = false
                     newTitle = ""
                 }
@@ -121,7 +121,7 @@ struct EventListView: View {
 
                 Spacer()
 
-                Button("添加") {
+                Button(L10n.add) {
                     let title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !title.isEmpty else { return }
                     store.addEvent(title: title, type: newType, targetDate: newDate)

@@ -34,18 +34,18 @@ struct BookmarkListView: View {
                 .foregroundColor(.white.opacity(0.15))
                 .padding(.top, 20)
 
-            Text("URL 书签")
+            Text(L10n.bookmarkTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("收藏常用链接，快速访问")
+            Text(L10n.bookmarkEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
 
             Button {
                 showAddBookmark = true
             } label: {
-                Label("添加书签", systemImage: "plus")
+                Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
@@ -63,7 +63,7 @@ struct BookmarkListView: View {
     private var bookmarkListView: some View {
         VStack(spacing: Theme.Spacing.sm) {
             HStack {
-                Text("\(store.items.count) 个书签")
+                Text("\(store.items.count) \(L10n.count)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
@@ -91,7 +91,7 @@ struct BookmarkListView: View {
 
     private var addBookmarkForm: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            TextField("名称", text: $newTitle)
+            TextField(L10n.bookmarkName, text: $newTitle)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body))
                 .foregroundColor(.textPrimary)
@@ -103,7 +103,7 @@ struct BookmarkListView: View {
                 .autocorrectionDisabled()
 
             HStack {
-                Button("取消") {
+                Button(L10n.cancel) {
                     showAddBookmark = false
                     newTitle = ""
                     newURL = ""
@@ -114,7 +114,7 @@ struct BookmarkListView: View {
 
                 Spacer()
 
-                Button("添加") {
+                Button(L10n.add) {
                     let title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
                     var url = newURL.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !title.isEmpty, !url.isEmpty else { return }
