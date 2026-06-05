@@ -19,11 +19,11 @@ struct MokugyoView: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.lg) {
             // 标题
-            Text("木鱼冥想")
+            Text(L10n.mokugyoTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("静心敲击，放松身心")
+            Text(L10n.mokugyoSubtitle)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
 
@@ -60,7 +60,7 @@ struct MokugyoView: View {
                 Text("\(tapCount)")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(.textPrimary)
-                Text("次敲击")
+                Text(L10n.mokugyoTaps)
                     .font(.system(size: Theme.FontSize.caption2))
                     .foregroundColor(.textQuaternary)
             }
@@ -70,7 +70,7 @@ struct MokugyoView: View {
                 Button {
                     withAnimation { tapCount = 0 }
                 } label: {
-                    Text("重置")
+                    Text(L10n.mokugyoReset)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textTertiary)
                         .padding(.horizontal, 12)
@@ -83,7 +83,7 @@ struct MokugyoView: View {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString("\(tapCount)", forType: .string)
                 } label: {
-                    Text("复制计数")
+                    Text(L10n.mokugyoCopyCount)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textSecondary)
                         .padding(.horizontal, 12)

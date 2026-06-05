@@ -45,7 +45,7 @@ struct AIChatView: View {
                 .fill(ai.isConnected ? Color.green : Color.red)
                 .frame(width: 6, height: 6)
 
-            Text(ai.isConnected ? "已连接" : "未连接")
+            Text(ai.isConnected ? L10n.enabled : L10n.disabled)
                 .font(.system(size: 10))
                 .foregroundColor(.textTertiary)
 
@@ -78,7 +78,7 @@ struct AIChatView: View {
                     .foregroundColor(.textTertiary)
             }
             .buttonStyle(.plain)
-            .help("在浏览器中打开服务地址")
+            .help(L10n.aiServer)
 
             Button { showConfig = true } label: {
                 Image(systemName: "gearshape")
@@ -103,7 +103,7 @@ struct AIChatView: View {
     private var configSheet: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("AI 服务配置")
+                Text(L10n.aiConfig)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.textPrimary)
                 Spacer()
@@ -116,7 +116,7 @@ struct AIChatView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("服务地址")
+                Text(L10n.aiServer)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
                 TextField("http://localhost:11434 / https://api.deepseek.com", text: $ai.serverURL)
@@ -128,7 +128,7 @@ struct AIChatView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("API Key（本地服务可留空）")
+                Text(L10n.aiApiKey)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
                 SecureField("sk-... 或留空", text: $ai.apiKey)
