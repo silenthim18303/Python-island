@@ -38,7 +38,7 @@ struct BreakReminderView: View {
                     Text(formattedTime)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(.textPrimary)
-                    Text("已坐")
+                    Text(L10n.breakSeated)
                         .font(.system(size: 9))
                         .foregroundColor(.textQuaternary)
                 }
@@ -47,16 +47,16 @@ struct BreakReminderView: View {
             // 配置
             VStack(spacing: Theme.Spacing.sm) {
                 HStack {
-                    Text("提醒间隔")
+                    Text(L10n.breakInterval)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textSecondary)
                     Spacer()
                     Picker("", selection: $settings.breakReminderMinutes) {
-                        Text("30 分钟").tag(30)
-                        Text("45 分钟").tag(45)
-                        Text("60 分钟").tag(60)
-                        Text("90 分钟").tag(90)
-                        Text("120 分钟").tag(120)
+                        Text(L10n.break30).tag(30)
+                        Text(L10n.break45).tag(45)
+                        Text(L10n.break60).tag(60)
+                        Text(L10n.break90).tag(90)
+                        Text(L10n.break120).tag(120)
                     }
                     .pickerStyle(.menu)
                     .frame(width: 100)
@@ -65,7 +65,7 @@ struct BreakReminderView: View {
                     }
                 }
 
-                Toggle("启用提醒", isOn: $settings.breakReminderEnabled)
+                Toggle(L10n.breakEnable, isOn: $settings.breakReminderEnabled)
                     .onChange(of: settings.breakReminderEnabled) { _, newValue in
                         if newValue { startTimer() } else { stopTimer() }
                     }
@@ -80,7 +80,7 @@ struct BreakReminderView: View {
                 } label: {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                        Text("我知道了，重置计时")
+                        Text(L10n.breakReset)
                     }
                     .font(.system(size: Theme.FontSize.caption, weight: .medium))
                     .foregroundColor(.black)
@@ -148,8 +148,8 @@ struct BreakReminderView: View {
 
     private func sendNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "🪑 久坐提醒"
-        content.body = "你已经坐了 \(Int(timeSinceLastBreak / 60)) 分钟，站起来活动一下吧！"
+        content.title = "🪑 \(L10n.breakTitle)"
+        content.body = "\(L10n.breakSeated) \(Int(timeSinceLastBreak / 60)) \(L10n.minutes)"
         content.sound = .default
 
         let request = UNNotificationRequest(

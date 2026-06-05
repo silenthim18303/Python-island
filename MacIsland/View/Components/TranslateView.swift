@@ -21,11 +21,11 @@ struct TranslateView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // 语言选择
             HStack(spacing: Theme.Spacing.sm) {
-                langPicker("从", selection: $sourceLang)
+                langPicker(L10n.translateFrom, selection: $sourceLang)
                 Image(systemName: "arrow.right")
                     .font(.system(size: 12))
                     .foregroundColor(.textTertiary)
-                langPicker("到", selection: $targetLang)
+                langPicker(L10n.translateTo, selection: $targetLang)
                 Spacer()
             }
 
@@ -45,7 +45,7 @@ struct TranslateView: View {
                 }
                 Spacer()
                 Button { translate() } label: {
-                    Text("翻译")
+                    Text(L10n.translateButton)
                         .font(.system(size: Theme.FontSize.caption, weight: .medium))
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
@@ -60,7 +60,7 @@ struct TranslateView: View {
             if !translatedText.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("翻译结果")
+                        Text(L10n.translateResult)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                         Spacer()
@@ -150,10 +150,10 @@ struct TranslateView: View {
                 return translatedText
             }
         } catch {
-            return "翻译请求失败: \(error.localizedDescription)"
+            return "\(L10n.translateTitle) error: \(error.localizedDescription)"
         }
 
-        return "翻译服务暂时不可用"
+        return L10n.error
     }
 }
 
@@ -166,15 +166,15 @@ private enum TranslateLang: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .auto: return "自动"
+        case .auto: return L10n.translateAuto
         case .zh: return "中文"
-        case .en: return "英文"
-        case .ja: return "日文"
-        case .ko: return "韩文"
-        case .fr: return "法文"
-        case .de: return "德文"
-        case .es: return "西文"
-        case .ru: return "俄文"
+        case .en: return "English"
+        case .ja: return "日本語"
+        case .ko: return "한국어"
+        case .fr: return "Français"
+        case .de: return "Deutsch"
+        case .es: return "Español"
+        case .ru: return "Русский"
         }
     }
 

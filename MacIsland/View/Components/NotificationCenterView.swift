@@ -51,11 +51,11 @@ struct NotificationCenterView: View {
     private var headerBar: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("通知中心")
+                Text(L10n.notifCenter)
                     .font(.system(size: Theme.FontSize.headline, weight: .bold))
                     .foregroundColor(.textPrimary)
 
-                Text("\(store.records.count) 条通知")
+                Text("\(store.records.count) \(L10n.notifCount)")
                     .font(.system(size: Theme.FontSize.caption2))
                     .foregroundColor(.textTertiary)
             }
@@ -66,18 +66,18 @@ struct NotificationCenterView: View {
                 Button {
                     showClearConfirm = true
                 } label: {
-                    Text("清空")
+                    Text(L10n.notifClear)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textSecondary)
                 }
                 .buttonStyle(.plain)
-                .alert("确认清空", isPresented: $showClearConfirm) {
-                    Button("取消", role: .cancel) {}
-                    Button("清空", role: .destructive) {
+                .alert(L10n.notifClear, isPresented: $showClearConfirm) {
+                    Button(L10n.cancel, role: .cancel) {}
+                    Button(L10n.notifClear, role: .destructive) {
                         store.clearAll()
                     }
                 } message: {
-                    Text("确定要清空所有通知记录吗？")
+                    Text(L10n.notifClearConfirm)
                 }
             }
         }
@@ -92,7 +92,7 @@ struct NotificationCenterView: View {
                 Image(systemName: "moon.fill")
                     .font(.system(size: 12))
                     .foregroundColor(.textSecondary)
-                Text("免打扰")
+                Text(L10n.notifDND)
                     .font(.system(size: Theme.FontSize.caption, weight: .medium))
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -104,7 +104,7 @@ struct NotificationCenterView: View {
 
             if settings.dndEnabled {
                 HStack(spacing: Theme.Spacing.sm) {
-                    Text("时段")
+                    Text(L10n.notifDNDTime)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textTertiary)
 
@@ -116,7 +116,7 @@ struct NotificationCenterView: View {
                     .labelsHidden()
                     .frame(width: 80)
 
-                    Text("至")
+                    Text(L10n.notifDNDTo)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textTertiary)
 
@@ -131,7 +131,7 @@ struct NotificationCenterView: View {
                     Spacer()
 
                     if settings.isDNDActive {
-                        Text("生效中")
+                        Text(L10n.notifDNDActive)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.orange)
                     }
@@ -148,7 +148,7 @@ struct NotificationCenterView: View {
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Spacing.xs) {
-                filterChip(nil, label: "全部")
+                filterChip(nil, label: L10n.notifAll)
                 ForEach([NotificationSource.timer, .clipboard, .music, .system], id: \.self) { source in
                     filterChip(source, label: source.displayName)
                 }
@@ -204,7 +204,7 @@ struct NotificationCenterView: View {
             Image(systemName: "bell.slash")
                 .font(.system(size: 24))
                 .foregroundColor(.textQuaternary)
-            Text("暂无通知")
+            Text(L10n.notifEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
         }
@@ -270,7 +270,7 @@ private struct NotificationRecordRow: View {
         if calendar.isDateInToday(record.timestamp) {
             formatter.dateFormat = "HH:mm"
         } else if calendar.isDateInYesterday(record.timestamp) {
-            return "昨天"
+            return L10n.yesterday
         } else {
             formatter.dateFormat = "M/d"
         }

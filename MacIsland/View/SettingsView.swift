@@ -44,7 +44,7 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .searchable(text: $searchQuery, placement: .sidebar, prompt: "搜索设置")
+        .searchable(text: $searchQuery, placement: .sidebar, prompt: L10n.search)
         .onChange(of: visibleCategories) { _, categories in
             // 搜索过滤后，若当前选中项被过滤掉，跳到第一个命中项
             if !categories.contains(selection), let first = categories.first {
@@ -119,7 +119,7 @@ private struct GeneralSettingsView: View {
     // MARK: - Appearance
 
     @ViewBuilder private var appearanceSection: some View {
-        Section("外观") {
+        Section(L10n.settingsAppearance) {
             LabeledContent {
                 Picker("", selection: $settings.appearanceMode) {
                     ForEach(AppAppearance.allCases) { mode in
@@ -165,7 +165,7 @@ private struct GeneralSettingsView: View {
     // MARK: - Wallpaper
 
     @ViewBuilder private var wallpaperSection: some View {
-        Section("壁纸存储") {
+        Section(L10n.wallpaperPath) {
             VStack(alignment: .leading, spacing: 6) {
                 SettingLabel(key: "customWallpaperPath")
                 HStack {
@@ -177,10 +177,10 @@ private struct GeneralSettingsView: View {
                     } label: { Image(systemName: "folder") }
                 }
                 if settings.customWallpaperPath.isEmpty {
-                    Text("默认：Application Support/MacIsland/Wallpapers")
+                    Text(L10n.wallpaperPathDefault)
                         .font(.caption).foregroundColor(.secondary)
                 } else {
-                    Button("恢复默认") { settings.customWallpaperPath = "" }
+                    Button(L10n.restore) { settings.customWallpaperPath = "" }
                         .font(.caption)
                 }
             }
@@ -190,7 +190,7 @@ private struct GeneralSettingsView: View {
     // MARK: - Animation
 
     @ViewBuilder private var animationSection: some View {
-        Section("动画") {
+        Section(L10n.settingsAnimation) {
             Picker(selection: $settings.animationSpeed) {
                 ForEach(AnimationSpeed.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             } label: { SettingLabel(key: "animationSpeed") }
@@ -203,19 +203,19 @@ private struct GeneralSettingsView: View {
     // MARK: - Clipboard
 
     @ViewBuilder private var clipboardSection: some View {
-        Section("剪贴板") {
+        Section(L10n.settingsClipboard) {
             Toggle(isOn: $settings.clipboardEnabled) { SettingLabel(key: "clipboardEnabled") }
 
             Picker(selection: $settings.clipboardUrlDetectMode) {
-                Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
-                Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
-                Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
+                Text(L10n.settingsHttpsOnly).tag(ClipboardUrlDetectMode.httpsOnly)
+                Text(L10n.settingsHttpHttps).tag(ClipboardUrlDetectMode.httpHttps)
+                Text(L10n.settingsDomainOnly).tag(ClipboardUrlDetectMode.domainOnly)
             } label: { SettingLabel(key: "clipboardUrlDetectMode") }
 
             VStack(alignment: .leading, spacing: 6) {
                 SettingLabel(key: "blacklistedDomains")
                 if settings.blacklistedDomains.isEmpty {
-                    Text("暂无黑名单域名").font(.caption).foregroundColor(.secondary)
+                    Text(L10n.settingsBlacklistEmpty).font(.caption).foregroundColor(.secondary)
                 } else {
                     ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
                         HStack {
@@ -233,7 +233,7 @@ private struct GeneralSettingsView: View {
                 HStack {
                     TextField(settingHint("blacklistedDomains"), text: $newDomain)
                         .textFieldStyle(.roundedBorder)
-                    Button("添加") { addDomain() }
+                    Button(L10n.add) { addDomain() }
                         .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
@@ -243,9 +243,9 @@ private struct GeneralSettingsView: View {
     // MARK: - Music
 
     @ViewBuilder private var musicSection: some View {
-        Section("音乐与歌词") {
+        Section(L10n.musicLyrics) {
             Picker(selection: $settings.preferredLyricsSource) {
-                Text("自动").tag("auto")
+                Text(L10n.translateAuto).tag("auto")
                 Text("网易云").tag("netease")
                 Text("QQ 音乐").tag("qqmusic")
                 Text("酷狗").tag("kugou")
@@ -257,7 +257,7 @@ private struct GeneralSettingsView: View {
     // MARK: - Weather
 
     @ViewBuilder private var weatherSection: some View {
-        Section("天气") {
+        Section(L10n.weatherTitle) {
             LabeledContent {
                 TextField(settingHint("weatherManualCity"), text: $settings.weatherManualCity)
                     .textFieldStyle(.roundedBorder).frame(width: 160)
@@ -269,7 +269,7 @@ private struct GeneralSettingsView: View {
                         .textFieldStyle(.roundedBorder).frame(width: 160)
                 } label: { SettingLabel(key: "weatherManualLocationID") }
 
-                Button("清除手动设置") {
+                Button(L10n.weatherClear) {
                     settings.weatherManualCity = ""
                     settings.weatherManualLocationID = ""
                 }
@@ -287,7 +287,7 @@ private struct GeneralSettingsView: View {
     // MARK: - Community
 
     @ViewBuilder private var communitySection: some View {
-        Section("社区") {
+        Section(L10n.settingsCommunity) {
             LabeledContent {
                 TextField(settingHint("communityUploadUsername"), text: $communityUsername)
                     .textFieldStyle(.roundedBorder).frame(width: 160)
@@ -318,7 +318,7 @@ private struct GeneralSettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.message = "选择壁纸存储目录"
+        panel.message = L10n.wallpaperSelect
         guard panel.runModal() == .OK, let url = panel.url else { return }
         settings.customWallpaperPath = url.path
     }
@@ -332,7 +332,7 @@ private struct GeneralSettingsView: View {
                     try SMAppService.mainApp.unregister()
                 }
             } catch {
-                print("Login Item 设置失败: \(error)")
+                print("Login Item error: \(error)")
             }
         }
     }
@@ -364,14 +364,14 @@ private struct ShortcutsSettingsView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.orange)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("辅助功能权限未授予，快捷键不可用")
+                            Text(L10n.shortcutPermissionDenied)
                                 .font(.callout)
-                            Text("点击下方按钮，在系统设置中为 MacIsland 打勾授权")
+                            Text(L10n.shortcutOpenSettings)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Button("打开系统设置") {
+                        Button(L10n.shortcutOpenSettings) {
                             let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
                             NSWorkspace.shared.open(url)
                         }
@@ -384,7 +384,7 @@ private struct ShortcutsSettingsView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("辅助功能权限已授予，快捷键可用")
+                        Text(L10n.shortcutPermissionGranted)
                             .font(.callout)
                             .foregroundColor(.secondary)
                     }
@@ -392,7 +392,7 @@ private struct ShortcutsSettingsView: View {
             }
 
             // 快捷键绑定
-            Section("全局快捷键") {
+            Section(L10n.shortcutTitle) {
                 ForEach(HotkeyAction.allCases, id: \.self) { action in
                     HotkeyRow(
                         action: action,
@@ -406,7 +406,7 @@ private struct ShortcutsSettingsView: View {
                 }
 
                 // 恢复默认
-                Button("恢复默认快捷键") {
+                Button(L10n.shortcutReset) {
                     settings.resetHotkeyBindings()
                     recordingAction = nil
                 }
@@ -419,16 +419,16 @@ private struct ShortcutsSettingsView: View {
         }
         .alert(item: $conflictAlert) { alert in
             Alert(
-                title: Text("快捷键冲突"),
-                message: Text("「\(alert.combo.displayString)」已被「\(alert.conflictAction.displayName)」使用。"),
-                primaryButton: .default(Text("交换")) {
+                title: Text(L10n.shortcutConflict),
+                message: Text("「\(alert.combo.displayString)」\(L10n.shortcutConflictMsg)「\(alert.conflictAction.displayName)」。"),
+                primaryButton: .default(Text(L10n.shortcutSwap)) {
                     // 交换两者
                     let oldBinding = settings.hotkeyBindings[alert.newAction]
                     settings.hotkeyBindings[alert.newAction] = alert.combo
                     settings.hotkeyBindings[alert.conflictAction] = oldBinding
                     recordingAction = nil
                 },
-                secondaryButton: .cancel(Text("取消")) {
+                secondaryButton: .cancel(Text(L10n.cancel)) {
                     recordingAction = nil
                 }
             )
@@ -544,7 +544,7 @@ private class KeyRecorderNSView: NSView {
     /// 更新视觉状态（录制中高亮 + 脉冲动画 / 正常显示）
     func updateVisualState() {
         if isRecording {
-            label.stringValue = "按下快捷键…"
+            label.stringValue = L10n.shortcutPressKey
             label.textColor = .controlAccentColor
             layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
             layer?.borderColor = NSColor.controlAccentColor.withAlphaComponent(0.5).cgColor
@@ -634,7 +634,7 @@ private class KeyRecorderNSView: NSView {
         if flags.contains(.option)  { parts += "⌥" }
         if flags.contains(.shift)   { parts += "⇧" }
         if flags.contains(.command) { parts += "⌘" }
-        label.stringValue = parts.isEmpty ? "按下快捷键…" : parts
+        label.stringValue = parts.isEmpty ? L10n.shortcutPressKey : parts
     }
 }
 
@@ -654,7 +654,7 @@ private struct AboutSettingsView: View {
             Text("MacIsland")
                 .font(.title2.bold())
 
-            Text("版本 \(version)")
+            Text("\(L10n.version) \(version)")
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
