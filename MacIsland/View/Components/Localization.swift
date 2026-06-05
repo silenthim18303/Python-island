@@ -345,6 +345,53 @@ enum L10n {
     static var minutes: String { t("minutes") }
     static var hours: String { t("hours") }
     static var days: String { t("days") }
+
+    // MARK: - AI Extended
+    static var aiQuickStart: String { t("ai_quick_start") }
+    static var aiCloud: String { t("ai_cloud") }
+    static var aiLocalModels: String { t("ai_local_models") }
+    static var aiModelName: String { t("ai_model_name") }
+    static var aiThinking: String { t("ai_thinking") }
+    static var aiNoConfig: String { t("ai_no_config") }
+    static var aiProtocol: String { t("ai_protocol") }
+
+    // MARK: - Wallpaper Extended
+    static var wallpaperCommunity: String { t("wallpaper_community") }
+    static var wallpaperCommunityUpload: String { t("wallpaper_community_upload") }
+    static var wallpaperRefresh: String { t("wallpaper_refresh") }
+    static var wallpaperDownloaded: String { t("wallpaper_downloaded") }
+    static var wallpaperPrivate: String { t("wallpaper_private") }
+    static var wallpaperUploading: String { t("wallpaper_uploading") }
+    static var wallpaperGitHub: String { t("wallpaper_github") }
+    static var wallpaperGitHubUser: String { t("wallpaper_github_user") }
+    static var wallpaperGitHubLogin: String { t("wallpaper_github_login") }
+    static var wallpaperSelectHint: String { t("wallpaper_select_hint") }
+    static var wallpaperRecommended: String { t("wallpaper_recommended") }
+
+    // MARK: - Event Extended
+    static var eventTrack: String { t("event_track") }
+
+    // MARK: - Alarm Extended
+    static var alarmSet: String { t("alarm_set") }
+    static var alarmDaily: String { t("alarm_daily") }
+    static var alarmTimeUp: String { t("alarm_time_up") }
+
+    // MARK: - Break Extended
+    static var break30: String { t("break_30") }
+    static var break45: String { t("break_45") }
+    static var break60: String { t("break_60") }
+    static var break90: String { t("break_90") }
+    static var break120: String { t("break_120") }
+
+    // MARK: - Encoding Extended
+    static var encodingToLabel: String { t("encoding_to_label") }
+
+    // MARK: - Notification Extended
+    static var notifDNDFrom: String { t("notif_dnd_from") }
+    static var notifDNDTo: String { t("notif_dnd_to") }
+
+    // MARK: - Shortcut Extended
+    static var shortcutAuth: String { t("shortcut_auth") }
 }
 
 // MARK: - Language Settings View
@@ -487,6 +534,32 @@ private let zhStrings: [String: String] = [
     "island_exit": "退出 MacIsland", "island_settings": "设置", "island_preferences": "偏好设置...",
     // Misc
     "today": "今天", "yesterday": "昨天", "minutes": "分钟", "hours": "小时", "days": "天",
+    // AI Extended
+    "ai_quick_start": "快速开始 (Ollama):", "ai_cloud": "云端: OpenAI / DeepSeek / Moonshot / 通义千问 / 零一万物 / Together / Groq",
+    "ai_local_models": "本地: Ollama / llama.cpp / LM Studio / vLLM", "ai_model_name": "模型名称",
+    "ai_thinking": "思考中...", "ai_no_config": "请先配置 AI 服务\n点击右上角 ⚙ 按钮",
+    "ai_protocol": "有 API Key → OpenAI 兼容协议（/v1/chat/completions）\n无 API Key → Ollama 协议（/api/chat）",
+    // Wallpaper Extended
+    "wallpaper_community": "社区壁纸", "wallpaper_community_upload": "社区上传",
+    "wallpaper_refresh": "点击刷新获取社区壁纸", "wallpaper_downloaded": "已下载",
+    "wallpaper_private": "私有", "wallpaper_uploading": "上传中...",
+    "wallpaper_github": "GitHub 登录", "wallpaper_github_user": "GitHub 用户名",
+    "wallpaper_github_login": "请在浏览器中输入此代码",
+    "wallpaper_select_hint": "或点击下方按钮选择", "wallpaper_recommended": "建议 1920×1080 以上",
+    // Event Extended
+    "event_track": "追踪重要日期：纪念日、生日、节日、考试",
+    // Alarm Extended
+    "alarm_set": "设置提醒闹钟，支持每日重复", "alarm_daily": "每日",
+    "alarm_time_up": "时间到！",
+    // Break Extended
+    "break_30": "30 分钟", "break_45": "45 分钟", "break_60": "60 分钟",
+    "break_90": "90 分钟", "break_120": "120 分钟",
+    // Encoding Extended
+    "encoding_to_label": "至",
+    // Notification Extended
+    "notif_dnd_from": "从", "notif_dnd_to": "至",
+    // Shortcut Extended
+    "shortcut_auth": "授权",
 ]
 
 // MARK: - 英文翻译
@@ -614,6 +687,32 @@ private let enStrings: [String: String] = [
     "island_exit": "Quit MacIsland", "island_settings": "Settings", "island_preferences": "Preferences...",
     // Misc
     "today": "Today", "yesterday": "Yesterday", "minutes": "min", "hours": "hours", "days": "days",
+    // AI Extended
+    "ai_quick_start": "Quick Start (Ollama):", "ai_cloud": "Cloud: OpenAI / DeepSeek / Moonshot / Tongyi / Yi / Together / Groq",
+    "ai_local_models": "Local: Ollama / llama.cpp / LM Studio / vLLM", "ai_model_name": "Model Name",
+    "ai_thinking": "Thinking...", "ai_no_config": "Please configure AI service first\nClick ⚙ button",
+    "ai_protocol": "With API Key → OpenAI compatible (/v1/chat/completions)\nWithout → Ollama (/api/chat)",
+    // Wallpaper Extended
+    "wallpaper_community": "Community Wallpaper", "wallpaper_community_upload": "Community Upload",
+    "wallpaper_refresh": "Click to refresh community wallpapers", "wallpaper_downloaded": "Downloaded",
+    "wallpaper_private": "Private", "wallpaper_uploading": "Uploading...",
+    "wallpaper_github": "GitHub Login", "wallpaper_github_user": "GitHub Username",
+    "wallpaper_github_login": "Enter this code in browser",
+    "wallpaper_select_hint": "Or click button below", "wallpaper_recommended": "Recommended 1920×1080+",
+    // Event Extended
+    "event_track": "Track important dates: anniversaries, birthdays, holidays, exams",
+    // Alarm Extended
+    "alarm_set": "Set reminder alarm with daily repeat", "alarm_daily": "Daily",
+    "alarm_time_up": "Time's up!",
+    // Break Extended
+    "break_30": "30 min", "break_45": "45 min", "break_60": "60 min",
+    "break_90": "90 min", "break_120": "120 min",
+    // Encoding Extended
+    "encoding_to_label": "To",
+    // Notification Extended
+    "notif_dnd_from": "From", "notif_dnd_to": "To",
+    // Shortcut Extended
+    "shortcut_auth": "Authorize",
 ]
 
 // MARK: - 日文翻译
@@ -741,4 +840,30 @@ private let jaStrings: [String: String] = [
     "island_exit": "MacIsland を終了", "island_settings": "設定", "island_preferences": "環境設定...",
     // Misc
     "today": "今日", "yesterday": "昨日", "minutes": "分", "hours": "時間", "days": "日",
+    // AI Extended
+    "ai_quick_start": "クイックスタート (Ollama):", "ai_cloud": "クラウド: OpenAI / DeepSeek / Moonshot / Tongyi / Yi / Together / Groq",
+    "ai_local_models": "ローカル: Ollama / llama.cpp / LM Studio / vLLM", "ai_model_name": "モデル名",
+    "ai_thinking": "思考中...", "ai_no_config": "AI サービスを設定してください\n右上 ⚙ ボタンをクリック",
+    "ai_protocol": "API Key あり → OpenAI 互換 (/v1/chat/completions)\nなし → Ollama (/api/chat)",
+    // Wallpaper Extended
+    "wallpaper_community": "コミュニティ壁紙", "wallpaper_community_upload": "コミュニティアップロード",
+    "wallpaper_refresh": "クリックしてコミュニティ壁紙を更新", "wallpaper_downloaded": "ダウンロード済み",
+    "wallpaper_private": "プライベート", "wallpaper_uploading": "アップロード中...",
+    "wallpaper_github": "GitHub ログイン", "wallpaper_github_user": "GitHub ユーザー名",
+    "wallpaper_github_login": "ブラウザでこのコードを入力してください",
+    "wallpaper_select_hint": "または下のボタンを選択", "wallpaper_recommended": "1920×1080 以上推奨",
+    // Event Extended
+    "event_track": "記念日、誕生日、祝日、試験の重要な日付を追跡",
+    // Alarm Extended
+    "alarm_set": "毎日繰り返しのリマインダーアラーム設定", "alarm_daily": "毎日",
+    "alarm_time_up": "時間です！",
+    // Break Extended
+    "break_30": "30 分", "break_45": "45 分", "break_60": "60 分",
+    "break_90": "90 分", "break_120": "120 分",
+    // Encoding Extended
+    "encoding_to_label": "へ",
+    // Notification Extended
+    "notif_dnd_from": "から", "notif_dnd_to": "まで",
+    // Shortcut Extended
+    "shortcut_auth": "許可",
 ]
