@@ -14,6 +14,7 @@ import ServiceManagement
 
 /// 原生偏好设置窗口 — 左侧分类侧栏 + 右侧表单，顶部支持搜索
 struct SettingsView: View {
+    @ObservedObject private var loc = LocalizationManager.shared
     @State private var selection: SettingsCategory = .appearance
     @State private var searchQuery = ""
 

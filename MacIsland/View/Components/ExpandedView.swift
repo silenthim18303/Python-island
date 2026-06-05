@@ -18,6 +18,7 @@ struct ExpandedView: View {
     @EnvironmentObject var monitorService: SystemMonitorServiceImpl
 
     @State private var selectedTab: Tab = .overview
+    @ObservedObject private var loc = LocalizationManager.shared
 
     // MARK: - Tab Definition
 
@@ -26,6 +27,15 @@ struct ExpandedView: View {
         case music = "音乐"
         case tools = "工具"
         case monitor = "监控"
+
+        var displayName: String {
+            switch self {
+            case .overview: return "概览"
+            case .music: return "音乐"
+            case .tools: return L10n.tabToolbox
+            case .monitor: return "监控"
+            }
+        }
     }
 
     var body: some View {
@@ -93,7 +103,7 @@ struct ExpandedView: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
                 } label: {
-                    Text(tab.rawValue)
+                    Text(tab.displayName)
                         .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
                         .foregroundColor(selectedTab == tab ? .white : .white.opacity(0.5))
                         .padding(.horizontal, 14)

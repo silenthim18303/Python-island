@@ -48,6 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         IslandWindowManager.shared.createWindow(
             content: ContentView()
                 .environmentObject(AppSettings.shared)
+                .environmentObject(LocalizationManager.shared)
                 .environmentObject(serviceContainer.weather)
                 .environmentObject(serviceContainer.music)
                 .environmentObject(serviceContainer.monitor)

@@ -15,6 +15,7 @@ import ServiceManagement
 /// 内联设置视图 — 嵌入 MaxExpand 设置标签页，深色背景适配
 struct InlineSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var loc = LocalizationManager.shared
     @State private var newDomain = ""
     @State private var communityUsername = UserDefaults.standard.string(forKey: "communityUploadUsername") ?? ""
     @State private var selectedCategory: SettingsCategory = .appearance
