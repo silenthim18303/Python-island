@@ -196,7 +196,7 @@ struct AlarmListView: View {
                     .lineLimit(1)
 
                 if item.isOneTime {
-                    Text("单次")
+                    Text(L10n.alarmOnce)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textQuaternary)
                 } else {

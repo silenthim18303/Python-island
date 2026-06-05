@@ -152,9 +152,9 @@ private struct PomodoroSection: View {
             case .work:
                 durationRow(title: L10n.timerWork, color: .red, value: $settings.pomodoroWorkMinutes, range: 1...120)
             case .shortBreak:
-                durationRow(title: "短休", color: .green, value: $settings.pomodoroShortBreakMinutes, range: 1...30)
+                durationRow(title: L10n.timerBreak, color: .green, value: $settings.pomodoroShortBreakMinutes, range: 1...30)
             case .longBreak:
-                durationRow(title: "长休", color: .blue, value: $settings.pomodoroLongBreakMinutes, range: 1...60)
+                durationRow(title: L10n.timerLongBreak, color: .blue, value: $settings.pomodoroLongBreakMinutes, range: 1...60)
             }
         }
     }

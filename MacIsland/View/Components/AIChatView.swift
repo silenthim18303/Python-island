@@ -140,7 +140,7 @@ struct AIChatView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("模型名称")
+                Text(L10n.aiModelName)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
                 TextField("llama3 / gpt-4o-mini / deepseek-chat", text: $ai.selectedModel)

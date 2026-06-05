@@ -90,7 +90,7 @@ struct RunCatMonitorView: View {
     private var batteryCard: some View {
         unifiedCard(
             icon: batteryIcon, color: batteryColor,
-            title: "电池", value: String(format: "%.0f%%", stats.batteryLevel),
+            title: L10n.monitorBattery, value: String(format: "%.0f%%", stats.batteryLevel),
             subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
             rows: [
                 ("容量", String(format: "%.0f%%", stats.batteryMaxCapacity)),
