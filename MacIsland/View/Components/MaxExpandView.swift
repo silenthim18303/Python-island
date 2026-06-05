@@ -19,6 +19,7 @@ struct MaxExpandView: View {
     @StateObject private var bookmarkStore = BookmarkStore.shared
     @StateObject private var wallpaperStore = WallpaperStore.shared
     @State private var selectedTab: Tab = .todo
+    @ObservedObject private var notificationStore = NotificationCenterStore.shared
 
     // MARK: - Tab Definition
 
@@ -30,6 +31,7 @@ struct MaxExpandView: View {
         case bookmark = "书签"
         case wallpaper = "壁纸"
         case ai = "AI"
+        case notifications = "通知"
         case settings = "设置"
         case toolbox = "工具"
     }
@@ -107,8 +109,21 @@ struct MaxExpandView: View {
                         withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
                     } label: {
                         VStack(spacing: 4) {
-                            Image(systemName: iconName(for: tab))
-                                .font(.system(size: 14))
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: iconName(for: tab))
+                                    .font(.system(size: 14))
+
+                                // 通知角标
+                                if tab == .notifications && notificationStore.unreadCount > 0 {
+                                    Text("\(notificationStore.unreadCount)")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 4)
+                                        .padding(.vertical, 1)
+                                        .background(Capsule().fill(Color.red))
+                                        .offset(x: 8, y: -6)
+                                }
+                            }
 
                             Text(tab.rawValue)
                                 .font(.system(size: 10, weight: .medium))
@@ -143,6 +158,7 @@ struct MaxExpandView: View {
         case .bookmark: bookmarkContent
         case .wallpaper: wallpaperContent
         case .ai: aiContent
+        case .notifications: notificationsContent
         case .settings: settingsContent
         case .toolbox: toolboxContent
         }
@@ -190,6 +206,12 @@ struct MaxExpandView: View {
         AIChatView()
     }
 
+    // MARK: - Notifications Content
+
+    private var notificationsContent: some View {
+        NotificationCenterView()
+    }
+
     // MARK: - Settings Content
 
     private var settingsContent: some View {
@@ -213,6 +235,7 @@ struct MaxExpandView: View {
         case .bookmark: return "bookmark.fill"
         case .wallpaper: return "photo.fill"
         case .ai: return "brain.head.profile"
+        case .notifications: return "bell.badge.fill"
         case .settings: return "gearshape.fill"
         case .toolbox: return "wrench.and.screwdriver.fill"
         }

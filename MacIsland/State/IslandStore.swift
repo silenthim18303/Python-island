@@ -74,7 +74,7 @@ final class IslandStore: ObservableObject {
         self.timerService = service
         service.setNotificationHandler { [weak self] title, body in
             DispatchQueue.main.async {
-                self?.setNotification(title: title, body: body)
+                self?.setNotification(title: title, body: body, source: .timer)
             }
         }
 
@@ -103,7 +103,7 @@ final class IslandStore: ObservableObject {
         self.clipboardService = service
         service.setNotificationHandler { [weak self] title, body in
             DispatchQueue.main.async {
-                self?.setNotification(title: title, body: body)
+                self?.setNotification(title: title, body: body, source: .clipboard)
             }
         }
     }
@@ -188,7 +188,13 @@ final class IslandStore: ObservableObject {
         animate(to: .maxExpand)
     }
 
-    func setNotification(title: String, body: String) {
+    func setNotification(title: String, body: String, source: NotificationSource = .other) {
+        // 保存到通知历史（无论是否显示）
+        NotificationCenterStore.shared.addNotification(title: title, body: body, source: source)
+
+        // 免打扰时段内不显示灵动岛通知
+        if AppSettings.shared.isDNDActive { return }
+
         previousState = state
         cancelIdleTimer()
         animate(to: .notification(title: title, body: body))

@@ -46,43 +46,46 @@ enum SettingsCatalog {
 
 /// 设置分类 — 取代原先「通用」一个标签塞满全部的结构。
 enum SettingsCategory: String, CaseIterable, Identifiable {
-    case appearance   // 外观
-    case wallpaper    // 壁纸
-    case animation    // 动画
-    case clipboard    // 剪贴板
-    case music        // 音乐与歌词
-    case weather      // 天气
-    case community    // 社区
-    case shortcuts    // 快捷键
-    case about        // 关于
+    case appearance    // 外观
+    case wallpaper     // 壁纸
+    case animation     // 动画
+    case clipboard     // 剪贴板
+    case music         // 音乐与歌词
+    case weather       // 天气
+    case notifications // 通知中心
+    case community     // 社区
+    case shortcuts     // 快捷键
+    case about         // 关于
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .appearance: return "外观"
-        case .wallpaper:  return "壁纸"
-        case .animation:  return "动画"
-        case .clipboard:  return "剪贴板"
-        case .music:      return "音乐与歌词"
-        case .weather:    return "天气"
-        case .community:  return "社区"
-        case .shortcuts:  return "快捷键"
-        case .about:      return "关于"
+        case .appearance:    return "外观"
+        case .wallpaper:     return "壁纸"
+        case .animation:     return "动画"
+        case .clipboard:     return "剪贴板"
+        case .music:         return "音乐与歌词"
+        case .weather:       return "天气"
+        case .notifications: return "通知中心"
+        case .community:     return "社区"
+        case .shortcuts:     return "快捷键"
+        case .about:         return "关于"
         }
     }
 
     var systemImage: String {
         switch self {
-        case .appearance: return "paintbrush"
-        case .wallpaper:  return "photo"
-        case .animation:  return "wand.and.rays"
-        case .clipboard:  return "doc.on.clipboard"
-        case .music:      return "music.note"
-        case .weather:    return "cloud.sun"
-        case .community:  return "person.2"
-        case .shortcuts:  return "command"
-        case .about:      return "info.circle"
+        case .appearance:    return "paintbrush"
+        case .wallpaper:     return "photo"
+        case .animation:     return "wand.and.rays"
+        case .clipboard:     return "doc.on.clipboard"
+        case .music:         return "music.note"
+        case .weather:       return "cloud.sun"
+        case .notifications: return "bell.badge"
+        case .community:     return "person.2"
+        case .shortcuts:     return "command"
+        case .about:         return "info.circle"
         }
     }
 
@@ -94,8 +97,9 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .animation:  return ["动画", "弹簧", "速度", "animation", "spring", "speed"]
         case .clipboard:  return ["剪贴板", "链接", "url", "黑名单", "clipboard", "link"]
         case .music:      return ["音乐", "歌词", "lyrics", "netease", "music"]
-        case .weather:    return ["天气", "城市", "weather", "city", "location"]
-        case .community:  return ["社区", "上传", "用户名", "community", "upload"]
+        case .weather:       return ["天气", "城市", "weather", "city", "location"]
+        case .notifications: return ["通知", "免打扰", "历史", "notification", "dnd", "mute"]
+        case .community:     return ["社区", "上传", "用户名", "community", "upload"]
         case .shortcuts:  return ["快捷键", "热键", "shortcut", "hotkey", "key"]
         case .about:      return ["关于", "版本", "about", "version"]
         }
@@ -198,6 +202,14 @@ struct SettingItemMeta: Identifiable {
               title: "域名黑名单", description: "命中黑名单的域名不会触发链接提示。",
               hint: "example.com",
               keywords: ["blacklist", "黑名单", "domain"]),
+
+        // 通知中心
+        .init("dndEnabled", .notifications,
+              title: "免打扰", description: "在指定时段内静默所有通知。",
+              keywords: ["dnd", "mute", "静音", "免打扰"]),
+        .init("dndTimeRange", .notifications,
+              title: "免打扰时段", description: "设置免打扰的开始和结束时间。",
+              keywords: ["time", "时段", "时间"]),
 
         // 音乐与歌词
         .init("preferredLyricsSource", .music,
