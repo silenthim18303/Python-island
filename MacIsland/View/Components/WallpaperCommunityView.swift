@@ -13,6 +13,7 @@ import UniformTypeIdentifiers
 /// 社区壁纸浏览与上传
 struct WallpaperCommunityView: View {
     @ObservedObject var store: WallpaperStore
+    @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var github = GitHubService.shared
     @State private var showUploadPicker = false
     @State private var isUploading = false
@@ -60,7 +61,7 @@ struct WallpaperCommunityView: View {
                         VStack(spacing: 4) {
                             Text(code)
                                 .font(.system(size: 16, weight: .bold, design: .monospaced))
-                                .foregroundColor(.accentColor)
+                                .foregroundColor(Color.appAccent)
                             Text("请在浏览器中输入此代码")
                                 .font(.system(size: 9))
                                 .foregroundColor(.textQuaternary)
@@ -438,7 +439,7 @@ struct WallpaperCommunityView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
-                .background(Capsule().fill(Color.accentColor))
+                .background(Capsule().fill(Color.appAccent))
             }
             .buttonStyle(.plain)
             .disabled(
@@ -457,6 +458,7 @@ struct WallpaperCommunityView: View {
 struct WallpaperDetailSheet: View {
     let wallpaper: CommunityWallpaper
     @ObservedObject var store: WallpaperStore
+    @ObservedObject private var settings = AppSettings.shared
     let isDownloaded: Bool
     @Environment(\.dismiss) private var dismiss
     @State private var isDownloading = false
@@ -571,7 +573,7 @@ struct WallpaperDetailSheet: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
-                                .background(Capsule().fill(Color.accentColor))
+                                .background(Capsule().fill(Color.appAccent))
                         }
                         .buttonStyle(.plain)
                     }
@@ -593,7 +595,7 @@ struct WallpaperDetailSheet: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
-                        .background(Capsule().fill(isDownloading ? .gray : Color.accentColor))
+                        .background(Capsule().fill(isDownloading ? .gray : Color.appAccent))
                     }
                     .buttonStyle(.plain)
                     .disabled(isDownloading)

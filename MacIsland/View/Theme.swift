@@ -63,6 +63,11 @@ extension Color {
     static let fillSubtle = Color.white.opacity(Theme.FillOpacity.subtle)
     static let fillStrong = Color.white.opacity(Theme.FillOpacity.strong)
     static let hairline = Color.white.opacity(Theme.FillOpacity.hairline)
+
+    /// 用户自定义强调色
+    static var appAccent: Color {
+        AppSettings.shared.accentColorOption.color
+    }
 }
 
 // MARK: - Height Preference Key
