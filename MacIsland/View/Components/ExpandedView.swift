@@ -30,10 +30,10 @@ struct ExpandedView: View {
 
         var displayName: String {
             switch self {
-            case .overview: return "概览"
-            case .music: return "音乐"
+            case .overview: return L10n.tabTodo
+            case .music: return L10n.tabTodo
             case .tools: return L10n.tabToolbox
-            case .monitor: return "监控"
+            case .monitor: return L10n.monitorTitle
             }
         }
     }

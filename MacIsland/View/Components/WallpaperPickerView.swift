@@ -121,7 +121,7 @@ struct WallpaperPickerView: View {
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textQuaternary)
 
-            Button("选择文件") { openFilePicker() }
+            Button(L10n.wallpaperSelect) { openFilePicker() }
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.blue)
                 .padding(.horizontal, 16)
@@ -178,7 +178,7 @@ struct WallpaperPickerView: View {
 
     private var actionButtons: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Button("重新选择") {
+            Button(L10n.restore) {
                 openFilePicker()
             }
             .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -189,7 +189,7 @@ struct WallpaperPickerView: View {
             .buttonStyle(.plain)
 
             if selectedURL != nil {
-                Button("添加壁纸") {
+                Button(L10n.wallpaperAdd) {
                     addWallpaper()
                 }
                 .font(.system(size: Theme.FontSize.body, weight: .bold))
@@ -208,7 +208,7 @@ struct WallpaperPickerView: View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: "info.circle")
                 .font(.system(size: 9))
-            Text("支持 JPG / PNG / WebP / MP4 / MOV，建议 1920×1080 以上")
+            Text(L10n.wallpaperFormats)
         }
         .font(.system(size: Theme.FontSize.caption2))
         .foregroundColor(.textQuaternary)

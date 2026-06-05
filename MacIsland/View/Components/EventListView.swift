@@ -149,7 +149,7 @@ struct EventListView: View {
                 Text("\(abs(item.daysRemaining))")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(item.isPast ? .textQuaternary : daysColor(item.daysRemaining))
-                Text(item.isPast ? "天前" : "天")
+                Text(item.isPast ? L10n.eventDaysPassed : L10n.days)
                     .font(.system(size: Theme.FontSize.caption2))
                     .foregroundColor(.textQuaternary)
             }
