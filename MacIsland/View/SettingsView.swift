@@ -12,124 +12,293 @@ import ServiceManagement
 
 // MARK: - Settings View
 
-/// 原生偏好设置窗口
+/// 原生偏好设置窗口 — 左侧分类侧栏 + 右侧表单，顶部支持搜索
 struct SettingsView: View {
-    var body: some View {
-        TabView {
-            GeneralSettingsView()
-                .tabItem { Label("通用", systemImage: "gearshape") }
+    @State private var selection: SettingsCategory = .appearance
+    @State private var searchQuery = ""
 
-            ShortcutsSettingsView()
-                .tabItem { Label("快捷键", systemImage: "command") }
-
-            AboutSettingsView()
-                .tabItem { Label("关于", systemImage: "info.circle") }
-        }
-        .frame(width: 420, height: 360)
+    private var isSearching: Bool {
+        !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+
+    /// 搜索时仅展示命中的分类
+    private var visibleCategories: [SettingsCategory] {
+        if isSearching {
+            return SettingsCatalog.search(searchQuery).map(\.category)
+        }
+        return SettingsCategory.allCases
+    }
+
+    var body: some View {
+        NavigationSplitView {
+            List(visibleCategories, selection: $selection) { category in
+                Label(category.title, systemImage: category.systemImage)
+                    .tag(category)
+            }
+            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
+        } detail: {
+            ScrollView {
+                detailContent
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .searchable(text: $searchQuery, placement: .sidebar, prompt: "搜索设置")
+        .onChange(of: visibleCategories) { _, categories in
+            // 搜索过滤后，若当前选中项被过滤掉，跳到第一个命中项
+            if !categories.contains(selection), let first = categories.first {
+                selection = first
+            }
+        }
+        .frame(minWidth: 620, idealWidth: 660, minHeight: 420, idealHeight: 460)
+    }
+
+    @ViewBuilder
+    private var detailContent: some View {
+        switch selection {
+        case .appearance, .wallpaper, .animation, .clipboard,
+             .music, .weather, .community:
+            GeneralSettingsView(category: selection)
+        case .shortcuts:
+            ShortcutsSettingsView()
+        case .about:
+            AboutSettingsView()
+        }
+    }
+}
+
+// MARK: - Settings Description Helpers
+
+/// 设置项标题 + 说明小字（取自 SettingsCatalog），统一原生窗口文案
+private struct SettingLabel: View {
+    let key: String
+
+    var body: some View {
+        let meta = SettingItemMeta.meta(key)
+        VStack(alignment: .leading, spacing: 2) {
+            Text(meta?.title ?? key)
+            if let desc = meta?.description, !desc.isEmpty {
+                Text(desc)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
+private func settingHint(_ key: String) -> String {
+    SettingItemMeta.meta(key)?.hint ?? ""
 }
 
 // MARK: - General
 
 private struct GeneralSettingsView: View {
+    let category: SettingsCategory
     @ObservedObject private var settings = AppSettings.shared
     @State private var newDomain: String = ""
+    @State private var communityUsername = UserDefaults.standard.string(forKey: "communityUploadUsername") ?? ""
 
     var body: some View {
         Form {
-            Section("外观") {
-                LanguageSettingsView()
-
-                Toggle("开机自启动", isOn: $settings.launchAtLogin)
-                    .onChange(of: settings.launchAtLogin) { _, newValue in
-                        setLaunchAtLogin(newValue)
-                    }
-
-                HStack {
-                    Text("灵动岛透明度")
-                    Spacer()
-                    Text("\(Int(settings.islandOpacity * 100))%")
-                        .foregroundColor(.secondary)
-                        .monospacedDigit()
-                }
-                Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
-
-                HStack {
-                    Text("壁纸透明度")
-                    Spacer()
-                    Text("\(Int(settings.wallpaperOpacity * 100))%")
-                        .foregroundColor(.secondary)
-                        .monospacedDigit()
-                }
-                Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
-            }
-
-            Section("动画") {
-                Picker("动画速度", selection: $settings.animationSpeed) {
-                    ForEach(AnimationSpeed.allCases, id: \.self) { speed in
-                        Text(speed.rawValue).tag(speed)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                Toggle("弹簧动画", isOn: $settings.springAnimation)
-            }
-
-            Section("剪贴板") {
-                Toggle("链接检测", isOn: $settings.clipboardEnabled)
-
-                Picker("URL 检测模式", selection: $settings.clipboardUrlDetectMode) {
-                    Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
-                    Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
-                    Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
-                }
-
-                // 域名黑名单
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("域名黑名单")
-                        .font(.headline)
-
-                    if settings.blacklistedDomains.isEmpty {
-                        Text("暂无黑名单域名")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
-                            HStack {
-                                Text(domain)
-                                    .font(.callout)
-                                Spacer()
-                                Button {
-                                    settings.blacklistedDomains.remove(domain)
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    HStack {
-                        TextField("输入域名，如 example.com", text: $newDomain)
-                            .textFieldStyle(.roundedBorder)
-                        Button("添加") {
-                            let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
-                                .lowercased()
-                                .replacingOccurrences(of: "https://", with: "")
-                                .replacingOccurrences(of: "http://", with: "")
-                                .replacingOccurrences(of: "/", with: "")
-                            if !domain.isEmpty {
-                                settings.blacklistedDomains.insert(domain)
-                                newDomain = ""
-                            }
-                        }
-                        .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                }
+            switch category {
+            case .appearance: appearanceSection
+            case .wallpaper:  wallpaperSection
+            case .animation:  animationSection
+            case .clipboard:  clipboardSection
+            case .music:      musicSection
+            case .weather:    weatherSection
+            case .community:  communitySection
+            default:          EmptyView()
             }
         }
         .formStyle(.grouped)
+    }
+
+    // MARK: - Appearance
+
+    @ViewBuilder private var appearanceSection: some View {
+        Section("外观") {
+            LabeledContent { LanguageSettingsView().labelsHidden() }
+            label: { SettingLabel(key: "language") }
+
+            Toggle(isOn: $settings.launchAtLogin) { SettingLabel(key: "launchAtLogin") }
+                .onChange(of: settings.launchAtLogin) { _, v in setLaunchAtLogin(v) }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    SettingLabel(key: "islandOpacity")
+                    Spacer()
+                    Text("\(Int(settings.islandOpacity * 100))%")
+                        .foregroundColor(.secondary).monospacedDigit()
+                }
+                Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    SettingLabel(key: "wallpaperOpacity")
+                    Spacer()
+                    Text("\(Int(settings.wallpaperOpacity * 100))%")
+                        .foregroundColor(.secondary).monospacedDigit()
+                }
+                Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
+            }
+        }
+    }
+
+    // MARK: - Wallpaper
+
+    @ViewBuilder private var wallpaperSection: some View {
+        Section("壁纸存储") {
+            VStack(alignment: .leading, spacing: 6) {
+                SettingLabel(key: "customWallpaperPath")
+                HStack {
+                    TextField(settingHint("customWallpaperPath"), text: $settings.customWallpaperPath)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.system(.callout, design: .monospaced))
+                    Button {
+                        selectWallpaperPath()
+                    } label: { Image(systemName: "folder") }
+                }
+                if settings.customWallpaperPath.isEmpty {
+                    Text("默认：Application Support/MacIsland/Wallpapers")
+                        .font(.caption).foregroundColor(.secondary)
+                } else {
+                    Button("恢复默认") { settings.customWallpaperPath = "" }
+                        .font(.caption)
+                }
+            }
+        }
+    }
+
+    // MARK: - Animation
+
+    @ViewBuilder private var animationSection: some View {
+        Section("动画") {
+            Picker(selection: $settings.animationSpeed) {
+                ForEach(AnimationSpeed.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            } label: { SettingLabel(key: "animationSpeed") }
+                .pickerStyle(.segmented)
+
+            Toggle(isOn: $settings.springAnimation) { SettingLabel(key: "springAnimation") }
+        }
+    }
+
+    // MARK: - Clipboard
+
+    @ViewBuilder private var clipboardSection: some View {
+        Section("剪贴板") {
+            Toggle(isOn: $settings.clipboardEnabled) { SettingLabel(key: "clipboardEnabled") }
+
+            Picker(selection: $settings.clipboardUrlDetectMode) {
+                Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
+                Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
+                Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
+            } label: { SettingLabel(key: "clipboardUrlDetectMode") }
+
+            VStack(alignment: .leading, spacing: 6) {
+                SettingLabel(key: "blacklistedDomains")
+                if settings.blacklistedDomains.isEmpty {
+                    Text("暂无黑名单域名").font(.caption).foregroundColor(.secondary)
+                } else {
+                    ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
+                        HStack {
+                            Text(domain).font(.callout)
+                            Spacer()
+                            Button {
+                                settings.blacklistedDomains.remove(domain)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                HStack {
+                    TextField(settingHint("blacklistedDomains"), text: $newDomain)
+                        .textFieldStyle(.roundedBorder)
+                    Button("添加") { addDomain() }
+                        .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+
+    // MARK: - Music
+
+    @ViewBuilder private var musicSection: some View {
+        Section("音乐与歌词") {
+            Picker(selection: $settings.preferredLyricsSource) {
+                Text("自动").tag("auto")
+                Text("网易云").tag("netease")
+                Text("QQ 音乐").tag("qqmusic")
+                Text("酷狗").tag("kugou")
+                Text("LRCLIB").tag("lrclib")
+            } label: { SettingLabel(key: "preferredLyricsSource") }
+        }
+    }
+
+    // MARK: - Weather
+
+    @ViewBuilder private var weatherSection: some View {
+        Section("天气") {
+            LabeledContent {
+                TextField(settingHint("weatherManualCity"), text: $settings.weatherManualCity)
+                    .textFieldStyle(.roundedBorder).frame(width: 160)
+            } label: { SettingLabel(key: "weatherManualCity") }
+
+            if !settings.weatherManualCity.isEmpty {
+                LabeledContent {
+                    TextField(settingHint("weatherManualLocationID"), text: $settings.weatherManualLocationID)
+                        .textFieldStyle(.roundedBorder).frame(width: 160)
+                } label: { SettingLabel(key: "weatherManualLocationID") }
+
+                Button("清除手动设置") {
+                    settings.weatherManualCity = ""
+                    settings.weatherManualLocationID = ""
+                }
+                .font(.caption)
+            }
+        }
+    }
+
+    // MARK: - Community
+
+    @ViewBuilder private var communitySection: some View {
+        Section("社区") {
+            LabeledContent {
+                TextField(settingHint("communityUploadUsername"), text: $communityUsername)
+                    .textFieldStyle(.roundedBorder).frame(width: 160)
+                    .onSubmit {
+                        UserDefaults.standard.set(communityUsername, forKey: "communityUploadUsername")
+                    }
+            } label: { SettingLabel(key: "communityUploadUsername") }
+        }
+    }
+
+    // MARK: - Actions
+
+    private func addDomain() {
+        let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: "http://", with: "")
+            .replacingOccurrences(of: "/", with: "")
+        if !domain.isEmpty {
+            settings.blacklistedDomains.insert(domain)
+            newDomain = ""
+        }
+    }
+
+    private func selectWallpaperPath() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.message = "选择壁纸存储目录"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        settings.customWallpaperPath = url.path
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

@@ -17,95 +17,204 @@ struct InlineSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @State private var newDomain = ""
     @State private var communityUsername = UserDefaults.standard.string(forKey: "communityUploadUsername") ?? ""
-    @State private var selectedSection: SettingSection = .general
+    @State private var selectedCategory: SettingsCategory = .appearance
+    @State private var searchQuery = ""
     @State private var accessibilityGranted = AXIsProcessTrusted()
     @State private var recordingAction: HotkeyAction?
     private let pollTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
-    enum SettingSection: String, CaseIterable {
-        case general = "通用"
-        case shortcuts = "快捷键"
-        case about = "关于"
+    private var isSearching: Bool {
+        !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $selectedSection) {
-                ForEach(SettingSection.allCases, id: \.self) { section in
-                    Text(section.rawValue).tag(section)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.bottom, Theme.Spacing.sm)
+        VStack(spacing: Theme.Spacing.sm) {
+            searchBar
 
-            ScrollView {
-                switch selectedSection {
-                case .general: generalSection
-                case .shortcuts: shortcutsSection
-                case .about: aboutSection
+            if isSearching {
+                ScrollView { searchResults }
+            } else {
+                HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                    sidebar
+                    ScrollView { categoryContent(selectedCategory) }
                 }
             }
         }
+        .onReceive(pollTimer) { _ in
+            accessibilityGranted = AXIsProcessTrusted()
+        }
     }
 
-    // MARK: - General Section
+    // MARK: - Search Bar
 
-    private var generalSection: some View {
+    private var searchBar: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12))
+                .foregroundColor(.textTertiary)
+            TextField("搜索设置…", text: $searchQuery)
+                .textFieldStyle(.plain)
+                .font(.system(size: Theme.FontSize.caption))
+                .foregroundColor(.textPrimary)
+            if isSearching {
+                Button {
+                    searchQuery = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.textQuaternary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
+    }
+
+    // MARK: - Sidebar
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(SettingsCategory.allCases) { category in
+                Button {
+                    selectedCategory = category
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: category.systemImage)
+                            .font(.system(size: 12))
+                            .frame(width: 16)
+                        Text(category.title)
+                            .font(.system(size: Theme.FontSize.caption))
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    .foregroundColor(selectedCategory == category ? .textPrimary : .textSecondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                            .fill(selectedCategory == category ? Color.fillStrong : Color.clear)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(width: 112)
+    }
+
+    // MARK: - Category Content Router
+
+    @ViewBuilder
+    private func categoryContent(_ category: SettingsCategory) -> some View {
+        VStack(spacing: Theme.Spacing.md) {
+            switch category {
+            case .appearance: appearanceSection
+            case .wallpaper:  wallpaperSection
+            case .animation:  animationSection
+            case .clipboard:  clipboardSection
+            case .music:      musicSection
+            case .weather:    weatherSection
+            case .community:  communitySection
+            case .shortcuts:  shortcutsSection
+            case .about:      aboutSection
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    // MARK: - Search Results
+
+    private var searchResults: some View {
+        let hits = SettingsCatalog.search(searchQuery)
+        return VStack(spacing: Theme.Spacing.md) {
+            if hits.isEmpty {
+                Text("未找到匹配的设置")
+                    .font(.system(size: Theme.FontSize.caption))
+                    .foregroundColor(.textTertiary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, Theme.Spacing.lg)
+            } else {
+                ForEach(hits) { hit in
+                    Button {
+                        selectedCategory = hit.category
+                        searchQuery = ""
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: hit.category.systemImage)
+                                .font(.system(size: 12))
+                                .frame(width: 16)
+                                .foregroundColor(.textSecondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(hit.category.title)
+                                    .font(.system(size: Theme.FontSize.caption, weight: .semibold))
+                                    .foregroundColor(.textPrimary)
+                                if !hit.items.isEmpty {
+                                    Text(hit.items.map(\.title).joined(separator: " · "))
+                                        .font(.system(size: Theme.FontSize.caption2))
+                                        .foregroundColor(.textTertiary)
+                                        .lineLimit(1)
+                                }
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10))
+                                .foregroundColor(.textQuaternary)
+                        }
+                        .padding(Theme.Spacing.sm)
+                        .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    // MARK: - Appearance Section
+
+    private var appearanceSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             settingsGroup("外观") {
-                settingsRow("语言") {
+                describedRow("language") {
                     LanguageSettingsView()
                         .environment(\.colorScheme, .dark)
                 }
 
-                settingsRow("开机自启动") {
+                describedRow("launchAtLogin") {
                     Toggle("", isOn: $settings.launchAtLogin)
                         .toggleStyle(.switch)
                         .controlSize(.small)
+                        .labelsHidden()
                         .onChange(of: settings.launchAtLogin) { _, newValue in
                             setLaunchAtLogin(newValue)
                         }
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("灵动岛透明度")
-                            .font(.system(size: Theme.FontSize.caption))
-                            .foregroundColor(.textSecondary)
-                        Spacer()
-                        Text("\(Int(settings.islandOpacity * 100))%")
-                            .font(.system(size: Theme.FontSize.caption))
-                            .foregroundColor(.textTertiary)
-                            .monospacedDigit()
-                    }
-                    Slider(value: $settings.islandOpacity, in: 0.1...1.0, step: 0.05)
-                        .tint(.white.opacity(0.5))
-                }
+                sliderRow("islandOpacity",
+                          value: $settings.islandOpacity,
+                          range: 0.1...1.0,
+                          percentText: "\(Int(settings.islandOpacity * 100))%")
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("壁纸透明度")
-                            .font(.system(size: Theme.FontSize.caption))
-                            .foregroundColor(.textSecondary)
-                        Spacer()
-                        Text("\(Int(settings.wallpaperOpacity * 100))%")
-                            .font(.system(size: Theme.FontSize.caption))
-                            .foregroundColor(.textTertiary)
-                            .monospacedDigit()
-                    }
-                    Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
-                        .tint(.white.opacity(0.5))
-                }
+                sliderRow("wallpaperOpacity",
+                          value: $settings.wallpaperOpacity,
+                          range: 0.0...1.0,
+                          percentText: "\(Int(settings.wallpaperOpacity * 100))%")
             }
+        }
+    }
 
+    // MARK: - Wallpaper Section
+
+    private var wallpaperSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
             settingsGroup("壁纸存储") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("存储路径")
-                        .font(.system(size: Theme.FontSize.caption))
-                        .foregroundColor(.textSecondary)
+                    descriptionText("customWallpaperPath")
 
                     HStack(spacing: 6) {
-                        TextField("默认路径", text: $settings.customWallpaperPath)
+                        TextField(SettingItemMeta.meta("customWallpaperPath")?.hint ?? "",
+                                  text: $settings.customWallpaperPath)
                             .textFieldStyle(.plain)
                             .font(.system(size: Theme.FontSize.caption2, design: .monospaced))
                             .foregroundColor(.textPrimary)
@@ -127,109 +236,134 @@ struct InlineSettingsView: View {
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                     } else {
-                        HStack(spacing: 4) {
-                            Button("恢复默认") {
-                                settings.customWallpaperPath = ""
-                            }
-                            .font(.system(size: Theme.FontSize.caption2))
-                            .foregroundColor(.accentColor)
-                            .buttonStyle(.plain)
+                        Button("恢复默认") {
+                            settings.customWallpaperPath = ""
                         }
+                        .font(.system(size: Theme.FontSize.caption2))
+                        .foregroundColor(.accentColor)
+                        .buttonStyle(.plain)
                     }
                 }
             }
+        }
+    }
 
+    // MARK: - Animation Section
+
+    private var animationSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
             settingsGroup("动画") {
-                settingsRow("动画速度") {
+                describedRow("animationSpeed") {
                     Picker("", selection: $settings.animationSpeed) {
                         ForEach(AnimationSpeed.allCases, id: \.self) { speed in
                             Text(speed.rawValue).tag(speed)
                         }
                     }
+                    .labelsHidden()
                     .pickerStyle(.segmented)
                     .frame(width: 160)
                 }
 
-                settingsRow("弹簧动画") {
+                describedRow("springAnimation") {
                     Toggle("", isOn: $settings.springAnimation)
                         .toggleStyle(.switch)
                         .controlSize(.small)
+                        .labelsHidden()
                 }
             }
+        }
+    }
 
+    // MARK: - Clipboard Section
+
+    private var clipboardSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
             settingsGroup("剪贴板") {
-                settingsRow("链接检测") {
+                describedRow("clipboardEnabled") {
                     Toggle("", isOn: $settings.clipboardEnabled)
                         .toggleStyle(.switch)
                         .controlSize(.small)
+                        .labelsHidden()
                 }
 
-                settingsRow("URL 检测模式") {
+                describedRow("clipboardUrlDetectMode") {
                     Picker("", selection: $settings.clipboardUrlDetectMode) {
                         Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
                         Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
                         Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
                     }
+                    .labelsHidden()
                     .frame(width: 120)
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("域名黑名单")
-                        .font(.system(size: Theme.FontSize.caption, weight: .medium))
-                        .foregroundColor(.textSecondary)
+                blacklistEditor
+            }
+        }
+    }
 
-                    if settings.blacklistedDomains.isEmpty {
-                        Text("暂无")
-                            .font(.system(size: Theme.FontSize.caption2))
-                            .foregroundColor(.textQuaternary)
-                    } else {
-                        ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
-                            HStack {
-                                Text(domain)
-                                    .font(.system(size: Theme.FontSize.caption))
-                                    .foregroundColor(.textPrimary)
-                                Spacer()
-                                Button {
-                                    settings.blacklistedDomains.remove(domain)
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.textQuaternary)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
+    private var blacklistEditor: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("域名黑名单")
+                .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                .foregroundColor(.textSecondary)
+            descriptionText("blacklistedDomains")
 
-                    HStack(spacing: Theme.Spacing.xs) {
-                        TextField("example.com", text: $newDomain)
-                            .textFieldStyle(.plain)
+            if settings.blacklistedDomains.isEmpty {
+                Text("暂无")
+                    .font(.system(size: Theme.FontSize.caption2))
+                    .foregroundColor(.textQuaternary)
+            } else {
+                ForEach(Array(settings.blacklistedDomains.sorted()), id: \.self) { domain in
+                    HStack {
+                        Text(domain)
                             .font(.system(size: Theme.FontSize.caption))
                             .foregroundColor(.textPrimary)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
-                            .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
-
-                        Button("添加") {
-                            let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
-                                .lowercased()
-                                .replacingOccurrences(of: "https://", with: "")
-                                .replacingOccurrences(of: "http://", with: "")
-                                .replacingOccurrences(of: "/", with: "")
-                            if !domain.isEmpty {
-                                settings.blacklistedDomains.insert(domain)
-                                newDomain = ""
-                            }
+                        Spacer()
+                        Button {
+                            settings.blacklistedDomains.remove(domain)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.textQuaternary)
                         }
-                        .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(.textSecondary)
-                        .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .buttonStyle(.plain)
                     }
                 }
             }
 
-            settingsGroup("歌词") {
-                settingsRow("歌词源") {
+            HStack(spacing: Theme.Spacing.xs) {
+                TextField(SettingItemMeta.meta("blacklistedDomains")?.hint ?? "", text: $newDomain)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: Theme.FontSize.caption))
+                    .foregroundColor(.textPrimary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+
+                Button("添加") {
+                    let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
+                        .lowercased()
+                        .replacingOccurrences(of: "https://", with: "")
+                        .replacingOccurrences(of: "http://", with: "")
+                        .replacingOccurrences(of: "/", with: "")
+                    if !domain.isEmpty {
+                        settings.blacklistedDomains.insert(domain)
+                        newDomain = ""
+                    }
+                }
+                .font(.system(size: Theme.FontSize.caption2))
+                .foregroundColor(.textSecondary)
+                .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+    }
+
+    // MARK: - Music Section
+
+    private var musicSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            settingsGroup("音乐与歌词") {
+                describedRow("preferredLyricsSource") {
                     Picker("", selection: $settings.preferredLyricsSource) {
                         Text("自动").tag("auto")
                         Text("网易云").tag("netease")
@@ -237,13 +371,21 @@ struct InlineSettingsView: View {
                         Text("酷狗").tag("kugou")
                         Text("LRCLIB").tag("lrclib")
                     }
+                    .labelsHidden()
                     .frame(width: 100)
                 }
             }
+        }
+    }
 
+    // MARK: - Weather Section
+
+    private var weatherSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
             settingsGroup("天气") {
-                settingsRow("手动城市") {
-                    TextField("自动定位", text: $settings.weatherManualCity)
+                describedRow("weatherManualCity") {
+                    TextField(SettingItemMeta.meta("weatherManualCity")?.hint ?? "",
+                              text: $settings.weatherManualCity)
                         .textFieldStyle(.plain)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textPrimary)
@@ -254,8 +396,9 @@ struct InlineSettingsView: View {
                 }
 
                 if !settings.weatherManualCity.isEmpty {
-                    settingsRow("Location ID") {
-                        TextField("101010100", text: $settings.weatherManualLocationID)
+                    describedRow("weatherManualLocationID") {
+                        TextField(SettingItemMeta.meta("weatherManualLocationID")?.hint ?? "",
+                                  text: $settings.weatherManualLocationID)
                             .textFieldStyle(.plain)
                             .font(.system(size: Theme.FontSize.caption))
                             .foregroundColor(.textPrimary)
@@ -264,9 +407,7 @@ struct InlineSettingsView: View {
                             .padding(.vertical, 4)
                             .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
                     }
-                }
 
-                if !settings.weatherManualCity.isEmpty {
                     Button("清除手动设置") {
                         settings.weatherManualCity = ""
                         settings.weatherManualLocationID = ""
@@ -276,11 +417,17 @@ struct InlineSettingsView: View {
                     .buttonStyle(.plain)
                 }
             }
+        }
+    }
 
-            // 社区
+    // MARK: - Community Section
+
+    private var communitySection: some View {
+        VStack(spacing: Theme.Spacing.md) {
             settingsGroup("社区") {
-                settingsRow("上传用户名") {
-                    TextField("设置用户名", text: $communityUsername)
+                describedRow("communityUploadUsername") {
+                    TextField(SettingItemMeta.meta("communityUploadUsername")?.hint ?? "",
+                              text: $communityUsername)
                         .textFieldStyle(.plain)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textPrimary)
@@ -294,7 +441,6 @@ struct InlineSettingsView: View {
                 }
             }
         }
-        .padding(.top, Theme.Spacing.sm)
     }
 
     // MARK: - Shortcuts Section
@@ -363,9 +509,6 @@ struct InlineSettingsView: View {
                 .buttonStyle(.plain)
             }
         }
-        .onReceive(pollTimer) { _ in
-            accessibilityGranted = AXIsProcessTrusted()
-        }
     }
 
     // MARK: - About Section
@@ -410,13 +553,64 @@ struct InlineSettingsView: View {
         }
     }
 
-    private func settingsRow<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
-        HStack {
-            Text(label)
-                .font(.system(size: Theme.FontSize.caption))
-                .foregroundColor(.textSecondary)
-            Spacer()
-            content()
+    /// 带说明的行：标题 + 控件一行，下方小字说明（取自 SettingsCatalog）
+    private func describedRow<Content: View>(_ key: String, @ViewBuilder content: () -> Content) -> some View {
+        let meta = SettingItemMeta.meta(key)
+        return VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(meta?.title ?? key)
+                    .font(.system(size: Theme.FontSize.caption))
+                    .foregroundColor(.textSecondary)
+                Spacer()
+                content()
+            }
+            if let desc = meta?.description, !desc.isEmpty {
+                Text(desc)
+                    .font(.system(size: Theme.FontSize.caption2))
+                    .foregroundColor(.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, 3)
+    }
+
+    /// 带说明的滑块行：标题 + 百分比 + 说明 + 滑块
+    private func sliderRow(_ key: String,
+                           value: Binding<Double>,
+                           range: ClosedRange<Double>,
+                           percentText: String) -> some View {
+        let meta = SettingItemMeta.meta(key)
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(meta?.title ?? key)
+                    .font(.system(size: Theme.FontSize.caption))
+                    .foregroundColor(.textSecondary)
+                Spacer()
+                Text(percentText)
+                    .font(.system(size: Theme.FontSize.caption))
+                    .foregroundColor(.textTertiary)
+                    .monospacedDigit()
+            }
+            if let desc = meta?.description, !desc.isEmpty {
+                Text(desc)
+                    .font(.system(size: Theme.FontSize.caption2))
+                    .foregroundColor(.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Slider(value: value, in: range, step: 0.05)
+                .tint(.white.opacity(0.5))
+        }
+        .padding(.vertical, 3)
+    }
+
+    /// 仅说明小字（用于自定义布局的组，如壁纸路径 / 黑名单）
+    @ViewBuilder
+    private func descriptionText(_ key: String) -> some View {
+        if let desc = SettingItemMeta.meta(key)?.description, !desc.isEmpty {
+            Text(desc)
+                .font(.system(size: Theme.FontSize.caption2))
+                .foregroundColor(.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
