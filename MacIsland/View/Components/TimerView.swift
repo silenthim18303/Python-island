@@ -16,8 +16,8 @@ struct TimerView: View {
     @State private var mode: Mode = .pomodoro
 
     enum Mode: String, CaseIterable {
-        case pomodoro = "番茄钟"
-        case countdown = "倒计时"
+        case pomodoro = "pomodoro"
+        case countdown = "countdown"
     }
 
     var body: some View {
@@ -79,20 +79,20 @@ private struct PomodoroSection: View {
             // Controls
             HStack(spacing: 12) {
                 if data.running {
-                    TimerButton(title: "暂停", icon: "pause.fill") {
+                    TimerButton(title: L10n.timerPause, icon: "pause.fill") {
                         timerService.pausePomodoro()
                     }
                 } else {
-                    TimerButton(title: "开始", icon: "play.fill") {
+                    TimerButton(title: L10n.timerStart, icon: "play.fill") {
                         timerService.startPomodoro()
                     }
                 }
 
-                TimerButton(title: "重置", icon: "arrow.counterclockwise") {
+                TimerButton(title: L10n.reset, icon: "arrow.counterclockwise") {
                     timerService.resetPomodoro()
                 }
 
-                TimerButton(title: "跳过", icon: "forward.fill") {
+                TimerButton(title: L10n.close, icon: "forward.fill") {
                     timerService.skipPomodoro()
                 }
             }
@@ -133,7 +133,7 @@ private struct PomodoroSection: View {
                 Text("\(data.completedCount)")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-                Text("完成")
+                Text(L10n.done)
                     .font(.system(size: 9))
                     .foregroundColor(.white.opacity(0.4))
             }
@@ -150,7 +150,7 @@ private struct PomodoroSection: View {
             // 选中阶段的时长调整
             switch data.phase {
             case .work:
-                durationRow(title: "专注", color: .red, value: $settings.pomodoroWorkMinutes, range: 1...120)
+                durationRow(title: L10n.timerWork, color: .red, value: $settings.pomodoroWorkMinutes, range: 1...120)
             case .shortBreak:
                 durationRow(title: "短休", color: .green, value: $settings.pomodoroShortBreakMinutes, range: 1...30)
             case .longBreak:
@@ -296,26 +296,26 @@ private struct CountdownSection: View {
             HStack(spacing: 12) {
                 switch data.state {
                 case .idle:
-                    TimerButton(title: "开始", icon: "play.fill") {
+                    TimerButton(title: L10n.timerStart, icon: "play.fill") {
                         timerService.setCountdownInput(hours: inputH, minutes: inputM, seconds: inputS)
                         timerService.startCountdown()
                     }
                 case .running:
-                    TimerButton(title: "暂停", icon: "pause.fill") {
+                    TimerButton(title: L10n.timerPause, icon: "pause.fill") {
                         timerService.pauseCountdown()
                     }
-                    TimerButton(title: "重置", icon: "arrow.counterclockwise") {
+                    TimerButton(title: L10n.reset, icon: "arrow.counterclockwise") {
                         timerService.resetCountdown()
                     }
                 case .paused:
                     TimerButton(title: "继续", icon: "play.fill") {
                         timerService.resumeCountdown()
                     }
-                    TimerButton(title: "重置", icon: "arrow.counterclockwise") {
+                    TimerButton(title: L10n.reset, icon: "arrow.counterclockwise") {
                         timerService.resetCountdown()
                     }
                 case .completed:
-                    TimerButton(title: "重置", icon: "arrow.counterclockwise") {
+                    TimerButton(title: L10n.reset, icon: "arrow.counterclockwise") {
                         timerService.resetCountdown()
                     }
                 }

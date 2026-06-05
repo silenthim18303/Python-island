@@ -23,10 +23,10 @@ struct ExpandedView: View {
     // MARK: - Tab Definition
 
     enum Tab: String, CaseIterable {
-        case overview = "概览"
-        case music = "音乐"
-        case tools = "工具"
-        case monitor = "监控"
+        case overview = "overview"
+        case music = "music"
+        case tools = "tools"
+        case monitor = "monitor"
 
         var displayName: String {
             switch self {
@@ -70,7 +70,7 @@ struct ExpandedView: View {
                     .background(Circle().fill(.white.opacity(0.1)))
             }
             .buttonStyle(.plain)
-            .help("展开更多功能")
+            .help(L10n.open)
 
             Spacer()
 
