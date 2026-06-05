@@ -109,15 +109,16 @@ struct InlineSettingsView: View {
     private func categoryContent(_ category: SettingsCategory) -> some View {
         VStack(spacing: Theme.Spacing.md) {
             switch category {
-            case .appearance: appearanceSection
-            case .wallpaper:  wallpaperSection
-            case .animation:  animationSection
-            case .clipboard:  clipboardSection
-            case .music:      musicSection
-            case .weather:    weatherSection
-            case .community:  communitySection
-            case .shortcuts:  shortcutsSection
-            case .about:      aboutSection
+            case .appearance:    appearanceSection
+            case .wallpaper:     wallpaperSection
+            case .animation:     animationSection
+            case .clipboard:     clipboardSection
+            case .music:         musicSection
+            case .weather:       weatherSection
+            case .notifications: notificationsSection
+            case .community:     communitySection
+            case .shortcuts:     shortcutsSection
+            case .about:         aboutSection
             }
         }
         .padding(.top, 2)
@@ -432,6 +433,12 @@ struct InlineSettingsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Notifications Section
+
+    private var notificationsSection: some View {
+        NotificationCenterView()
     }
 
     // MARK: - Community Section

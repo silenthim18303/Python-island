@@ -33,7 +33,7 @@ struct IslandView: View {
             .onChange(of: hotkeyService.isAccessibilityGranted) { _, granted in
                 // 权限从「未授予」变为「已授予」时，通知用户快捷键已可用
                 if granted {
-                    store.setNotification(title: "⌨️ 快捷键已启用", body: "⌥⌘I/P/←/→ 现在可用")
+                    store.setNotification(title: "⌨️ 快捷键已启用", body: "⌥⌘I/P/←/→ 现在可用", source: .system)
                 }
             }
             .onPreferenceChange(HeightPreferenceKey.self) { height in
@@ -60,7 +60,7 @@ struct IslandView: View {
                 // 启动后检查辅助功能权限，不足时以通知态提醒用户
                 if !hotkeyService.isAccessibilityGranted {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        store.setNotification(title: "⌨️ 快捷键不可用", body: "请在设置中授权辅助功能权限")
+                        store.setNotification(title: "⌨️ 快捷键不可用", body: "请在设置中授权辅助功能权限", source: .system)
                     }
                 }
             }

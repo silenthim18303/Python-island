@@ -125,6 +125,21 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(launchAtLogin, forKey: Keys.launchAtLogin) }
     }
 
+    // MARK: - 通知免打扰
+
+    /// 免打扰是否启用
+    @Published var dndEnabled: Bool {
+        didSet { defaults.set(dndEnabled, forKey: Keys.dndEnabled) }
+    }
+    /// 免打扰开始时间（小时，0-23）
+    @Published var dndStartHour: Int {
+        didSet { defaults.set(dndStartHour, forKey: Keys.dndStartHour) }
+    }
+    /// 免打扰结束时间（小时，0-23）
+    @Published var dndEndHour: Int {
+        didSet { defaults.set(dndEndHour, forKey: Keys.dndEndHour) }
+    }
+
     // MARK: - 久坐提醒
 
     /// 久坐提醒是否启用
@@ -176,6 +191,9 @@ final class AppSettings: ObservableObject {
         static let pomodoroLongBreakInterval = "pomodoroLongBreakInterval"
         static let clipboardUrlDetectMode = "clipboardUrlDetectMode"
         static let blacklistedDomains = "blacklistedDomains"
+        static let dndEnabled = "dndEnabled"
+        static let dndStartHour = "dndStartHour"
+        static let dndEndHour = "dndEndHour"
         static let islandOpacity = "islandOpacity"
         static let wallpaperOpacity = "wallpaperOpacity"
         static let launchAtLogin = "launchAtLogin"
@@ -217,6 +235,11 @@ final class AppSettings: ObservableObject {
         wallpaperOpacity = defaults.object(forKey: Keys.wallpaperOpacity) as? Double ?? 1.0
         launchAtLogin = defaults.object(forKey: Keys.launchAtLogin) as? Bool ?? false
 
+        // 通知免打扰
+        dndEnabled = defaults.object(forKey: Keys.dndEnabled) as? Bool ?? false
+        dndStartHour = defaults.object(forKey: Keys.dndStartHour) as? Int ?? 22
+        dndEndHour = defaults.object(forKey: Keys.dndEndHour) as? Int ?? 8
+
         // 久坐提醒
         breakReminderEnabled = defaults.object(forKey: Keys.breakReminderEnabled) as? Bool ?? false
         breakReminderMinutes = defaults.object(forKey: Keys.breakReminderMinutes) as? Int ?? 60
@@ -257,5 +280,18 @@ final class AppSettings: ObservableObject {
     /// 恢复所有快捷键为默认值
     func resetHotkeyBindings() {
         hotkeyBindings = KeyCombo.defaultBindings
+    }
+
+    /// 检查当前是否在免打扰时段内
+    var isDNDActive: Bool {
+        guard dndEnabled else { return false }
+        let hour = Calendar.current.component(.hour, from: Date())
+        if dndStartHour <= dndEndHour {
+            // 同日范围：如 9...17
+            return hour >= dndStartHour && hour < dndEndHour
+        } else {
+            // 跨日范围：如 22...8
+            return hour >= dndStartHour || hour < dndEndHour
+        }
     }
 }

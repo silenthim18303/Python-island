@@ -57,7 +57,7 @@ struct SettingsView: View {
     private var detailContent: some View {
         switch selection {
         case .appearance, .wallpaper, .animation, .clipboard,
-             .music, .weather, .community:
+             .music, .weather, .notifications, .community:
             GeneralSettingsView(category: selection)
         case .shortcuts:
             ShortcutsSettingsView()
@@ -101,14 +101,15 @@ private struct GeneralSettingsView: View {
     var body: some View {
         Form {
             switch category {
-            case .appearance: appearanceSection
-            case .wallpaper:  wallpaperSection
-            case .animation:  animationSection
-            case .clipboard:  clipboardSection
-            case .music:      musicSection
-            case .weather:    weatherSection
-            case .community:  communitySection
-            default:          EmptyView()
+            case .appearance:    appearanceSection
+            case .wallpaper:     wallpaperSection
+            case .animation:     animationSection
+            case .clipboard:     clipboardSection
+            case .music:         musicSection
+            case .weather:       weatherSection
+            case .notifications: notificationsSection
+            case .community:     communitySection
+            default:             EmptyView()
             }
         }
         .formStyle(.grouped)
@@ -274,6 +275,12 @@ private struct GeneralSettingsView: View {
                 .font(.caption)
             }
         }
+    }
+
+    // MARK: - Notifications
+
+    @ViewBuilder private var notificationsSection: some View {
+        NotificationCenterView()
     }
 
     // MARK: - Community
