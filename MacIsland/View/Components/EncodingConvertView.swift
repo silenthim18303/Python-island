@@ -109,11 +109,11 @@ struct EncodingConvertView: View {
     private func convert() {
         errorMessage = nil
         guard let inputData = inputText.data(using: sourceEncoding.encoding) else {
-            errorMessage = "无法用 \(sourceEncoding.displayName) 编码输入文本"
+            errorMessage = L10n.error
             return
         }
         guard let result = String(data: inputData, encoding: targetEncoding.encoding) else {
-            errorMessage = "转换失败"
+            errorMessage = L10n.error
             return
         }
         outputText = result

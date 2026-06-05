@@ -66,7 +66,7 @@ struct ToolboxView: View {
 
     private var toolGrid: some View {
         VStack(spacing: Theme.Spacing.md) {
-            Text("工具箱")
+            Text(L10n.toolboxTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
                 .padding(.top, Theme.Spacing.sm)

@@ -76,7 +76,7 @@ struct WallpaperView: View {
     private var activeWallpaperSection: some View {
         VStack(spacing: Theme.Spacing.xs) {
             HStack {
-                Text("当前壁纸")
+                Text(L10n.wallpaperCurrent)
                     .font(.system(size: Theme.FontSize.caption, weight: .semibold))
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -114,7 +114,7 @@ struct WallpaperView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // 添加按钮
             HStack {
-                Text("本地壁纸")
+                Text(L10n.wallpaperLocal)
                     .font(.system(size: Theme.FontSize.caption, weight: .semibold))
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -162,7 +162,7 @@ struct WallpaperView: View {
                     .lineLimit(1)
 
                 if store.activeWallpaper?.id == wallpaper.id {
-                    Text("使用中")
+                    Text(L10n.wallpaperInUse)
                         .font(.system(size: 8, weight: .medium))
                         .foregroundColor(.green)
                 }
@@ -256,7 +256,7 @@ struct WallpaperView: View {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 28))
                 .foregroundColor(.white.opacity(0.1))
-            Text("点击 + 添加本地壁纸")
+            Text(L10n.wallpaperAdd)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textQuaternary)
         }
@@ -306,7 +306,7 @@ struct LocalWallpaperDetailSheet: View {
         VStack(spacing: 0) {
             // 标题栏
             HStack {
-                Text("壁纸详情")
+                Text(L10n.wallpaperDetail)
                     .font(.system(size: Theme.FontSize.body, weight: .semibold))
                     .foregroundColor(.textPrimary)
                 Spacer()

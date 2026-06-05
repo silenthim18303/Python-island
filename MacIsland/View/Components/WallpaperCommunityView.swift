@@ -318,7 +318,7 @@ struct WallpaperCommunityView: View {
                 }
 
                 if wallpaper.isDownloaded {
-                    Text("已下载")
+                    Text(L10n.wallpaperDownloaded)
                         .font(.system(size: 8, weight: .medium))
                         .foregroundColor(.green)
                 }
@@ -327,7 +327,7 @@ struct WallpaperCommunityView: View {
                     HStack(spacing: 2) {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 6))
-                        Text("私有")
+                        Text(L10n.wallpaperPrivate)
                     }
                     .font(.system(size: 8, weight: .medium))
                     .foregroundColor(.orange)

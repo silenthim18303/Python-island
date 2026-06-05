@@ -93,7 +93,7 @@ struct MaxExpandView: View {
             .buttonStyle(.plain)
             .help("收起到概览")
 
-            Text("MacIsland")
+            Text(L10n.aboutTitle)
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.textPrimary)
 

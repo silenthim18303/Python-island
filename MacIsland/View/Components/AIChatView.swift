@@ -169,10 +169,10 @@ struct AIChatView: View {
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.textTertiary)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("本地: Ollama / llama.cpp / LM Studio / vLLM")
+                    Text(L10n.aiLocalModels)
                         .font(.system(size: 10))
                         .foregroundColor(.textQuaternary)
-                    Text("云端: OpenAI / DeepSeek / Moonshot / 通义千问 / 零一万物 / Together / Groq")
+                    Text(L10n.aiCloud)
                         .font(.system(size: 10))
                         .foregroundColor(.textQuaternary)
                 }

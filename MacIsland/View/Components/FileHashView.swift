@@ -120,7 +120,7 @@ struct FileHashView: View {
             guard let data = try? Data(contentsOf: url) else {
                 await MainActor.run {
                     isComputing = false
-                    errorMessage = "无法读取文件"
+                    errorMessage = L10n.error
                 }
                 return
             }
