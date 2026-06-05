@@ -576,7 +576,7 @@ private class KeyRecorderNSView: NSView {
 
 private struct AboutSettingsView: View {
     private var version: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2.0"
     }
 
     var body: some View {
