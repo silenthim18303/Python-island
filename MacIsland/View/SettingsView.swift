@@ -343,7 +343,16 @@ private struct ShortcutsSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @State private var accessibilityGranted = AXIsProcessTrusted()
     @State private var recordingAction: HotkeyAction?
+    @State private var conflictAlert: ConflictAlert?
     private let pollTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+
+    /// 冲突弹窗数据
+    private struct ConflictAlert: Identifiable {
+        let id = UUID()
+        let newAction: HotkeyAction
+        let conflictAction: HotkeyAction
+        let combo: KeyCombo
+    }
 
     var body: some View {
         Form {
@@ -389,12 +398,7 @@ private struct ShortcutsSettingsView: View {
                         binding: settings.hotkeyBindings[action] ?? KeyCombo.defaultBindings[action]!,
                         isRecording: recordingAction == action
                     ) { combo in
-                        // 冲突检测：如果新 combo 已被另一个 action 使用，交换两者
-                        if let conflict = settings.hotkeyBindings.first(where: { $0.key != action && $0.value == combo }) {
-                            settings.hotkeyBindings[conflict.key] = settings.hotkeyBindings[action]
-                        }
-                        settings.hotkeyBindings[action] = combo
-                        recordingAction = nil
+                        handleCapture(action: action, combo: combo)
                     } onStartRecording: {
                         recordingAction = action
                     }
@@ -411,6 +415,38 @@ private struct ShortcutsSettingsView: View {
         .formStyle(.grouped)
         .onReceive(pollTimer) { _ in
             accessibilityGranted = AXIsProcessTrusted()
+        }
+        .alert(item: $conflictAlert) { alert in
+            Alert(
+                title: Text("快捷键冲突"),
+                message: Text("「\(alert.combo.displayString)」已被「\(alert.conflictAction.displayName)」使用。"),
+                primaryButton: .default(Text("交换")) {
+                    // 交换两者
+                    let oldBinding = settings.hotkeyBindings[alert.newAction]
+                    settings.hotkeyBindings[alert.newAction] = alert.combo
+                    settings.hotkeyBindings[alert.conflictAction] = oldBinding
+                    recordingAction = nil
+                },
+                secondaryButton: .cancel(Text("取消")) {
+                    recordingAction = nil
+                }
+            )
+        }
+    }
+
+    /// 处理快捷键捕获 — 检测冲突并弹窗
+    private func handleCapture(action: HotkeyAction, combo: KeyCombo) {
+        // 检查是否有冲突
+        if let conflictEntry = settings.hotkeyBindings.first(where: { $0.key != action && $0.value == combo }) {
+            conflictAlert = ConflictAlert(
+                newAction: action,
+                conflictAction: conflictEntry.key,
+                combo: combo
+            )
+        } else {
+            // 无冲突，直接设置
+            settings.hotkeyBindings[action] = combo
+            recordingAction = nil
         }
     }
 }
@@ -476,7 +512,7 @@ private class KeyRecorderNSView: NSView {
     var onStartRecording: (() -> Void)?
 
     private let label = NSTextField(labelWithString: "")
-    private var trackingArea: NSTrackingArea?
+    private var pulseAnimation: CABasicAnimation?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -494,26 +530,48 @@ private class KeyRecorderNSView: NSView {
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
         wantsLayer = true
-        layer?.cornerRadius = 4
+        layer?.cornerRadius = 6
+        layer?.borderWidth = 1.5
         updateVisualState()
     }
 
-    /// 更新视觉状态（录制中高亮 / 正常显示）
+    /// 更新视觉状态（录制中高亮 + 脉冲动画 / 正常显示）
     func updateVisualState() {
         if isRecording {
             label.stringValue = "按下快捷键…"
             label.textColor = .controlAccentColor
-            layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor
+            layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
+            layer?.borderColor = NSColor.controlAccentColor.withAlphaComponent(0.5).cgColor
+            startPulseAnimation()
         } else {
             label.stringValue = displayString
             label.textColor = .labelColor
             layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+            layer?.borderColor = NSColor.clear.cgColor
+            stopPulseAnimation()
         }
+    }
+
+    /// 脉冲动画 — 录制时边框呼吸效果
+    private func startPulseAnimation() {
+        let pulse = CABasicAnimation(keyPath: "borderColor")
+        pulse.fromValue = NSColor.controlAccentColor.withAlphaComponent(0.3).cgColor
+        pulse.toValue = NSColor.controlAccentColor.withAlphaComponent(0.8).cgColor
+        pulse.duration = 0.8
+        pulse.autoreverses = true
+        pulse.repeatCount = .infinity
+        layer?.add(pulse, forKey: "pulseBorder")
+        self.pulseAnimation = pulse
+    }
+
+    private func stopPulseAnimation() {
+        layer?.removeAnimation(forKey: "pulseBorder")
+        self.pulseAnimation = nil
     }
 
     // MARK: - First Responder & Hit Testing
