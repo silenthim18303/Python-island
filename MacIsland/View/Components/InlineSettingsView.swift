@@ -817,8 +817,7 @@ private class InlineKeyRecorderNSView: NSView {
         let modOnlyKeys: Set<UInt16> = [0x37, 0x38, 0x3A, 0x3B]
         if modOnlyKeys.contains(event.keyCode) { return }
         if event.keyCode == 0x35 { isRecording = false; updateVisual(); return }
-        let nonModFlags = flags.subtracting([.function, .numericPad])
-        guard !nonModFlags.isEmpty else { NSSound.beep(); return }
+        // 允许所有按键组合（包括无修饰键的单键）
         onCapture?(KeyCombo(modifiers: flags.rawValue, keyCode: event.keyCode))
     }
 

@@ -613,14 +613,7 @@ private class KeyRecorderNSView: NSView {
             return
         }
 
-        // 至少需要一个修饰键（纯字母快捷键容易冲突）
-        let nonModifierFlags = flags.subtracting([.function, .numericPad])
-        guard !nonModifierFlags.isEmpty else {
-            // 无修饰键，忽略
-            NSSound.beep()
-            return
-        }
-
+        // 允许所有按键组合（包括无修饰键的单键）
         let combo = KeyCombo(modifiers: flags.rawValue, keyCode: event.keyCode)
         onCapture?(combo)
     }
