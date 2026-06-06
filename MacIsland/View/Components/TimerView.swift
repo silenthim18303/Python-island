@@ -344,11 +344,11 @@ private struct CountdownSection: View {
 
             // 时:分:秒 StepperField
             HStack(spacing: 4) {
-                StepperField(value: $inputH, range: 0...23, label: "时")
+                StepperField(value: $inputH, range: 0...23, label: L10n.timerHour)
                 Text(":").foregroundColor(.white.opacity(0.5))
-                StepperField(value: $inputM, range: 0...59, label: "分")
+                StepperField(value: $inputM, range: 0...59, label: L10n.timerMin)
                 Text(":").foregroundColor(.white.opacity(0.5))
-                StepperField(value: $inputS, range: 0...59, label: "秒")
+                StepperField(value: $inputS, range: 0...59, label: L10n.timerSec)
             }
         }
     }
