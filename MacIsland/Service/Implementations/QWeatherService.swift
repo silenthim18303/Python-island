@@ -141,8 +141,17 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
     // MARK: - Weather API
 
+    /// 和风天气 API 语言参数
+    private var apiLang: String {
+        switch LocalizationManager.shared.currentLanguage {
+        case .zh: return "zh"
+        case .en: return "en"
+        case .ja: return "ja"
+        }
+    }
+
     private func fetchNowWeather(locationID: String) async -> NowWeatherData? {
-        let urlString = "\(config.baseURL)/v7/weather/now?location=\(locationID)"
+        let urlString = "\(config.baseURL)/v7/weather/now?location=\(locationID)&lang=\(apiLang)"
         return await makeRequest(urlString: urlString) { (result: NowResponse) -> NowWeatherData? in
             guard result.code == "200", let now = result.now else { return nil }
             return NowWeatherData(
@@ -157,7 +166,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
     }
 
     private func fetchForecast(locationID: String) async -> ForecastData? {
-        let urlString = "\(config.baseURL)/v7/weather/3d?location=\(locationID)"
+        let urlString = "\(config.baseURL)/v7/weather/3d?location=\(locationID)&lang=\(apiLang)"
         return await makeRequest(urlString: urlString) { (result: ForecastResponse) -> ForecastData? in
             guard result.code == "200", let daily = result.daily, let today = daily.first else { return nil }
             return ForecastData(
