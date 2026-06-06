@@ -55,18 +55,78 @@ final class WidgetDataManager {
         reloadTimerWidget()
     }
 
+    // MARK: - System Monitor
+
+    func updateSystemMonitor(
+        cpuUsage: Double, cpuTemperature: Double, cpuCoreCount: Int,
+        memoryUsage: Double, memoryUsed: Double, memoryTotal: Double,
+        diskUsage: Double, diskUsed: Double, diskTotal: Double,
+        batteryLevel: Int, batteryCharging: Bool
+    ) {
+        defaults.set(cpuUsage, forKey: "widget_cpu_usage")
+        defaults.set(cpuTemperature, forKey: "widget_cpu_temperature")
+        defaults.set(cpuCoreCount, forKey: "widget_cpu_cores")
+        defaults.set(memoryUsage, forKey: "widget_memory_usage")
+        defaults.set(memoryUsed, forKey: "widget_memory_used")
+        defaults.set(memoryTotal, forKey: "widget_memory_total")
+        defaults.set(diskUsage, forKey: "widget_disk_usage")
+        defaults.set(diskUsed, forKey: "widget_disk_used")
+        defaults.set(diskTotal, forKey: "widget_disk_total")
+        defaults.set(batteryLevel, forKey: "widget_battery_level")
+        defaults.set(batteryCharging, forKey: "widget_battery_charging")
+
+        reloadWidget("SystemMonitorWidget")
+    }
+
+    // MARK: - Todo
+
+    func updateTodo(totalCount: Int, completedCount: Int, items: [[String: Any]]) {
+        defaults.set(totalCount, forKey: "widget_todo_total")
+        defaults.set(completedCount, forKey: "widget_todo_completed")
+
+        if let data = try? JSONSerialization.data(withJSONObject: items) {
+            defaults.set(data, forKey: "widget_todo_items")
+        }
+
+        reloadWidget("TodoWidget")
+    }
+
+    // MARK: - Clipboard
+
+    func updateClipboard(items: [[String: Any]]) {
+        if let data = try? JSONSerialization.data(withJSONObject: items) {
+            defaults.set(data, forKey: "widget_clipboard_items")
+        }
+
+        reloadWidget("ClipboardWidget")
+    }
+
+    // MARK: - Events
+
+    func updateEvents(items: [[String: Any]]) {
+        if let data = try? JSONSerialization.data(withJSONObject: items) {
+            defaults.set(data, forKey: "widget_event_items")
+        }
+
+        reloadWidget("EventWidget")
+    }
+
     // MARK: - Widget Reload
 
     private func reloadWeatherWidget() {
-        WidgetCenter.shared.reloadTimelines(ofKind: "WeatherWidget")
+        reloadWidget("WeatherWidget")
     }
 
     private func reloadMusicWidget() {
-        WidgetCenter.shared.reloadTimelines(ofKind: "MusicWidget")
+        reloadWidget("MusicWidget")
     }
 
     private func reloadTimerWidget() {
-        WidgetCenter.shared.reloadTimelines(ofKind: "TimerWidget")
+        reloadWidget("TimerWidget")
+    }
+
+    private func reloadWidget(_ kind: String) {
+        WidgetCenter.shared.reloadTimelines(ofKind: kind)
     }
 
     func reloadAllWidgets() {

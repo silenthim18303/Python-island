@@ -111,9 +111,23 @@ struct ClipboardHistoryView: View {
                     if history.count > maxHistory {
                         history = Array(history.prefix(maxHistory))
                     }
+                    // 同步到小组件
+                    Self.syncToWidget(history)
                 }
             }
         }
+    }
+
+    /// 同步剪贴板历史到小组件
+    private static func syncToWidget(_ history: [ClipboardEntry]) {
+        let items = history.prefix(5).map { entry -> [String: Any] in
+            [
+                "id": entry.id.uuidString,
+                "text": entry.text,
+                "timestamp": entry.timestamp.timeIntervalSince1970
+            ]
+        }
+        WidgetDataManager.shared.updateClipboard(items: items)
     }
 
     private func stopPolling() {

@@ -105,11 +105,11 @@
 		F76E31032FCD2F7800789A93 = {
 			isa = PBXGroup;
 			children = (
-				F79B639E2FD4749200572333 /* MacIslandWidgetsExtension.entitlements */,
 				F76E310E2FCD2F7800789A93 /* MacIsland */,
 				F79B63862FD473F100572333 /* MacIslandWidgets */,
 				F79B63812FD473F100572333 /* Frameworks */,
 				F76E310D2FCD2F7800789A93 /* Products */,
+				F79B639E2FD4749200572333 /* MacIslandWidgetsExtension.entitlements */,
 			);
 			sourceTree = "<group>";
 		};

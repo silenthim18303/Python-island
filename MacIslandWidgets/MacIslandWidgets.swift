@@ -14,5 +14,9 @@ struct MacIslandWidgets: WidgetBundle {
         WeatherWidget()
         MusicWidget()
         TimerWidget()
+        SystemMonitorWidget()
+        TodoWidget()
+        ClipboardWidget()
+        EventWidget()
     }
 }
