@@ -158,7 +158,7 @@ struct AlarmListView: View {
                 Button(L10n.add) {
                     let label = newLabel.trimmingCharacters(in: .whitespacesAndNewlines)
                     store.addAlarm(
-                        label: label.isEmpty ? "闹钟" : label,
+                        label: label.isEmpty ? L10n.alarmTitle : label,
                         hour: newHour,
                         minute: newMinute,
                         repeatDays: newRepeatDays

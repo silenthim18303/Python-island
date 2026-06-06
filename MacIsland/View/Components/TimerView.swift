@@ -179,7 +179,7 @@ private struct PomodoroSection: View {
                     VStack(spacing: 2) {
                         Text(phase.rawValue)
                             .font(.system(size: 10, weight: selected ? .bold : .medium))
-                        Text("\(minutes)分钟")
+                        Text("\(minutes) \(L10n.timerMin)")
                             .font(.system(size: 8, design: .monospaced))
                     }
                     .frame(maxWidth: .infinity)
@@ -277,7 +277,7 @@ private struct CountdownSection: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 28))
                         .foregroundColor(.green)
-                    Text("时间到！")
+                    Text(L10n.alarmTimeUp)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                 }
