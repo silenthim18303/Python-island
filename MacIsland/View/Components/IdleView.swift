@@ -125,9 +125,8 @@ struct IdleView: View {
 
     private var dateString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M/d EEEE"
+        formatter.locale = Locale(identifier: L10n.localeIdentifier)
+        formatter.dateFormat = L10n.dateFormatShort
         return formatter.string(from: currentTime)
-            .replacingOccurrences(of: "星期", with: L10n.dateFormatWeekday)
     }
 }

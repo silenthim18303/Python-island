@@ -484,6 +484,16 @@ enum L10n {
 
     // MARK: - Date Format
     static var dateFormatCN: String { t("date_format_cn") }
+    static var dateFormatShort: String { t("date_format_short") }
+
+    /// 当前语言对应的 Locale identifier
+    static var localeIdentifier: String {
+        switch LocalizationManager.shared.currentLanguage {
+        case .zh: return "zh_CN"
+        case .en: return "en_US"
+        case .ja: return "ja_JP"
+        }
+    }
 }
 
 // MARK: - Language Settings View
@@ -703,6 +713,7 @@ private let zhStrings: [String: String] = [
     "nav_settings": "设置", "nav_tools": "工具",
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
+    "date_format_short": "M/d EEEE",
 ]
 
 // MARK: - 英文翻译
@@ -907,6 +918,7 @@ private let enStrings: [String: String] = [
     "nav_settings": "Settings", "nav_tools": "Tools",
     // Date Format
     "date_format_cn": "EEEE, MMMM d, yyyy",
+    "date_format_short": "EEE, M/d",
 ]
 
 // MARK: - 日文翻译
@@ -1111,4 +1123,5 @@ private let jaStrings: [String: String] = [
     "nav_settings": "設定", "nav_tools": "ツール",
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
+    "date_format_short": "M/d（EEE）",
 ]

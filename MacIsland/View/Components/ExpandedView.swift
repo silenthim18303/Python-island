@@ -442,7 +442,7 @@ struct ExpandedView: View {
 
     private func formatDate(_ format: String) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: L10n.localeIdentifier)
         formatter.dateFormat = format
         return formatter.string(from: Date())
     }
