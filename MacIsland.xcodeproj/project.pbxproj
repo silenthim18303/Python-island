@@ -8,13 +8,51 @@
 
 /* Begin PBXBuildFile section */
 		F74229FA2FCD3625001BB74F /* QWeatherSDK in Frameworks */ = {isa = PBXBuildFile; productRef = F74229F92FCD3625001BB74F /* QWeatherSDK */; };
+		F79B63832FD473F100572333 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79B63822FD473F100572333 /* WidgetKit.framework */; };
+		F79B63852FD473F100572333 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79B63842FD473F100572333 /* SwiftUI.framework */; };
+		F79B63922FD473F200572333 /* MacIslandWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F79B63802FD473F100572333 /* MacIslandWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F79B63902FD473F200572333 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F76E31042FCD2F7800789A93 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F79B637F2FD473F100572333;
+			remoteInfo = MacIslandWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F79B63972FD473F200572333 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F79B63922FD473F200572333 /* MacIslandWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		F76E310C2FCD2F7800789A93 /* MacIsland.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacIsland.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F79B63802FD473F100572333 /* MacIslandWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MacIslandWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F79B63822FD473F100572333 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		F79B63842FD473F100572333 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		F79B639E2FD4749200572333 /* MacIslandWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacIslandWidgetsExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F79B63962FD473F200572333 /* Exceptions for "MacIslandWidgets" folder in "MacIslandWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F79B637F2FD473F100572333 /* MacIslandWidgetsExtension */;
+		};
 		F7C0DE012FCD2F7800789A93 /* Exceptions for "MacIsland" folder in "MacIsland" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -33,6 +71,14 @@
 			path = MacIsland;
 			sourceTree = "<group>";
 		};
+		F79B63862FD473F100572333 /* MacIslandWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F79B63962FD473F200572333 /* Exceptions for "MacIslandWidgets" folder in "MacIslandWidgetsExtension" target */,
+			);
+			path = MacIslandWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,13 +90,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F79B637D2FD473F100572333 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F79B63852FD473F100572333 /* SwiftUI.framework in Frameworks */,
+				F79B63832FD473F100572333 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		F76E31032FCD2F7800789A93 = {
 			isa = PBXGroup;
 			children = (
+				F79B639E2FD4749200572333 /* MacIslandWidgetsExtension.entitlements */,
 				F76E310E2FCD2F7800789A93 /* MacIsland */,
+				F79B63862FD473F100572333 /* MacIslandWidgets */,
+				F79B63812FD473F100572333 /* Frameworks */,
 				F76E310D2FCD2F7800789A93 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,8 +117,18 @@
 			isa = PBXGroup;
 			children = (
 				F76E310C2FCD2F7800789A93 /* MacIsland.app */,
+				F79B63802FD473F100572333 /* MacIslandWidgetsExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F79B63812FD473F100572333 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F79B63822FD473F100572333 /* WidgetKit.framework */,
+				F79B63842FD473F100572333 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -73,10 +141,12 @@
 				F76E31082FCD2F7800789A93 /* Sources */,
 				F76E31092FCD2F7800789A93 /* Frameworks */,
 				F76E310A2FCD2F7800789A93 /* Resources */,
+				F79B63972FD473F200572333 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F79B63912FD473F200572333 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				F76E310E2FCD2F7800789A93 /* MacIsland */,
@@ -89,6 +159,28 @@
 			productReference = F76E310C2FCD2F7800789A93 /* MacIsland.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F79B637F2FD473F100572333 /* MacIslandWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F79B63932FD473F200572333 /* Build configuration list for PBXNativeTarget "MacIslandWidgetsExtension" */;
+			buildPhases = (
+				F79B637C2FD473F100572333 /* Sources */,
+				F79B637D2FD473F100572333 /* Frameworks */,
+				F79B637E2FD473F100572333 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F79B63862FD473F100572333 /* MacIslandWidgets */,
+			);
+			name = MacIslandWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = MacIslandWidgetsExtension;
+			productReference = F79B63802FD473F100572333 /* MacIslandWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -100,6 +192,9 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					F76E310B2FCD2F7800789A93 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					F79B637F2FD473F100572333 = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -122,12 +217,20 @@
 			projectRoot = "";
 			targets = (
 				F76E310B2FCD2F7800789A93 /* MacIsland */,
+				F79B637F2FD473F100572333 /* MacIslandWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		F76E310A2FCD2F7800789A93 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F79B637E2FD473F100572333 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -144,7 +247,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F79B637C2FD473F100572333 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F79B63912FD473F200572333 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F79B637F2FD473F100572333 /* MacIslandWidgetsExtension */;
+			targetProxy = F79B63902FD473F200572333 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		F76E31152FCD2F7900789A93 /* Debug */ = {
@@ -335,6 +453,72 @@
 			};
 			name = Release;
 		};
+		F79B63942FD473F200572333 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MacIslandWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacIslandWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MacIslandWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = geminimortal.MacIsland.MacIslandWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F79B63952FD473F200572333 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MacIslandWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacIslandWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MacIslandWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = geminimortal.MacIsland.MacIslandWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -352,6 +536,15 @@
 			buildConfigurations = (
 				F76E31182FCD2F7900789A93 /* Debug */,
 				F76E31192FCD2F7900789A93 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F79B63932FD473F200572333 /* Build configuration list for PBXNativeTarget "MacIslandWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F79B63942FD473F200572333 /* Debug */,
+				F79B63952FD473F200572333 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
