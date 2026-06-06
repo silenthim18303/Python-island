@@ -395,6 +395,42 @@ enum L10n {
 
     // MARK: - Shortcut Extended
     static var shortcutAuth: String { t("shortcut_auth") }
+
+    // MARK: - Wallpaper Extended 2
+    static var wallpaperClose: String { t("wallpaper_close") }
+    static var wallpaperDelete: String { t("wallpaper_delete") }
+    static var wallpaperUploadFail: String { t("wallpaper_upload_fail") }
+    static var wallpaperUploadSuccess: String { t("wallpaper_upload_success") }
+    static var wallpaperSetPrivate: String { t("wallpaper_set_private") }
+    static var wallpaperStatic: String { t("wallpaper_static") }
+    static var wallpaperVideo: String { t("wallpaper_video") }
+    static var wallpaperImage: String { t("wallpaper_image") }
+    static var wallpaperDownload: String { t("wallpaper_download") }
+    static var wallpaperLoading: String { t("wallpaper_loading") }
+    static var wallpaperUsernameRequired: String { t("wallpaper_username_required") }
+    static var wallpaperPRConfirm: String { t("wallpaper_pr_confirm") }
+
+    // MARK: - Timer Extended
+    static var timerSkip: String { t("timer_skip") }
+    static var timerMin: String { t("timer_min") }
+    static var timerSec: String { t("timer_sec") }
+    static var timerHour: String { t("timer_hour") }
+
+    // MARK: - Monitor Extended
+    static var monitorCores: String { t("monitor_cores") }
+    static var monitorCycles: String { t("monitor_cycles") }
+    static var monitorIdle: String { t("monitor_idle") }
+    static var monitorCapacity: String { t("monitor_capacity") }
+    static var monitorUsed: String { t("monitor_used") }
+    static var monitorCompressed: String { t("monitor_compressed") }
+
+    // MARK: - Date Format
+    static var dateFormatWeekday: String { t("date_format_weekday") }
+
+    // MARK: - Misc Extended
+    static var closePanel: String { t("close_panel") }
+    static var collapseOverview: String { t("collapse_overview") }
+    static var skip: String { t("skip") }
 }
 
 // MARK: - Language Settings View
@@ -564,6 +600,24 @@ private let zhStrings: [String: String] = [
     "notif_dnd_from": "从", "notif_dnd_to": "至",
     // Shortcut Extended
     "shortcut_auth": "授权",
+    // Wallpaper Extended 2
+    "wallpaper_close": "关闭壁纸", "wallpaper_delete": "删除",
+    "wallpaper_upload_fail": "上传失败", "wallpaper_upload_success": "已提交审核",
+    "wallpaper_set_private": "设为私有", "wallpaper_static": "静态壁纸",
+    "wallpaper_video": "视频", "wallpaper_image": "图片",
+    "wallpaper_download": "下载", "wallpaper_loading": "加载中...",
+    "wallpaper_username_required": "请先设置用户名",
+    "wallpaper_pr_confirm": "确定要删除吗？此操作将提交 PR 至仓库审核。",
+    // Timer Extended
+    "timer_skip": "跳过", "timer_min": "分", "timer_sec": "秒", "timer_hour": "时",
+    // Monitor Extended
+    "monitor_cores": "核", "monitor_cycles": "次",
+    "monitor_idle": "空闲", "monitor_capacity": "容量",
+    "monitor_used": "已用", "monitor_compressed": "压缩",
+    // Date Format
+    "date_format_weekday": "周",
+    // Misc Extended
+    "close_panel": "关闭", "collapse_overview": "收起到概览", "skip": "跳过",
 ]
 
 // MARK: - 英文翻译
@@ -718,6 +772,24 @@ private let enStrings: [String: String] = [
     "notif_dnd_from": "From", "notif_dnd_to": "To",
     // Shortcut Extended
     "shortcut_auth": "Authorize",
+    // Wallpaper Extended 2
+    "wallpaper_close": "Close Wallpaper", "wallpaper_delete": "Delete",
+    "wallpaper_upload_fail": "Upload Failed", "wallpaper_upload_success": "Submitted for Review",
+    "wallpaper_set_private": "Set Private", "wallpaper_static": "Static",
+    "wallpaper_video": "Video", "wallpaper_image": "Image",
+    "wallpaper_download": "Download", "wallpaper_loading": "Loading...",
+    "wallpaper_username_required": "Please set username first",
+    "wallpaper_pr_confirm": "Delete? This will submit a PR for review.",
+    // Timer Extended
+    "timer_skip": "Skip", "timer_min": "min", "timer_sec": "sec", "timer_hour": "hr",
+    // Monitor Extended
+    "monitor_cores": "cores", "monitor_cycles": "cycles",
+    "monitor_idle": "Idle", "monitor_capacity": "Capacity",
+    "monitor_used": "Used", "monitor_compressed": "Compressed",
+    // Date Format
+    "date_format_weekday": "",
+    // Misc Extended
+    "close_panel": "Close", "collapse_overview": "Collapse", "skip": "Skip",
 ]
 
 // MARK: - 日文翻译
@@ -872,4 +944,22 @@ private let jaStrings: [String: String] = [
     "notif_dnd_from": "から", "notif_dnd_to": "まで",
     // Shortcut Extended
     "shortcut_auth": "許可",
+    // Wallpaper Extended 2
+    "wallpaper_close": "壁紙を閉じる", "wallpaper_delete": "削除",
+    "wallpaper_upload_fail": "アップロード失敗", "wallpaper_upload_success": "審査に提出済み",
+    "wallpaper_set_private": "プライベート設定", "wallpaper_static": "静止画",
+    "wallpaper_video": "動画", "wallpaper_image": "画像",
+    "wallpaper_download": "ダウンロード", "wallpaper_loading": "読み込み中...",
+    "wallpaper_username_required": "ユーザー名を先に設定してください",
+    "wallpaper_pr_confirm": "削除しますか？PR が提交されます。",
+    // Timer Extended
+    "timer_skip": "スキップ", "timer_min": "分", "timer_sec": "秒", "timer_hour": "時間",
+    // Monitor Extended
+    "monitor_cores": "コア", "monitor_cycles": "サイクル",
+    "monitor_idle": "アイドル", "monitor_capacity": "容量",
+    "monitor_used": "使用済み", "monitor_compressed": "圧縮",
+    // Date Format
+    "date_format_weekday": "",
+    // Misc Extended
+    "close_panel": "閉じる", "collapse_overview": "折りたたむ", "skip": "スキップ",
 ]

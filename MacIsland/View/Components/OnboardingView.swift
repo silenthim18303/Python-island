@@ -99,7 +99,7 @@ struct OnboardingView: View {
             .padding(.bottom, 24)
 
             // 跳过
-            Button("跳过") { complete() }
+            Button(L10n.skip) { complete() }
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.white.opacity(0.3))
                 .buttonStyle(.plain)

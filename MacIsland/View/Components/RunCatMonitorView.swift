@@ -94,7 +94,7 @@ struct RunCatMonitorView: View {
             subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
             rows: [
                 ("Capacity", String(format: "%.0f%%", stats.batteryMaxCapacity)),
-                ("Cycles", "\(stats.batteryCycleCount)次"),
+                ("Cycles", "\(stats.batteryCycleCount) \(L10n.monitorCycles)"),
             ],
             percent: stats.batteryLevel / 100, barColor: batteryColor
         )

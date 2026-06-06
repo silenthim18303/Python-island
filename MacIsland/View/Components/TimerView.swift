@@ -206,7 +206,7 @@ private struct PomodoroSection: View {
                 .foregroundColor(color.opacity(0.8))
                 .frame(width: 28, alignment: .leading)
 
-            Text("分钟")
+            Text(L10n.timerMin)
                 .font(.system(size: 9))
                 .foregroundColor(.white.opacity(0.35))
 

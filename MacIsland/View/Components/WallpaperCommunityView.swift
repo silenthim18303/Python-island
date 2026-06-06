@@ -136,7 +136,7 @@ struct WallpaperCommunityView: View {
                 HStack(spacing: 6) {
                     ProgressView()
                         .controlSize(.mini)
-                    Text("上传中…")
+                    Text(L10n.wallpaperUploading)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textTertiary)
                 }
@@ -383,7 +383,7 @@ struct WallpaperCommunityView: View {
                 Image(systemName: "globe")
                     .font(.system(size: 28))
                     .foregroundColor(.white.opacity(0.1))
-                Text("点击刷新获取社区壁纸")
+                Text(L10n.wallpaperRefresh)
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textQuaternary)
             }
@@ -412,7 +412,7 @@ struct WallpaperCommunityView: View {
 
             // 用户名
             VStack(alignment: .leading, spacing: 4) {
-                Text("GitHub 用户名")
+                Text(L10n.wallpaperGitHubUser)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
                 TextField("用于壁纸目录命名", text: Binding(
@@ -433,7 +433,7 @@ struct WallpaperCommunityView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "person.crop.circle.badge.checkmark")
-                    Text("GitHub 登录")
+                    Text(L10n.wallpaperGitHub)
                 }
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.white)

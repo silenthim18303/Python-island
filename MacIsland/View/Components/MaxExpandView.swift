@@ -91,7 +91,7 @@ struct MaxExpandView: View {
                     .background(Circle().fill(Color.fillSubtle))
             }
             .buttonStyle(.plain)
-            .help("收起到概览")
+            .help(L10n.collapseOverview)
 
             Text(L10n.aboutTitle)
                 .font(.system(size: 13, weight: .bold))
@@ -109,7 +109,7 @@ struct MaxExpandView: View {
                     .background(Circle().fill(Color.fillSubtle))
             }
             .buttonStyle(.plain)
-            .help("关闭")
+            .help(L10n.closePanel)
         }
         .padding(.horizontal, 14)
         .padding(.top, 10)

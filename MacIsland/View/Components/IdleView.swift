@@ -128,6 +128,6 @@ struct IdleView: View {
         formatter.locale = Locale(identifier: "zh_CN")
         formatter.dateFormat = "M/d EEEE"
         return formatter.string(from: currentTime)
-            .replacingOccurrences(of: "星期", with: "周")
+            .replacingOccurrences(of: "星期", with: L10n.dateFormatWeekday)
     }
 }
