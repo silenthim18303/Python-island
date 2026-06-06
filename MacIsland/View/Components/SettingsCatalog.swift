@@ -161,82 +161,82 @@ struct SettingItemMeta: Identifiable {
         [
             // 外观
             .init("appearanceMode", .appearance,
-                  title: L10n.settingsTheme, description: L10n.settingsTheme + "。",
+                  title: L10n.settingsTheme, description: L10n.descAppearanceMode,
                   keywords: ["theme", "dark", "light", "深色", "浅色", "主题"]),
             .init("accentColor", .appearance,
-                  title: L10n.settingsAccentColor, description: L10n.settingsAccentColor + "。",
+                  title: L10n.settingsAccentColor, description: L10n.descAccentColor,
                   keywords: ["accent", "color", "颜色", "强调色"]),
             .init("language", .appearance,
-                  title: L10n.settingsLanguage, description: L10n.settingsLanguage + "。",
+                  title: L10n.settingsLanguage, description: L10n.descLanguage,
                   keywords: ["language", "中文", "english", "日本語", "japanese"]),
             .init("launchAtLogin", .appearance,
-                  title: L10n.settingsAutostart, description: L10n.settingsAutostart + "。",
+                  title: L10n.settingsAutostart, description: L10n.descAutostart,
                   keywords: ["login", "startup", "自启"]),
             .init("islandOpacity", .appearance,
-                  title: L10n.settingsOpacity, description: L10n.settingsOpacity + "。",
+                  title: L10n.settingsOpacity, description: L10n.descIslandOpacity,
                   keywords: ["opacity", "透明"]),
             .init("wallpaperOpacity", .appearance,
-                  title: L10n.settingsWallpaperOpacity, description: L10n.settingsWallpaperOpacity + "。",
+                  title: L10n.settingsWallpaperOpacity, description: L10n.descWallpaperOpacity,
                   keywords: ["opacity", "壁纸", "透明"]),
 
             // 壁纸
             .init("customWallpaperPath", .wallpaper,
-                  title: L10n.wallpaperPath, description: L10n.wallpaperPath + "。",
+                  title: L10n.wallpaperPath, description: L10n.descWallpaperPath,
                   hint: L10n.wallpaperPathDefault,
                   keywords: ["path", "目录", "缓存"]),
 
             // 动画
             .init("animationSpeed", .animation,
-                  title: L10n.settingsSpeed, description: L10n.settingsSpeed + "。",
+                  title: L10n.settingsSpeed, description: L10n.descAnimationSpeed,
                   keywords: ["speed", "速度"]),
             .init("springAnimation", .animation,
-                  title: L10n.settingsSpring, description: L10n.settingsSpring + "。",
+                  title: L10n.settingsSpring, description: L10n.descSpringAnimation,
                   keywords: ["spring", "弹簧"]),
 
             // 剪贴板
             .init("clipboardEnabled", .clipboard,
-                  title: L10n.settingsLinkDetect, description: L10n.settingsLinkDetect + "。",
+                  title: L10n.settingsLinkDetect, description: L10n.descLinkDetect,
                   keywords: ["link", "检测"]),
             .init("clipboardUrlDetectMode", .clipboard,
-                  title: L10n.settingsUrlMode, description: L10n.settingsUrlMode + "。",
+                  title: L10n.settingsUrlMode, description: L10n.descUrlMode,
                   keywords: ["url", "http", "https", "domain"]),
             .init("blacklistedDomains", .clipboard,
-                  title: L10n.settingsBlacklist, description: L10n.settingsBlacklist + "。",
+                  title: L10n.settingsBlacklist, description: L10n.descBlacklist,
                   hint: "example.com",
                   keywords: ["blacklist", "黑名单", "domain"]),
 
             // 通知中心
             .init("dndEnabled", .notifications,
-                  title: L10n.notifDND, description: L10n.notifDND + "。",
+                  title: L10n.notifDND, description: L10n.descDnd,
                   keywords: ["dnd", "mute", "静音", "免打扰"]),
             .init("dndTimeRange", .notifications,
-                  title: L10n.notifDNDTime, description: L10n.notifDNDTime + "。",
+                  title: L10n.notifDNDTime, description: L10n.descDndTime,
                   keywords: ["time", "时段", "时间"]),
 
             // 音乐与歌词
             .init("preferredLyricsSource", .music,
-                  title: L10n.settingsLyricsSource, description: L10n.settingsLyricsSource + "。",
+                  title: L10n.settingsLyricsSource, description: L10n.descLyricsSource,
                   keywords: ["lyrics", "netease", "网易", "qq", "酷狗", "lrclib"]),
 
             // 天气
             .init("weatherManualCity", .weather,
-                  title: L10n.weatherCity, description: L10n.weatherCity + "。",
+                  title: L10n.weatherCity, description: L10n.descWeatherCity,
                   hint: L10n.weatherAuto,
                   keywords: ["city", "城市", "定位"]),
             .init("weatherManualLocationID", .weather,
-                  title: L10n.weatherLocationID, description: L10n.weatherLocationID + "。",
+                  title: L10n.weatherLocationID, description: L10n.descWeatherLocationID,
                   hint: "101010100",
                   keywords: ["location", "id", "和风"]),
 
             // 社区
             .init("communityUploadUsername", .community,
-                  title: L10n.settingsUsername, description: L10n.settingsUsername + "。",
+                  title: L10n.settingsUsername, description: L10n.descUsername,
                   hint: L10n.settingsUsername,
                   keywords: ["username", "用户名", "上传"]),
 
         // 快捷键
         .init("hotkeyBindings", .shortcuts,
-              title: L10n.shortcutTitle, description: L10n.shortcutTitle + "。",
+              title: L10n.shortcutTitle, description: L10n.descHotkeyBindings,
               keywords: ["hotkey", "shortcut", "热键"]),
         ]
     }

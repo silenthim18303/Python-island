@@ -482,6 +482,27 @@ enum L10n {
     static var navSettings: String { t("nav_settings") }
     static var navTools: String { t("nav_tools") }
 
+    // MARK: - Setting Descriptions
+    static var descAppearanceMode: String { t("desc_appearance_mode") }
+    static var descAccentColor: String { t("desc_accent_color") }
+    static var descLanguage: String { t("desc_language") }
+    static var descAutostart: String { t("desc_autostart") }
+    static var descIslandOpacity: String { t("desc_island_opacity") }
+    static var descWallpaperOpacity: String { t("desc_wallpaper_opacity") }
+    static var descWallpaperPath: String { t("desc_wallpaper_path") }
+    static var descAnimationSpeed: String { t("desc_animation_speed") }
+    static var descSpringAnimation: String { t("desc_spring_animation") }
+    static var descLinkDetect: String { t("desc_link_detect") }
+    static var descUrlMode: String { t("desc_url_mode") }
+    static var descBlacklist: String { t("desc_blacklist") }
+    static var descDnd: String { t("desc_dnd") }
+    static var descDndTime: String { t("desc_dnd_time") }
+    static var descLyricsSource: String { t("desc_lyrics_source") }
+    static var descWeatherCity: String { t("desc_weather_city") }
+    static var descWeatherLocationID: String { t("desc_weather_location_id") }
+    static var descUsername: String { t("desc_username") }
+    static var descHotkeyBindings: String { t("desc_hotkey_bindings") }
+
     // MARK: - Date Format
     static var dateFormatCN: String { t("date_format_cn") }
     static var dateFormatShort: String { t("date_format_short") }
@@ -714,6 +735,26 @@ private let zhStrings: [String: String] = [
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
     "date_format_short": "M/d EEEE",
+    // Setting Descriptions
+    "desc_appearance_mode": "切换深色/浅色/跟随系统主题，设置窗口和菜单栏即时生效。",
+    "desc_accent_color": "自定义界面强调色，9 种预设色可选，全局即时生效。",
+    "desc_language": "切换界面显示语言，支持中文/English/日本語。",
+    "desc_autostart": "登录系统后自动启动 MacIsland。",
+    "desc_island_opacity": "调整灵动岛整体不透明度（10%–100%）。",
+    "desc_wallpaper_opacity": "独立于灵动岛整体透明度的壁纸不透明度。",
+    "desc_wallpaper_path": "自定义壁纸缓存目录，留空使用默认位置。",
+    "desc_animation_speed": "灵动岛展开/折叠的过渡时长。",
+    "desc_spring_animation": "启用更有弹性的弹簧过渡曲线。",
+    "desc_link_detect": "复制链接时在灵动岛快速提示。",
+    "desc_url_mode": "选择被识别为链接的 URL 形式。",
+    "desc_blacklist": "命中黑名单的域名不会触发链接提示。",
+    "desc_dnd": "在指定时段内静默所有灵动岛通知。",
+    "desc_dnd_time": "设置免打扰的开始和结束时间。",
+    "desc_lyrics_source": "优先使用的歌词数据来源。",
+    "desc_weather_city": "指定城市名，留空则自动定位。",
+    "desc_weather_location_id": "和风天气城市 ID，配合手动城市使用。",
+    "desc_username": "上传社区壁纸时显示的作者名。",
+    "desc_hotkey_bindings": "自定义显示/播放控制等全局热键。",
 ]
 
 // MARK: - 英文翻译
@@ -919,6 +960,26 @@ private let enStrings: [String: String] = [
     // Date Format
     "date_format_cn": "EEEE, MMMM d, yyyy",
     "date_format_short": "EEE, M/d",
+    // Setting Descriptions
+    "desc_appearance_mode": "Switch between dark/light/system theme. Takes effect immediately.",
+    "desc_accent_color": "Customize accent color with 9 presets. Global instant effect.",
+    "desc_language": "Switch display language. Supports Chinese/English/Japanese.",
+    "desc_autostart": "Automatically launch MacIsland after login.",
+    "desc_island_opacity": "Adjust island opacity (10%–100%).",
+    "desc_wallpaper_opacity": "Wallpaper opacity independent of island opacity.",
+    "desc_wallpaper_path": "Custom wallpaper cache directory. Leave empty for default.",
+    "desc_animation_speed": "Transition duration for expand/collapse animations.",
+    "desc_spring_animation": "Enable bouncy spring animation curves.",
+    "desc_link_detect": "Show quick notification when copying links.",
+    "desc_url_mode": "Choose which URL formats are recognized as links.",
+    "desc_blacklist": "Domains in blacklist won't trigger link notifications.",
+    "desc_dnd": "Silence all island notifications during specified hours.",
+    "desc_dnd_time": "Set do-not-disturb start and end time.",
+    "desc_lyrics_source": "Preferred lyrics data source.",
+    "desc_weather_city": "Specify city name. Leave empty for auto location.",
+    "desc_weather_location_id": "QWeather city ID, used with manual city.",
+    "desc_username": "Author name shown when uploading community wallpapers.",
+    "desc_hotkey_bindings": "Customize display/playback control global hotkeys.",
 ]
 
 // MARK: - 日文翻译
@@ -1124,4 +1185,24 @@ private let jaStrings: [String: String] = [
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
     "date_format_short": "M/d（EEE）",
+    // Setting Descriptions
+    "desc_appearance_mode": "ダーク/ライト/システムテーマを切り替え。即時反映されます。",
+    "desc_accent_color": "アクセントカラーをカスタマイズ。9色のプリセット、即時反映。",
+    "desc_language": "表示言語を切り替え。中国語/英語/日本語に対応。",
+    "desc_autostart": "ログイン後に MacIsland を自動起動します。",
+    "desc_island_opacity": "アイランドの不透明度を調整（10%–100%）。",
+    "desc_wallpaper_opacity": "アイランドとは独立した壁紙の不透明度。",
+    "desc_wallpaper_path": "壁紙キャッシュディレクトリを指定。空欄でデフォルト。",
+    "desc_animation_speed": "展開/折りたたみアニメーションの遷移時間。",
+    "desc_spring_animation": "バウンスするスプリングアニメーションを有効化。",
+    "desc_link_detect": "リンクをコピー時にクイック通知を表示。",
+    "desc_url_mode": "リンクとして認識する URL 形式を選択。",
+    "desc_blacklist": "ブラックリストのドメインはリンク通知をトリガーしません。",
+    "desc_dnd": "指定時間内にアイランド通知をミュート。",
+    "desc_dnd_time": "通知オフの開始・終了時間を設定。",
+    "desc_lyrics_source": "優先する歌詞データソース。",
+    "desc_weather_city": "都市名を指定。空欄で自動位置。",
+    "desc_weather_location_id": "和風天気の都市 ID。手動都市と併用。",
+    "desc_username": "コミュニティ壁紙アップロード時の著者名。",
+    "desc_hotkey_bindings": "表示/再生制御のグローバルホットキーをカスタマイズ。",
 ]
