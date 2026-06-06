@@ -12,21 +12,17 @@ import SwiftUI
 
 struct TimerTimelineProvider: TimelineProvider {
     func placeholder(in context: Context) -> TimerEntry {
-        TimerEntry.placeholder
+        .placeholder
     }
 
     func getSnapshot(in context: Context, completion: @escaping (TimerEntry) -> Void) {
-        completion(TimerEntry.placeholder)
+        completion(.placeholder)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TimerEntry>) -> Void) {
-        // 从 UserDefaults 读取计时器数据
         let entry = TimerEntry.fromUserDefaults()
-
-        // 每 1 秒刷新一次（计时器需要精确显示）
         let nextUpdate = Calendar.current.date(byAdding: .second, value: 1, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-        completion(timeline)
+        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
 }
 
@@ -39,65 +35,39 @@ struct TimerEntry: TimelineEntry {
     let isRunning: Bool
     let completedPomodoros: Int
 
-    enum TimerType {
-        case pomodoro
-        case countdown
-        case idle
+    enum TimerType: String {
+        case pomodoro, countdown, idle
     }
 
     static var placeholder: TimerEntry {
-        TimerEntry(
-            date: Date(),
-            type: .pomodoro,
-            remainingSeconds: 1500, // 25 分钟
-            isRunning: true,
-            completedPomodoros: 2
-        )
+        TimerEntry(date: Date(), type: .pomodoro, remainingSeconds: 1500,
+                   isRunning: true, completedPomodoros: 2)
     }
 
     static func fromUserDefaults() -> TimerEntry {
-        let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
-        let timerType = defaults.string(forKey: "widget_timer_type") ?? "idle"
+        let d = WidgetConstants.sharedDefaults
+        let type = TimerType(rawValue: d.string(forKey: "widget_timer_type") ?? "idle") ?? .idle
 
-        switch timerType {
-        case "pomodoro":
-            return TimerEntry(
-                date: Date(),
-                type: .pomodoro,
-                remainingSeconds: defaults.integer(forKey: "widget_timer_remaining"),
-                isRunning: defaults.bool(forKey: "widget_timer_running"),
-                completedPomodoros: defaults.integer(forKey: "widget_timer_pomodoros")
-            )
-        case "countdown":
-            return TimerEntry(
-                date: Date(),
-                type: .countdown,
-                remainingSeconds: defaults.integer(forKey: "widget_timer_remaining"),
-                isRunning: defaults.bool(forKey: "widget_timer_running"),
-                completedPomodoros: 0
-            )
-        default:
-            return TimerEntry(
-                date: Date(),
-                type: .idle,
-                remainingSeconds: 0,
-                isRunning: false,
-                completedPomodoros: defaults.integer(forKey: "widget_timer_pomodoros")
-            )
-        }
+        return TimerEntry(
+            date: Date(),
+            type: type,
+            remainingSeconds: d.integer(forKey: "widget_timer_remaining"),
+            isRunning: d.bool(forKey: "widget_timer_running"),
+            completedPomodoros: d.integer(forKey: "widget_timer_pomodoros")
+        )
     }
 
     var formattedTime: String {
-        let minutes = remainingSeconds / 60
-        let seconds = remainingSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        let m = remainingSeconds / 60
+        let s = remainingSeconds % 60
+        return String(format: "%02d:%02d", m, s)
     }
 
     var title: String {
         switch type {
-        case .pomodoro: return "番茄钟"
-        case .countdown: return "倒计时"
-        case .idle: return "计时器"
+        case .pomodoro: return "Pomodoro"
+        case .countdown: return "Countdown"
+        case .idle: return "Timer"
         }
     }
 
@@ -108,12 +78,22 @@ struct TimerEntry: TimelineEntry {
         case .idle: return "clock"
         }
     }
+
+    var statusText: String {
+        if type == .idle { return "Idle" }
+        return isRunning ? "Running" : "Paused"
+    }
+
+    var statusColor: Color {
+        if type == .idle { return .secondary }
+        return isRunning ? .green : .orange
+    }
 }
 
 // MARK: - Timer Widget
 
 struct TimerWidget: Widget {
-    let kind: String = "TimerWidget"
+    let kind = "TimerWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TimerTimelineProvider()) { entry in
@@ -130,38 +110,32 @@ struct TimerWidget: Widget {
 
 struct TimerWidgetView: View {
     let entry: TimerEntry
-
     @Environment(\.widgetFamily) var family
 
     var body: some View {
         switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        default:
-            smallView
+        case .systemSmall: smallView
+        case .systemMedium: mediumView
+        default: smallView
         }
     }
-
-    // MARK: - Small View
 
     private var smallView: some View {
         VStack(spacing: 8) {
             Image(systemName: entry.iconSystemName)
                 .font(.system(size: 20))
-                .foregroundColor(.accentColor)
+                .foregroundColor(entry.statusColor)
 
             Text(entry.formattedTime)
                 .font(.system(size: 28, weight: .bold, design: .monospaced))
                 .foregroundColor(.primary)
 
             Text(entry.title)
-                .font(.system(size: 11))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
 
-            if entry.type == .pomodoro {
-                Text("\(entry.completedPomodoros) 个番茄")
+            if entry.type == .pomodoro && entry.completedPomodoros > 0 {
+                Text("\(entry.completedPomodoros) done")
                     .font(.system(size: 9))
                     .foregroundColor(.secondary)
             }
@@ -169,48 +143,53 @@ struct TimerWidgetView: View {
         .padding()
     }
 
-    // MARK: - Medium View
-
     private var mediumView: some View {
         HStack(spacing: 16) {
-            // 左侧：时间显示
+            // 左侧：时间
             VStack(spacing: 4) {
                 Text(entry.formattedTime)
                     .font(.system(size: 36, weight: .bold, design: .monospaced))
                     .foregroundColor(.primary)
 
                 Text(entry.title)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.secondary)
             }
+            .frame(width: 100)
 
             Divider()
 
-            // 右侧：状态信息
-            VStack(alignment: .leading, spacing: 8) {
+            // 右侧：状态
+            VStack(alignment: .leading, spacing: 10) {
+                // 运行状态
                 HStack(spacing: 6) {
-                    Image(systemName: entry.isRunning ? "play.fill" : "pause.fill")
-                        .font(.system(size: 10))
-                    Text(entry.isRunning ? "运行中" : "已暂停")
-                        .font(.system(size: 11))
+                    Circle()
+                        .fill(entry.statusColor)
+                        .frame(width: 6, height: 6)
+                    Text(entry.statusText)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.primary)
                 }
-                .foregroundColor(entry.isRunning ? .green : .secondary)
 
+                // 番茄钟信息
                 if entry.type == .pomodoro {
                     HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 10))
-                        Text("已完成 \(entry.completedPomodoros) 个番茄")
+                            .foregroundColor(.green)
+                        Text("\(entry.completedPomodoros) completed")
                             .font(.system(size: 11))
                     }
                     .foregroundColor(.secondary)
                 }
 
+                // 倒计时信息
                 if entry.type == .countdown {
                     HStack(spacing: 6) {
                         Image(systemName: "hourglass")
                             .font(.system(size: 10))
-                        Text("倒计时中")
+                            .foregroundColor(.orange)
+                        Text("Counting down")
                             .font(.system(size: 11))
                     }
                     .foregroundColor(.secondary)
@@ -221,12 +200,4 @@ struct TimerWidgetView: View {
         }
         .padding()
     }
-}
-
-// MARK: - Preview
-
-#Preview(as: .systemSmall) {
-    TimerWidget()
-} timeline: {
-    TimerEntry.placeholder
 }

@@ -12,21 +12,17 @@ import SwiftUI
 
 struct MusicTimelineProvider: TimelineProvider {
     func placeholder(in context: Context) -> MusicEntry {
-        MusicEntry.placeholder
+        .placeholder
     }
 
     func getSnapshot(in context: Context, completion: @escaping (MusicEntry) -> Void) {
-        completion(MusicEntry.placeholder)
+        completion(.placeholder)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MusicEntry>) -> Void) {
-        // 从 UserDefaults 读取音乐数据
         let entry = MusicEntry.fromUserDefaults()
-
-        // 每 5 秒刷新一次（音乐状态变化快）
-        let nextUpdate = Calendar.current.date(byAdding: .second, value: 5, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-        completion(timeline)
+        let nextUpdate = Calendar.current.date(byAdding: .second, value: 10, to: Date())!
+        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
 }
 
@@ -40,43 +36,35 @@ struct MusicEntry: TimelineEntry {
     let progress: Double
 
     static var placeholder: MusicEntry {
-        MusicEntry(
-            date: Date(),
-            title: "歌曲名称",
-            artist: "艺术家",
-            isPlaying: true,
-            progress: 0.45
-        )
+        MusicEntry(date: Date(), title: "Song Title", artist: "Artist",
+                   isPlaying: true, progress: 0.45)
     }
 
     static func fromUserDefaults() -> MusicEntry {
-        let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
-        let hasMedia = defaults.bool(forKey: "widget_music_hasMedia")
+        let d = WidgetConstants.sharedDefaults
+        let hasMedia = d.bool(forKey: "widget_music_hasMedia")
 
         guard hasMedia else {
-            return MusicEntry(
-                date: Date(),
-                title: "暂无播放",
-                artist: "",
-                isPlaying: false,
-                progress: 0
-            )
+            return MusicEntry(date: Date(), title: "No Playback", artist: "",
+                              isPlaying: false, progress: 0)
         }
 
         return MusicEntry(
             date: Date(),
-            title: defaults.string(forKey: "widget_music_title") ?? "暂无播放",
-            artist: defaults.string(forKey: "widget_music_artist") ?? "",
-            isPlaying: defaults.bool(forKey: "widget_music_isPlaying"),
-            progress: defaults.double(forKey: "widget_music_progress")
+            title: d.string(forKey: "widget_music_title") ?? "No Playback",
+            artist: d.string(forKey: "widget_music_artist") ?? "",
+            isPlaying: d.bool(forKey: "widget_music_isPlaying"),
+            progress: d.double(forKey: "widget_music_progress")
         )
     }
+
+    var hasMedia: Bool { !title.isEmpty && title != "No Playback" }
 }
 
 // MARK: - Music Widget
 
 struct MusicWidget: Widget {
-    let kind: String = "MusicWidget"
+    let kind = "MusicWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: MusicTimelineProvider()) { entry in
@@ -93,99 +81,100 @@ struct MusicWidget: Widget {
 
 struct MusicWidgetView: View {
     let entry: MusicEntry
-
     @Environment(\.widgetFamily) var family
 
     var body: some View {
         switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        default:
-            smallView
+        case .systemSmall: smallView
+        case .systemMedium: mediumView
+        default: smallView
         }
     }
-
-    // MARK: - Small View
 
     private var smallView: some View {
         VStack(spacing: 6) {
-            Image(systemName: entry.isPlaying ? "music.note" : "music.note")
-                .font(.system(size: 24))
-                .foregroundColor(.accentColor)
+            if entry.hasMedia {
+                albumArt(size: 32)
 
-            Text(entry.title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.primary)
-                .lineLimit(1)
-
-            Text(entry.artist)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-
-            // 进度条
-            ProgressView(value: entry.progress)
-                .progressViewStyle(.linear)
-                .tint(.accentColor)
-                .frame(height: 2)
-        }
-        .padding()
-    }
-
-    // MARK: - Medium View
-
-    private var mediumView: some View {
-        HStack(spacing: 12) {
-            // 左侧：封面占位
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.accentColor.opacity(0.2))
-                .frame(width: 60, height: 60)
-                .overlay(
-                    Image(systemName: "music.note")
-                        .font(.system(size: 24))
-                        .foregroundColor(.accentColor)
-                )
-
-            // 右侧：歌曲信息
-            VStack(alignment: .leading, spacing: 4) {
                 Text(entry.title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
                 Text(entry.artist)
-                    .font(.system(size: 12))
+                    .font(.system(size: 10))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
 
-                // 进度条
-                ProgressView(value: entry.progress)
-                    .progressViewStyle(.linear)
-                    .tint(.accentColor)
-                    .frame(height: 3)
+                progressBar(height: 2)
+            } else {
+                WidgetEmptyState(icon: "music.note", message: "No Playback")
+            }
+        }
+        .padding()
+    }
 
-                // 播放状态
-                HStack(spacing: 4) {
-                    Image(systemName: entry.isPlaying ? "play.fill" : "pause.fill")
-                        .font(.system(size: 8))
-                    Text(entry.isPlaying ? "播放中" : "已暂停")
-                        .font(.system(size: 9))
+    private var mediumView: some View {
+        HStack(spacing: 12) {
+            if entry.hasMedia {
+                albumArt(size: 52)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(entry.title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    Text(entry.artist)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+
+                    progressBar(height: 3)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: entry.isPlaying ? "play.fill" : "pause.fill")
+                            .font(.system(size: 8))
+                        Text(entry.isPlaying ? "Playing" : "Paused")
+                            .font(.system(size: 9))
+                    }
+                    .foregroundColor(.secondary)
                 }
-                .foregroundColor(.secondary)
+            } else {
+                WidgetEmptyState(icon: "music.note", message: "No music playing")
             }
 
             Spacer()
         }
         .padding()
     }
-}
 
-// MARK: - Preview
+    private func albumArt(size: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: size * 0.15)
+            .fill(LinearGradient(
+                colors: [.purple.opacity(0.3), .blue.opacity(0.3)],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            ))
+            .frame(width: size, height: size)
+            .overlay(
+                Image(systemName: "music.note")
+                    .font(.system(size: size * 0.4))
+                    .foregroundColor(.accentColor)
+            )
+    }
 
-#Preview(as: .systemSmall) {
-    MusicWidget()
-} timeline: {
-    MusicEntry.placeholder
+    private func progressBar(height: CGFloat) -> some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: height / 2)
+                    .fill(Color.secondary.opacity(0.2))
+                    .frame(height: height)
+
+                RoundedRectangle(cornerRadius: height / 2)
+                    .fill(Color.accentColor)
+                    .frame(width: geometry.size.width * entry.progress, height: height)
+            }
+        }
+        .frame(height: height)
+    }
 }
