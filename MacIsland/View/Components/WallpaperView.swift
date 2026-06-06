@@ -80,7 +80,7 @@ struct WallpaperView: View {
                     .font(.system(size: Theme.FontSize.caption, weight: .semibold))
                     .foregroundColor(.textSecondary)
                 Spacer()
-                Button("关闭壁纸") {
+                Button(L10n.wallpaperClose) {
                     store.clearActiveWallpaper()
                 }
                 .font(.system(size: Theme.FontSize.caption2))

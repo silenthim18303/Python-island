@@ -45,7 +45,7 @@ struct RunCatMonitorView: View {
             icon: "cpu", color: .blue,
             title: "CPU", value: String(format: "%.1f%%", stats.cpuUsage),
             subtitle: stats.cpuTemperature > 0
-                ? "\(stats.cpuCoreCount)核 \(Int(stats.cpuTemperature))°C"
+                ? "\(stats.cpuCoreCount) \(L10n.monitorCores) \(Int(stats.cpuTemperature))°C"
                 : "\(stats.cpuCoreCount) cores",
             rows: [
                 (L10n.monitorCPU + " System", String(format: "%.1f%%", stats.cpuSystem)),
