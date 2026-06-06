@@ -427,7 +427,7 @@ struct LocalWallpaperDetailSheet: View {
                 if let result = uploadResult {
                     Text(result)
                         .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(result.contains("失败") ? .red : .green)
+                        .foregroundColor(result.contains(L10n.wallpaperUploadFail) ? .red : .green)
                         .lineLimit(2)
                 }
             }
@@ -460,8 +460,8 @@ struct LocalWallpaperDetailSheet: View {
                         let result = await store.uploadCommunityWallpaper(from: url, username: uploadUsername)
                         isUploading = false
                         switch result {
-                        case .success(let prURL): uploadResult = "已提交：\(prURL)"
-                        case .failure(let error): uploadResult = "失败：\(error)"
+                        case .success(let prURL): uploadResult = "\(L10n.wallpaperUploadSuccess): \(prURL)"
+                        case .failure(let error): uploadResult = "\(L10n.wallpaperUploadFail): \(error)"
                         }
                     }
                 }

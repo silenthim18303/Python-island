@@ -245,7 +245,7 @@ struct WallpaperCommunityView: View {
 
             switch uploadResult {
             case .success(let prURL):
-                uploadSuccess = "已提交审核，PR: \(prURL)"
+                uploadSuccess = "\(L10n.wallpaperUploadSuccess), PR: \(prURL)"
             case .failure(let error):
                 uploadError = error
             }
@@ -267,7 +267,7 @@ struct WallpaperCommunityView: View {
             switch result {
             case .success(let prURL):
                 print("[Wallpaper] 删除成功: \(prURL)")
-                uploadSuccess = "已提交删除审核，PR: \(prURL)"
+                uploadSuccess = "\(L10n.wallpaperUploadSuccess), PR: \(prURL)"
             case .failure(let error):
                 print("[Wallpaper] 删除失败: \(error)")
                 uploadError = error
@@ -415,7 +415,7 @@ struct WallpaperCommunityView: View {
                 Text(L10n.wallpaperGitHubUser)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.textSecondary)
-                TextField("用于壁纸目录命名", text: Binding(
+                TextField(L10n.wallpaperPath, text: Binding(
                     get: { UserDefaults.standard.string(forKey: "communityUploadUsername") ?? "" },
                     set: { UserDefaults.standard.set($0, forKey: "communityUploadUsername") }
                 ))
@@ -639,7 +639,7 @@ struct WallpaperDetailSheet: View {
                 if let result = uploadResult {
                     Text(result)
                         .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(result.contains("失败") ? .red : .green)
+                        .foregroundColor(result.contains(L10n.wallpaperUploadFail) ? .red : .green)
                         .lineLimit(2)
                 }
             }
