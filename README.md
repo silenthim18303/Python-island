@@ -14,14 +14,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 26.5+ |
 | --- | --- |
-| 版本 | v1.4.0 |
+| 版本 | v1.5.0 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v1.4.0)](https://github.com/MacIsland/MacIsland/releases/download/v1.4.0/MacIsland_v1.4.0.dmg)
+[📥 下载最新版本 (v1.5.0)](https://github.com/MacIsland/MacIsland/releases/download/v1.5.0/MacIsland_v1.5.0.dmg)
 
 ## 项目结构
 
@@ -173,7 +173,7 @@ MacIsland/
 - ✅ **外观主题**：深色/浅色/跟随系统，自定义强调色（9 种预设色，即时生效）
 - ✅ **通知中心**：统一管理所有通知历史，支持通知免打扰时段（自定义开始/结束时间）
 - ✅ **快捷键 UI 优化**：可视化键位录制器（脉冲动画+实时修饰键显示），冲突检测弹窗（交换/取消）
-- ✅ **多语言支持**：中文/English/日本語 切换，内置完整翻译（170+ 字符串）
+- ✅ **多语言支持**：中文/English/日本語 切换，430+ 字符串全覆盖（UI/Service/设置/天气API），切换即时生效
 - ⚙️ **快捷键自定义 UI 优化**：可视化键位录制器，冲突检测提示
 - 🌐 **多语言支持**：中文/英文/日文切换
 - 📦 **开机自启优化**：更可靠的 Launch Agent 实现
