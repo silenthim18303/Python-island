@@ -50,7 +50,7 @@ struct MusicEntry: TimelineEntry {
     }
 
     static func fromUserDefaults() -> MusicEntry {
-        let defaults = UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
         let hasMedia = defaults.bool(forKey: "widget_music_hasMedia")
 
         guard hasMedia else {

@@ -56,7 +56,7 @@ struct TimerEntry: TimelineEntry {
     }
 
     static func fromUserDefaults() -> TimerEntry {
-        let defaults = UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
         let timerType = defaults.string(forKey: "widget_timer_type") ?? "idle"
 
         switch timerType {

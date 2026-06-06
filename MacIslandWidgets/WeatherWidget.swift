@@ -52,7 +52,7 @@ struct WeatherEntry: TimelineEntry {
     }
 
     static func fromUserDefaults() -> WeatherEntry {
-        let defaults = UserDefaults.standard
+        let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
         return WeatherEntry(
             date: Date(),
             temperature: defaults.double(forKey: "widget_weather_temperature"),

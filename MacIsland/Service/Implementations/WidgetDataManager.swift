@@ -14,7 +14,8 @@ import Combine
 final class WidgetDataManager {
     static let shared = WidgetDataManager()
 
-    private let defaults = UserDefaults.standard
+    /// 使用 App Group 共享 UserDefaults，主 app 和小组件都能访问
+    private let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
     private var cancellables = Set<AnyCancellable>()
 
     private init() {}
