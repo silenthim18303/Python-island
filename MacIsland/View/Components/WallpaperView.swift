@@ -95,7 +95,7 @@ struct WallpaperView: View {
                         Text(wallpaper.name)
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))
                             .foregroundColor(.textPrimary)
-                        Text(wallpaper.isVideo ? "动态壁纸" : "静态壁纸")
+                        Text(wallpaper.isVideo ? L10n.wallpaperVideo : L10n.wallpaperStatic)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                     }
@@ -350,7 +350,7 @@ struct LocalWallpaperDetailSheet: View {
                     .foregroundColor(.textPrimary)
 
                 HStack(spacing: Theme.Spacing.sm) {
-                    infoChip(icon: wallpaper.isVideo ? "film" : "photo", text: wallpaper.isVideo ? "视频" : "图片")
+                    infoChip(icon: wallpaper.isVideo ? "film" : "photo", text: wallpaper.isVideo ? L10n.wallpaperVideo : L10n.wallpaperImage)
                     if let ext = wallpaper.fileURL?.pathExtension.uppercased() {
                         infoChip(icon: "doc", text: ext)
                     }
@@ -359,7 +359,7 @@ struct LocalWallpaperDetailSheet: View {
                         infoChip(icon: "doc.badge.gearshape", text: formatFileSize(size))
                     }
                     if wallpaper.source == .community {
-                        infoChip(icon: "globe", text: "社区")
+                        infoChip(icon: "globe", text: L10n.wallpaperCommunity)
                     }
                 }
             }
@@ -373,7 +373,7 @@ struct LocalWallpaperDetailSheet: View {
             VStack(spacing: Theme.Spacing.sm) {
                 // 设为壁纸 / 使用中
                 if isActive {
-                    Label("使用中", systemImage: "checkmark.circle.fill")
+                    Label(L10n.wallpaperInUse, systemImage: "checkmark.circle.fill")
                         .font(.system(size: Theme.FontSize.body, weight: .medium))
                         .foregroundColor(.green)
                         .frame(maxWidth: .infinity)
@@ -384,7 +384,7 @@ struct LocalWallpaperDetailSheet: View {
                         store.setActive(wallpaper)
                         dismiss()
                     } label: {
-                        Label("设为壁纸", systemImage: "photo.fill")
+                        Label(L10n.wallpaperSelect, systemImage: "photo.fill")
                             .font(.system(size: Theme.FontSize.body, weight: .medium))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -400,7 +400,7 @@ struct LocalWallpaperDetailSheet: View {
                     Button {
                         showUploadConfirm = true
                     } label: {
-                        Label("上传社区", systemImage: "arrow.up.circle")
+                        Label(L10n.wallpaperUpload, systemImage: "arrow.up.circle")
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))
                             .foregroundColor(.textSecondary)
                             .frame(maxWidth: .infinity)
@@ -414,7 +414,7 @@ struct LocalWallpaperDetailSheet: View {
                     Button {
                         showDeleteConfirm = true
                     } label: {
-                        Label("删除", systemImage: "trash")
+                        Label(L10n.delete, systemImage: "trash")
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))
                             .foregroundColor(.red.opacity(0.8))
                             .frame(maxWidth: .infinity)
@@ -442,14 +442,14 @@ struct LocalWallpaperDetailSheet: View {
         .onDisappear {
             NotificationCenter.default.post(name: .sheetDismissed, object: nil)
         }
-        .alert("确认删除", isPresented: $showDeleteConfirm) {
+        .alert(L10n.confirm, isPresented: $showDeleteConfirm) {
             Button(L10n.cancel, role: .cancel) { }
-            Button("删除", role: .destructive) {
+            Button(L10n.delete, role: .destructive) {
                 store.deleteWallpaper(wallpaper)
                 dismiss()
             }
         } message: {
-            Text("确定要删除「\(wallpaper.name)」吗？")
+            Text("\(L10n.delete)「\(wallpaper.name)」？")
         }
         .alert(L10n.wallpaperUpload, isPresented: $showUploadConfirm) {
             Button(L10n.cancel, role: .cancel) { }
@@ -467,7 +467,7 @@ struct LocalWallpaperDetailSheet: View {
                 }
             }
         } message: {
-            Text("将「\(wallpaper.name)」上传到社区，需审核后展示。")
+            Text(L10n.wallpaperUploadConfirm)
         }
     }
 

@@ -202,16 +202,16 @@ struct WallpaperCommunityView: View {
         .sheet(isPresented: $showGitHubConfig) {
             gitHubConfigSheet
         }
-        .alert("确认删除", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
+        .alert(L10n.confirm, isPresented: $showDeleteConfirm) {
+            Button(L10n.cancel, role: .cancel) { }
+            Button(L10n.delete, role: .destructive) {
                 if let target = deleteTarget {
                     performDelete(target)
                 }
             }
         } message: {
             if let target = deleteTarget {
-                Text("确定要删除「\(target.name)」吗？此操作将提交 PR 至仓库审核。")
+                Text(L10n.wallpaperPRConfirm)
             }
         }
         .sheet(item: $selectedWallpaper) { wallpaper in
@@ -228,7 +228,7 @@ struct WallpaperCommunityView: View {
     private func handleUpload(_ result: Result<[URL], Error>) {
         guard case .success(let urls) = result, let url = urls.first else { return }
         guard !uploadUsername.isEmpty else {
-            uploadError = "请先设置用户名"
+            uploadError = L10n.wallpaperUsernameRequired
             return
         }
 
@@ -357,7 +357,7 @@ struct WallpaperCommunityView: View {
                     deleteTarget = wallpaper
                     showDeleteConfirm = true
                 } label: {
-                    Label("删除", systemImage: "trash")
+                    Label(L10n.delete, systemImage: "trash")
                 }
             }
         }
@@ -376,7 +376,7 @@ struct WallpaperCommunityView: View {
     private var emptyState: some View {
         VStack(spacing: Theme.Spacing.sm) {
             if store.isLoadingCommunity {
-                ProgressView("加载中...")
+                ProgressView(L10n.wallpaperLoading)
                     .controlSize(.small)
                     .foregroundColor(.textSecondary)
             } else {
@@ -398,7 +398,7 @@ struct WallpaperCommunityView: View {
     private var gitHubConfigSheet: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("社区上传")
+                Text(L10n.wallpaperCommunityUpload)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.textPrimary)
                 Spacer()
@@ -482,7 +482,7 @@ struct WallpaperDetailSheet: View {
         VStack(spacing: 0) {
             // 标题栏
             HStack {
-                Text("壁纸详情")
+                Text(L10n.wallpaperDetail)
                     .font(.system(size: Theme.FontSize.body, weight: .semibold))
                     .foregroundColor(.textPrimary)
                 Spacer()
@@ -534,13 +534,13 @@ struct WallpaperDetailSheet: View {
                 }
 
                 HStack(spacing: Theme.Spacing.sm) {
-                    infoChip(icon: wallpaper.isVideo ? "film" : "photo", text: wallpaper.isVideo ? "视频" : "图片")
+                    infoChip(icon: wallpaper.isVideo ? "film" : "photo", text: wallpaper.isVideo ? L10n.wallpaperVideo : L10n.wallpaperImage)
                     infoChip(icon: "doc", text: fileExtension.uppercased())
                     if store.isWallpaperPrivate(wallpaper) {
-                        infoChip(icon: "lock.fill", text: "私有")
+                        infoChip(icon: "lock.fill", text: L10n.wallpaperPrivate)
                     }
                     if isDownloaded {
-                        infoChip(icon: "checkmark.circle", text: "已下载")
+                        infoChip(icon: "checkmark.circle", text: L10n.wallpaperDownloaded)
                     }
                 }
             }
@@ -555,7 +555,7 @@ struct WallpaperDetailSheet: View {
                 // 主操作：下载 / 设为壁纸 / 使用中
                 if isDownloaded {
                     if isActive {
-                        Label("使用中", systemImage: "checkmark.circle.fill")
+                        Label(L10n.wallpaperInUse, systemImage: "checkmark.circle.fill")
                             .font(.system(size: Theme.FontSize.body, weight: .medium))
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity)
@@ -568,7 +568,7 @@ struct WallpaperDetailSheet: View {
                                 dismiss()
                             }
                         } label: {
-                            Label("设为壁纸", systemImage: "photo.fill")
+                            Label(L10n.wallpaperSelect, systemImage: "photo.fill")
                                 .font(.system(size: Theme.FontSize.body, weight: .medium))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -624,7 +624,7 @@ struct WallpaperDetailSheet: View {
                         Button {
                             showDeleteConfirm = true
                         } label: {
-                            Label("删除", systemImage: "trash")
+                            Label(L10n.delete, systemImage: "trash")
                                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                                 .foregroundColor(.red.opacity(0.8))
                                 .frame(maxWidth: .infinity)
@@ -654,9 +654,9 @@ struct WallpaperDetailSheet: View {
         .onDisappear {
             NotificationCenter.default.post(name: .sheetDismissed, object: nil)
         }
-        .alert("确认删除", isPresented: $showDeleteConfirm) {
-            Button("取消", role: .cancel) { }
-            Button("删除", role: .destructive) {
+        .alert(L10n.confirm, isPresented: $showDeleteConfirm) {
+            Button(L10n.cancel, role: .cancel) { }
+            Button(L10n.delete, role: .destructive) {
                 Task {
                     let result = await store.deleteCommunityWallpaper(wallpaper)
                     if case .success = result {
