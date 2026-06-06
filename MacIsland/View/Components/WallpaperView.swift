@@ -222,9 +222,9 @@ struct WallpaperView: View {
 
             switch result {
             case .success(let prURL):
-                uploadResult = "已提交审核：\(prURL)"
+                uploadResult = "\(L10n.wallpaperUploadSuccess): \(prURL)"
             case .failure(let error):
-                uploadResult = "上传失败：\(error)"
+                uploadResult = "\(L10n.wallpaperUploadFail): \(error)"
             }
         }
     }
