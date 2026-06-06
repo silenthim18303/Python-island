@@ -23,7 +23,7 @@ struct FileSearchView: View {
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.textTertiary)
-                TextField("搜索文件名...", text: $searchText)
+                TextField(L10n.fileSearchPlaceholder, text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: Theme.FontSize.body))
                     .foregroundColor(.textPrimary)
@@ -48,7 +48,7 @@ struct FileSearchView: View {
             // 筛选选项
             HStack(spacing: Theme.Spacing.sm) {
                 HStack(spacing: 4) {
-                    Text("深度")
+                    Text(L10n.fileSearchDepth)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textTertiary)
                     Picker("", selection: $searchDepth) {
@@ -61,7 +61,7 @@ struct FileSearchView: View {
                     .frame(width: 50)
                 }
 
-                TextField("扩展名", text: $fileExtension)
+                TextField(L10n.fileSearchExt, text: $fileExtension)
                     .textFieldStyle(.plain)
                     .font(.system(size: Theme.FontSize.caption2))
                     .foregroundColor(.textSecondary)
@@ -73,7 +73,7 @@ struct FileSearchView: View {
                 Spacer()
 
                 if !searchResults.isEmpty {
-                    Text("\(searchResults.count) 个结果")
+                    Text("\(searchResults.count) \(L10n.fileSearchResults)")
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textTertiary)
                 }
@@ -101,7 +101,7 @@ struct FileSearchView: View {
             Image(systemName: "folder")
                 .font(.system(size: 28))
                 .foregroundColor(.white.opacity(0.1))
-            Text("输入文件名开始搜索")
+            Text(L10n.fileSearchEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textQuaternary)
         }

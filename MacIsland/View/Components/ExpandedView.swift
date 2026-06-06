@@ -18,14 +18,24 @@ struct ExpandedView: View {
     @EnvironmentObject var monitorService: SystemMonitorServiceImpl
 
     @State private var selectedTab: Tab = .overview
+    @ObservedObject private var loc = LocalizationManager.shared
 
     // MARK: - Tab Definition
 
     enum Tab: String, CaseIterable {
-        case overview = "概览"
-        case music = "音乐"
-        case tools = "工具"
-        case monitor = "监控"
+        case overview = "overview"
+        case music = "music"
+        case tools = "tools"
+        case monitor = "monitor"
+
+        var displayName: String {
+            switch self {
+            case .overview: return L10n.taboverview
+            case .music: return L10n.tabmusic
+            case .tools: return L10n.tabToolbox
+            case .monitor: return L10n.monitorTitle
+            }
+        }
     }
 
     var body: some View {
@@ -60,7 +70,7 @@ struct ExpandedView: View {
                     .background(Circle().fill(.white.opacity(0.1)))
             }
             .buttonStyle(.plain)
-            .help("展开更多功能")
+            .help(L10n.open)
 
             Spacer()
 
@@ -93,7 +103,7 @@ struct ExpandedView: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
                 } label: {
-                    Text(tab.rawValue)
+                    Text(tab.displayName)
                         .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
                         .foregroundColor(selectedTab == tab ? .white : .white.opacity(0.5))
                         .padding(.horizontal, 14)
@@ -141,7 +151,7 @@ struct ExpandedView: View {
     private var dateTimeSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(formatDate("yyyy年M月d日 EEEE"))
+                Text(formatDate(L10n.dateFormatCN))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
 
@@ -163,12 +173,12 @@ struct ExpandedView: View {
             WeatherCard(
                 icon: "wind",
                 temp: String(format: "%.0f km/h", weatherService.weather.windSpeed),
-                desc: "风速"
+                desc: L10n.weatherWind
             )
             WeatherCard(
                 icon: "humidity.fill",
                 temp: "\(weatherService.weather.humidity)%",
-                desc: "湿度"
+                desc: L10n.weatherHumidity
             )
         }
     }
@@ -432,7 +442,7 @@ struct ExpandedView: View {
 
     private func formatDate(_ format: String) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = Locale(identifier: L10n.localeIdentifier)
         formatter.dateFormat = format
         return formatter.string(from: Date())
     }

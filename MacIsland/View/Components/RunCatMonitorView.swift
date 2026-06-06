@@ -45,11 +45,11 @@ struct RunCatMonitorView: View {
             icon: "cpu", color: .blue,
             title: "CPU", value: String(format: "%.1f%%", stats.cpuUsage),
             subtitle: stats.cpuTemperature > 0
-                ? "\(stats.cpuCoreCount)核 \(Int(stats.cpuTemperature))°C"
-                : "\(stats.cpuCoreCount)核",
+                ? "\(stats.cpuCoreCount) \(L10n.monitorCores) \(Int(stats.cpuTemperature))°C"
+                : "\(stats.cpuCoreCount) cores",
             rows: [
-                ("系统", String(format: "%.1f%%", stats.cpuSystem)),
-                ("用户", String(format: "%.1f%%", stats.cpuUser)),
+                (L10n.monitorCPU + " System", String(format: "%.1f%%", stats.cpuSystem)),
+                (L10n.monitorCPU + " User", String(format: "%.1f%%", stats.cpuUser)),
             ],
             percent: stats.cpuUsage / 100, barColor: .blue
         )
@@ -60,11 +60,11 @@ struct RunCatMonitorView: View {
     private var memoryCard: some View {
         unifiedCard(
             icon: "memorychip", color: .purple,
-            title: "内存", value: String(format: "%.1f%%", stats.memoryPercent),
+            title: L10n.monitorMemory, value: String(format: "%.1f%%", stats.memoryPercent),
             subtitle: String(format: "%.1fG / %.0fG", stats.memoryUsed, stats.memoryTotal),
             rows: [
                 ("App", String(format: "%.1fG", stats.memoryApp)),
-                ("压缩", String(format: "%.1fG", stats.memoryCompressed)),
+                ("Compressed", String(format: "%.1fG", stats.memoryCompressed)),
             ],
             percent: stats.memoryPercent / 100, barColor: .purple
         )
@@ -75,11 +75,11 @@ struct RunCatMonitorView: View {
     private var diskCard: some View {
         unifiedCard(
             icon: "internaldrive", color: .green,
-            title: "储存", value: String(format: "%.1f%%", stats.diskPercent),
+            title: L10n.monitorDisk, value: String(format: "%.1f%%", stats.diskPercent),
             subtitle: String(format: "%.0fG / %.0fG", stats.diskUsed, stats.diskTotal),
             rows: [
-                ("已用", String(format: "%.0fG", stats.diskUsed)),
-                ("空闲", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
+                ("Used", String(format: "%.0fG", stats.diskUsed)),
+                ("Idle", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
             ],
             percent: stats.diskPercent / 100, barColor: .green
         )
@@ -90,11 +90,11 @@ struct RunCatMonitorView: View {
     private var batteryCard: some View {
         unifiedCard(
             icon: batteryIcon, color: batteryColor,
-            title: "电池", value: String(format: "%.0f%%", stats.batteryLevel),
+            title: L10n.monitorBattery, value: String(format: "%.0f%%", stats.batteryLevel),
             subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
             rows: [
-                ("容量", String(format: "%.0f%%", stats.batteryMaxCapacity)),
-                ("循环", "\(stats.batteryCycleCount)次"),
+                ("Capacity", String(format: "%.0f%%", stats.batteryMaxCapacity)),
+                ("Cycles", "\(stats.batteryCycleCount) \(L10n.monitorCycles)"),
             ],
             percent: stats.batteryLevel / 100, barColor: batteryColor
         )
@@ -176,7 +176,7 @@ struct RunCatMonitorView: View {
                     .font(.system(size: 11))
                     .foregroundColor(stats.networkConnected ? .cyan : .red)
 
-                Text("网络")
+                Text(L10n.monitorNetwork)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(.textPrimary)
 

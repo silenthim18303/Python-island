@@ -16,7 +16,11 @@ enum AppAppearance: String, CaseIterable, Identifiable {
     case dark   = "dark"
     var id: String { rawValue }
     var displayName: String {
-        switch self { case .system: return "跟随系统"; case .light: return "浅色"; case .dark: return "深色" }
+        switch self {
+        case .system: return L10n.settingsThemeSystem
+        case .light: return L10n.settingsThemeLight
+        case .dark: return L10n.settingsThemeDark
+        }
     }
     var systemImage: String {
         switch self { case .system: return "circle.lefthalf.filled"; case .light: return "sun.max"; case .dark: return "moon" }

@@ -20,7 +20,7 @@ struct AlarmItem: Codable, Identifiable, Equatable {
 
     init(
         id: UUID = UUID(),
-        label: String = "闹钟",
+        label: String = L10n.defaultAlarmLabel,
         hour: Int = 8,
         minute: Int = 0,
         enabled: Bool = true,

@@ -20,6 +20,7 @@ struct MaxExpandView: View {
     @StateObject private var wallpaperStore = WallpaperStore.shared
     @State private var selectedTab: Tab = .todo
     @ObservedObject private var notificationStore = NotificationCenterStore.shared
+    @ObservedObject private var loc = LocalizationManager.shared
 
     // MARK: - Tab Definition
 
@@ -34,6 +35,22 @@ struct MaxExpandView: View {
         case notifications = "通知"
         case settings = "设置"
         case toolbox = "工具"
+
+        /// 本地化显示名称
+        var displayName: String {
+            switch self {
+            case .todo: return L10n.tabTodo
+            case .memo: return L10n.tabMemo
+            case .event: return L10n.tabEvent
+            case .alarm: return L10n.tabAlarm
+            case .bookmark: return L10n.tabBookmark
+            case .ai: return L10n.tabAI
+            case .notifications: return L10n.tabNotifications
+            case .settings: return L10n.tabSettings
+            case .toolbox: return L10n.tabToolbox
+            case .wallpaper: return L10n.tabWallpaper
+            }
+        }
     }
 
     var body: some View {
@@ -74,9 +91,9 @@ struct MaxExpandView: View {
                     .background(Circle().fill(Color.fillSubtle))
             }
             .buttonStyle(.plain)
-            .help("收起到概览")
+            .help(L10n.collapseOverview)
 
-            Text("MacIsland")
+            Text(L10n.aboutTitle)
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(.textPrimary)
 
@@ -92,7 +109,7 @@ struct MaxExpandView: View {
                     .background(Circle().fill(Color.fillSubtle))
             }
             .buttonStyle(.plain)
-            .help("关闭")
+            .help(L10n.closePanel)
         }
         .padding(.horizontal, 14)
         .padding(.top, 10)
@@ -125,7 +142,7 @@ struct MaxExpandView: View {
                                 }
                             }
 
-                            Text(tab.rawValue)
+                            Text(tab.displayName)
                                 .font(.system(size: 10, weight: .medium))
                         }
                         .foregroundColor(selectedTab == tab ? .white : .white.opacity(0.4))

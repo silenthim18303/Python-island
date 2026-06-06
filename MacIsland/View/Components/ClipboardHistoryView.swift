@@ -18,7 +18,7 @@ struct ClipboardHistoryView: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.sm) {
             HStack {
-                Text("\(history.count) 条记录")
+                Text("\(history.count) \(L10n.clipboardRecords)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
@@ -26,7 +26,7 @@ struct ClipboardHistoryView: View {
                     Button {
                         history.removeAll()
                     } label: {
-                        Text("清空")
+                        Text(L10n.clear)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.red.opacity(0.7))
                     }
@@ -57,7 +57,7 @@ struct ClipboardHistoryView: View {
             Image(systemName: "doc.on.clipboard")
                 .font(.system(size: 28))
                 .foregroundColor(.white.opacity(0.1))
-            Text("复制文本后自动记录")
+            Text(L10n.clipboardEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textQuaternary)
         }

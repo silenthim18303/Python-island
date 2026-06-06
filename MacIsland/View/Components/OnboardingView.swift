@@ -16,11 +16,11 @@ struct OnboardingView: View {
     @State private var currentPage = 0
 
     private let pages: [(title: String, subtitle: String, icon: String)] = [
-        ("欢迎使用 MacIsland", "你的 macOS 灵动岛助手", "island"),
-        ("音乐与歌词", "自动检测播放器，同步显示歌词", "music.note"),
-        ("天气与计时", "实时天气预报，番茄钟与倒计时", "cloud.sun"),
-        ("工具箱", "文件搜索、剪贴板历史、哈希校验等实用工具", "wrench.and.screwdriver"),
-        ("便签与书签", "快速记录想法，收藏常用链接", "bookmark.fill")
+        (L10n.aboutTitle, L10n.aboutSubtitle, "island"),
+        (L10n.musicLyrics, L10n.musicNowPlaying, "music.note"),
+        (L10n.weatherTitle, L10n.timerTitle, "cloud.sun"),
+        (L10n.toolboxTitle, L10n.toolboxFileSearch, "wrench.and.screwdriver"),
+        (L10n.memoTitle, L10n.bookmarkEmpty, "bookmark.fill")
     ]
 
     var body: some View {
@@ -63,7 +63,7 @@ struct OnboardingView: View {
             // 操作按钮
             HStack(spacing: Theme.Spacing.lg) {
                 if currentPage > 0 {
-                    Button("上一步") {
+                    Button(L10n.cancel) {
                         withAnimation { currentPage -= 1 }
                     }
                     .font(.system(size: Theme.FontSize.body))
@@ -74,7 +74,7 @@ struct OnboardingView: View {
                 Spacer()
 
                 if currentPage < pages.count - 1 {
-                    Button("下一步") {
+                    Button(L10n.open) {
                         withAnimation { currentPage += 1 }
                     }
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -84,7 +84,7 @@ struct OnboardingView: View {
                     .background(Capsule().fill(.white))
                     .buttonStyle(.plain)
                 } else {
-                    Button("开始使用") {
+                    Button(L10n.done) {
                         complete()
                     }
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -99,7 +99,7 @@ struct OnboardingView: View {
             .padding(.bottom, 24)
 
             // 跳过
-            Button("跳过") { complete() }
+            Button(L10n.skip) { complete() }
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.white.opacity(0.3))
                 .buttonStyle(.plain)

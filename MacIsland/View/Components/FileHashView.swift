@@ -23,7 +23,7 @@ struct FileHashView: View {
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: "doc")
                     .foregroundColor(.textTertiary)
-                TextField("拖拽文件或点击选择...", text: $filePath)
+                TextField(L10n.fileHashSelect, text: $filePath)
                     .textFieldStyle(.plain)
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textPrimary)
@@ -42,7 +42,7 @@ struct FileHashView: View {
             .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
 
             if isComputing {
-                ProgressView("计算中...")
+                ProgressView(L10n.fileHashComputing)
                     .controlSize(.small)
                     .foregroundColor(.textSecondary)
             }
@@ -89,7 +89,7 @@ struct FileHashView: View {
             .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
         }
         .buttonStyle(.plain)
-        .help("点击复制")
+        .help(L10n.fileHashClickCopy)
     }
 
     // MARK: - File Selection
@@ -120,7 +120,7 @@ struct FileHashView: View {
             guard let data = try? Data(contentsOf: url) else {
                 await MainActor.run {
                     isComputing = false
-                    errorMessage = "无法读取文件"
+                    errorMessage = L10n.error
                 }
                 return
             }

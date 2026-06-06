@@ -33,7 +33,7 @@ enum IslandLayout {
     // MARK: - Fixed Base Values
 
     static let idleHeight: CGFloat = 30
-    static let compactIdleWidth: CGFloat = 180
+    static let compactIdleWidth: CGFloat = 210
 
     /// 横向态每侧内容区宽度（基于刘海宽度比例）
     static var wideSideWidth: CGFloat {

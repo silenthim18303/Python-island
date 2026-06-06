@@ -12,6 +12,7 @@ import SwiftUI
 /// 工具箱主视图 — 包含多个工具子标签
 struct ToolboxView: View {
     @State private var selectedTool: Tool?
+    @ObservedObject private var loc = LocalizationManager.shared
 
     enum Tool: String, CaseIterable, Identifiable {
         case fileSearch = "文件搜索"
@@ -23,6 +24,19 @@ struct ToolboxView: View {
         case breakReminder = "久坐提醒"
 
         var id: String { rawValue }
+
+        /// 本地化显示名称
+        var displayName: String {
+            switch self {
+            case .fileSearch: return L10n.toolboxFileSearch
+            case .clipboard: return L10n.toolboxClipboard
+            case .fileHash: return L10n.toolboxFileHash
+            case .encoding: return L10n.toolboxEncoding
+            case .translate: return L10n.toolboxTranslate
+            case .mokugyo: return L10n.toolboxMokugyo
+            case .breakReminder: return L10n.toolboxBreakReminder
+            }
+        }
 
         var icon: String {
             switch self {
@@ -52,7 +66,7 @@ struct ToolboxView: View {
 
     private var toolGrid: some View {
         VStack(spacing: Theme.Spacing.md) {
-            Text("工具箱")
+            Text(L10n.toolboxTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
                 .padding(.top, Theme.Spacing.sm)
@@ -80,7 +94,7 @@ struct ToolboxView: View {
                     .foregroundColor(.textSecondary)
                     .frame(height: 28)
 
-                Text(tool.rawValue)
+                Text(tool.displayName)
                     .font(.system(size: Theme.FontSize.caption, weight: .medium))
                     .foregroundColor(.textPrimary)
             }
@@ -108,7 +122,7 @@ struct ToolboxView: View {
             if let tool = selectedTool {
                 Image(systemName: tool.icon)
                     .font(.system(size: 14))
-                Text(tool.rawValue)
+                Text(tool.displayName)
                     .font(.system(size: Theme.FontSize.body, weight: .semibold))
                     .foregroundColor(.textPrimary)
             }

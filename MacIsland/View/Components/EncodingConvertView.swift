@@ -30,16 +30,16 @@ struct EncodingConvertView: View {
 
             // 编码选择
             HStack(spacing: Theme.Spacing.sm) {
-                encodingPicker("从", selection: $sourceEncoding)
+                encodingPicker(L10n.encodingFrom, selection: $sourceEncoding)
                 Image(systemName: "arrow.right")
                     .font(.system(size: 12))
                     .foregroundColor(.textTertiary)
-                encodingPicker("到", selection: $targetEncoding)
+                encodingPicker(L10n.encodingTo, selection: $targetEncoding)
 
                 Spacer()
 
                 Button { convert() } label: {
-                    Text("转换")
+                    Text(L10n.encodingConvert)
                         .font(.system(size: Theme.FontSize.caption, weight: .medium))
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
@@ -60,7 +60,7 @@ struct EncodingConvertView: View {
             if !outputText.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("结果")
+                        Text(L10n.encodingResult)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                         Spacer()
@@ -109,11 +109,11 @@ struct EncodingConvertView: View {
     private func convert() {
         errorMessage = nil
         guard let inputData = inputText.data(using: sourceEncoding.encoding) else {
-            errorMessage = "无法用 \(sourceEncoding.displayName) 编码输入文本"
+            errorMessage = L10n.error
             return
         }
         guard let result = String(data: inputData, encoding: targetEncoding.encoding) else {
-            errorMessage = "转换失败"
+            errorMessage = L10n.error
             return
         }
         outputText = result

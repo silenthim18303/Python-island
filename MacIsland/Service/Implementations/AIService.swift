@@ -299,7 +299,7 @@ final class AIService: ObservableObject {
 
         let systemMessage = OpenAIChatRequest.Message(
             role: "system",
-            content: "你是 MacIsland 的 AI 助手。简洁、友好、有帮助。用中文回答。"
+            content: L10n.aiSystemPrompt
         )
 
         let body: [String: Any] = [
@@ -324,7 +324,7 @@ final class AIService: ObservableObject {
                 messages.append(AIMessage(role: .assistant, content: content))
             }
         } catch {
-            messages.append(AIMessage(role: .assistant, content: "连接失败: \(error.localizedDescription)\n\n请确认服务已启动 (\(serverURL))"))
+            messages.append(AIMessage(role: .assistant, content: "\(L10n.errorAIConnection): \(error.localizedDescription)\n\n\(L10n.aiServer) (\(serverURL))"))
         }
     }
 
@@ -337,7 +337,7 @@ final class AIService: ObservableObject {
 
         let systemMessage = OpenAIChatRequest.Message(
             role: "system",
-            content: "你是 MacIsland 的 AI 助手。简洁、友好、有帮助。用中文回答。"
+            content: L10n.aiSystemPrompt
         )
 
         let request = OpenAIChatRequest(
@@ -360,7 +360,7 @@ final class AIService: ObservableObject {
                 messages.append(AIMessage(role: .assistant, content: content))
             }
         } catch {
-            messages.append(AIMessage(role: .assistant, content: "API 请求失败: \(error.localizedDescription)"))
+            messages.append(AIMessage(role: .assistant, content: "\(L10n.errorAIRequest): \(error.localizedDescription)"))
         }
     }
 }

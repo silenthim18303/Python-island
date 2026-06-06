@@ -245,7 +245,7 @@ final class GitHubService: ObservableObject {
         }
 
         guard data.count <= Self.uploadFilesizeLimit else {
-            throw GitHubError.uploadFailed("文件大小超过 100MB 限制")
+            throw GitHubError.uploadFailed(L10n.errorGitHubSize)
         }
 
         // 检查仓库是否存在
@@ -258,20 +258,20 @@ final class GitHubService: ObservableObject {
             if let http = repoResponse as? HTTPURLResponse {
                 print("[GitHub] 仓库检查: HTTP \(http.statusCode)")
                 if http.statusCode == 404 {
-                    throw GitHubError.uploadFailed("社区仓库暂未开放，上传功能即将上线")
+                    throw GitHubError.uploadFailed(L10n.errorGitHubRepo)
                 }
                 if http.statusCode == 403 {
                     let body = String(data: repoData, encoding: .utf8) ?? ""
-                    throw GitHubError.uploadFailed("权限不足（HTTP 403），请确认 Token 有 repo 权限")
+                    throw GitHubError.uploadFailed(L10n.errorGitHubPermission)
                 }
                 if !(200...299).contains(http.statusCode) {
-                    throw GitHubError.uploadFailed("服务器返回 HTTP \(http.statusCode)")
+                    throw GitHubError.uploadFailed("\(L10n.errorGitHubHTTP) \(http.statusCode)")
                 }
             }
         } catch let error as GitHubError {
             throw error
         } catch {
-            throw GitHubError.uploadFailed("网络错误: \(error.localizedDescription)")
+            throw GitHubError.uploadFailed("\(L10n.errorGitHubNetwork): \(error.localizedDescription)")
         }
 
         let ext = isVideo ? "mp4" : "jpg"
@@ -293,7 +293,7 @@ final class GitHubService: ObservableObject {
             from: pendingBranch,
             to: mainBranch,
             title: "Upload: \(wallpaperName)",
-            body: "用户 **\(username)** 上传了壁纸 **\(wallpaperName)**\n\n类型: \(isVideo ? "视频" : "图片")"
+            body: "User **\(username)** uploaded wallpaper **\(wallpaperName)**\n\nType: \(isVideo ? L10n.wallpaperVideo : L10n.wallpaperImage)"
         )
 
         return prURL
@@ -324,7 +324,7 @@ final class GitHubService: ObservableObject {
             from: pendingBranch,
             to: mainBranch,
             title: "Delete: \(wallpaperName)",
-            body: "用户 **\(username)** 删除了壁纸 **\(wallpaperName)**"
+            body: "User **\(username)** deleted wallpaper **\(wallpaperName)**"
         )
 
         return prURL
@@ -358,7 +358,7 @@ final class GitHubService: ObservableObject {
         let (_, createResponse) = try await session.data(for: createRequest)
         guard let httpResponse = createResponse as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            throw GitHubError.uploadFailed("创建分支失败")
+            throw GitHubError.uploadFailed(L10n.errorGitHubBranch)
         }
     }
 
@@ -371,14 +371,14 @@ final class GitHubService: ObservableObject {
         if let http = response as? HTTPURLResponse {
             print("[GitHub] 获取 \(branch) SHA: HTTP \(http.statusCode)")
             if http.statusCode == 404 {
-                throw GitHubError.uploadFailed("分支 \(branch) 不存在，请先在仓库中创建至少一个提交")
+                throw GitHubError.uploadFailed("\(branch) \(L10n.errorGitHubBranchNotFound)")
             }
         }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let commit = json["commit"] as? [String: Any],
               let sha = commit["sha"] as? String else {
             print("[GitHub] SHA 解析失败: \(String(data: data, encoding: .utf8) ?? "")")
-            throw GitHubError.uploadFailed("无法读取分支信息")
+            throw GitHubError.uploadFailed(L10n.errorGitHubBranchInfo)
         }
         print("[GitHub] \(branch) SHA: \(sha)")
         return sha
@@ -403,7 +403,7 @@ final class GitHubService: ObservableObject {
         let (_, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            throw GitHubError.uploadFailed("文件创建失败")
+            throw GitHubError.uploadFailed(L10n.errorGitHubFileCreate)
         }
     }
 
@@ -421,7 +421,7 @@ final class GitHubService: ObservableObject {
         guard let http = shaResponse as? HTTPURLResponse, http.statusCode == 200,
               let json = try JSONSerialization.jsonObject(with: shaData) as? [String: Any],
               let sha = json["sha"] as? String else {
-            throw GitHubError.uploadFailed("无法获取文件信息")
+            throw GitHubError.uploadFailed(L10n.errorGitHubFileInfo)
         }
 
         // 2. 删除文件
@@ -441,7 +441,7 @@ final class GitHubService: ObservableObject {
         let (_, deleteResponse) = try await session.data(for: deleteRequest)
         guard let http = deleteResponse as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {
-            throw GitHubError.uploadFailed("文件删除失败")
+            throw GitHubError.uploadFailed(L10n.errorGitHubFileDelete)
         }
     }
 
@@ -461,7 +461,7 @@ final class GitHubService: ObservableObject {
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
             let errorBody = String(data: data, encoding: .utf8) ?? ""
-            throw GitHubError.uploadFailed("创建 PR 失败: \(errorBody)")
+            throw GitHubError.uploadFailed("\(L10n.errorGitHubPR): \(errorBody)")
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],

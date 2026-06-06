@@ -72,7 +72,7 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
                 self.detectedURLs = detected
                 let displayTitle = detected.first?.title ?? urls[0]
                 let truncated = String(displayTitle.prefix(48))
-                self.onNotification?("🔗 链接检测", truncated)
+                self.onNotification?(L10n.errorClipboardLink, truncated)
             }
         }
     }

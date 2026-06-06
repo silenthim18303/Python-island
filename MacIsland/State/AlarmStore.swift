@@ -28,7 +28,7 @@ final class AlarmStore: ObservableObject {
 
     // MARK: - CRUD
 
-    func addAlarm(label: String = "闹钟", hour: Int = 8, minute: Int = 0, repeatDays: Set<Weekday> = []) {
+    func addAlarm(label: String = L10n.defaultAlarmLabel, hour: Int = 8, minute: Int = 0, repeatDays: Set<Weekday> = []) {
         let item = AlarmItem(label: label, hour: hour, minute: minute, repeatDays: repeatDays)
         items.append(item)
     }

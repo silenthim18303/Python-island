@@ -90,7 +90,7 @@ struct LyricsView: View {
                 }
             }
         } else {
-            Text("暂无播放")
+            Text(L10n.musicNoPlayback)
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.textSecondary)
         }

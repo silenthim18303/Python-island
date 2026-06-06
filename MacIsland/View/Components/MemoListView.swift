@@ -35,11 +35,11 @@ struct MemoListView: View {
                 .foregroundColor(.white.opacity(0.15))
                 .padding(.top, 20)
 
-            Text("便签")
+            Text(L10n.memoTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("快速记录想法和笔记")
+            Text(L10n.memoEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
 
@@ -48,7 +48,7 @@ struct MemoListView: View {
                 editTitle = ""
                 editContent = ""
             } label: {
-                Label("新建便签", systemImage: "plus")
+                Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
@@ -67,7 +67,7 @@ struct MemoListView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // 顶部操作栏
             HStack {
-                Text("\(store.items.count) 条便签")
+                Text("\(store.items.count) \(L10n.count)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
@@ -99,7 +99,7 @@ struct MemoListView: View {
 
     private var memoEditor: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            TextField("标题", text: $editTitle)
+            TextField(L10n.memoPlaceholder, text: $editTitle)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body, weight: .semibold))
                 .foregroundColor(.textPrimary)
@@ -113,7 +113,7 @@ struct MemoListView: View {
                 .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
 
             HStack {
-                Button("取消") {
+                Button(L10n.cancel) {
                     showNewMemo = false
                     editingId = nil
                 }
@@ -123,7 +123,7 @@ struct MemoListView: View {
 
                 Spacer()
 
-                Button("保存") {
+                Button(L10n.save) {
                     saveMemo()
                 }
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
@@ -148,7 +148,7 @@ struct MemoListView: View {
                         .font(.system(size: 10))
                         .foregroundColor(.orange)
                 }
-                Text(item.title.isEmpty ? "无标题" : item.title)
+                Text(item.title.isEmpty ? L10n.noData : item.title)
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
                     .foregroundColor(.textPrimary)
                     .lineLimit(1)

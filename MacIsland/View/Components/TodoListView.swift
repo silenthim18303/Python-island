@@ -40,19 +40,19 @@ struct TodoListView: View {
                 .foregroundColor(.white.opacity(0.15))
                 .padding(.top, 20)
 
-            Text("待办事项")
+            Text(L10n.todoTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("管理你的任务，支持优先级和子任务")
+            Text(L10n.todoEmpty)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
                 .multilineTextAlignment(.center)
 
             HStack(spacing: Theme.Spacing.md) {
-                featureBadge(icon: "arrow.up.circle.fill", text: "P0 紧急", color: .red)
-                featureBadge(icon: "exclamationmark.circle.fill", text: "P1 重要", color: .orange)
-                featureBadge(icon: "info.circle.fill", text: "P2 普通", color: .blue)
+                featureBadge(icon: "arrow.up.circle.fill", text: "P0 \(L10n.todoHigh)", color: .red)
+                featureBadge(icon: "exclamationmark.circle.fill", text: "P1 \(L10n.todoMedium)", color: .orange)
+                featureBadge(icon: "info.circle.fill", text: "P2 \(L10n.todoLow)", color: .blue)
             }
 
             todoInput
@@ -89,8 +89,8 @@ struct TodoListView: View {
 
     private var statsBar: some View {
         HStack(spacing: Theme.Spacing.md) {
-            statChip(text: "完成 \(store.doneCount)", color: .green)
-            statChip(text: "待办 \(store.undoneCount)", color: .white.opacity(0.6))
+            statChip(text: "\(L10n.todoComplete) \(store.doneCount)", color: .green)
+            statChip(text: "\(L10n.todoPending) \(store.undoneCount)", color: .white.opacity(0.6))
 
             Spacer()
 
@@ -142,7 +142,7 @@ struct TodoListView: View {
             }
             .menuStyle(.borderlessButton)
 
-            TextField("添加待办...", text: $inputText)
+            TextField(L10n.todoPlaceholder, text: $inputText)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body))
                 .foregroundColor(.textPrimary)
@@ -197,7 +197,7 @@ struct TodoListView: View {
 
                     if !item.subItems.isEmpty {
                         let completed = item.subItems.filter(\.done).count
-                        Text("\(completed)/\(item.subItems.count) 子任务")
+                        Text("\(completed)/\(item.subItems.count) \(L10n.todoSubtask)")
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                     }
@@ -282,7 +282,7 @@ struct TodoListView: View {
 
     private func descriptionEditor(_ item: TodoItem) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("描述")
+            Text(L10n.todoDescription)
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textQuaternary)
 
@@ -346,7 +346,7 @@ struct TodoListView: View {
             }
             .menuStyle(.borderlessButton)
 
-            TextField("添加子任务...", text: Binding(
+            TextField("\(L10n.add)\(L10n.todoSubtask)...", text: Binding(
                 get: { subInputTexts[parentId] ?? "" },
                 set: { subInputTexts[parentId] = $0 }
             ))
@@ -380,11 +380,11 @@ struct TodoListView: View {
                     HStack(spacing: Theme.Spacing.xs) {
                         Image(systemName: "trash")
                             .font(.system(size: 12))
-                        Text("回收站 (\(store.deletedItems.count))")
+                        Text("\(L10n.todoTrash) (\(store.deletedItems.count))")
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))
                         Spacer()
                         if showTrash {
-                            Button("清空", role: .destructive) {
+                            Button(L10n.clear, role: .destructive) {
                                 store.emptyTrash()
                             }
                             .font(.system(size: Theme.FontSize.caption2))
@@ -431,7 +431,7 @@ struct TodoListView: View {
                     .background(Circle().fill(.white.opacity(0.08)))
             }
             .buttonStyle(.plain)
-            .help("恢复")
+            .help(L10n.restore)
 
             // 永久删除
             Button { store.permanentDelete(id: item.id) } label: {
@@ -442,7 +442,7 @@ struct TodoListView: View {
                     .background(Circle().fill(.white.opacity(0.05)))
             }
             .buttonStyle(.plain)
-            .help("永久删除")
+            .help(L10n.delete)
         }
         .padding(.vertical, 2)
         .padding(.horizontal, Theme.Spacing.sm)

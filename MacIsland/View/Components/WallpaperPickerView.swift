@@ -47,8 +47,8 @@ struct WallpaperPickerView: View {
         .padding(Theme.Spacing.lg)
         .frame(width: 420)
         .background(Color.black.ignoresSafeArea())
-        .alert("错误", isPresented: $showError) {
-            Button("确定") { }
+        .alert(L10n.error, isPresented: $showError) {
+            Button(L10n.ok) { }
         } message: {
             Text(errorMessage)
         }
@@ -58,7 +58,7 @@ struct WallpaperPickerView: View {
 
     private var headerBar: some View {
         HStack {
-            Text("选择壁纸")
+            Text(L10n.wallpaperSelect)
                 .font(.system(size: Theme.FontSize.headline, weight: .bold))
                 .foregroundColor(.textPrimary)
             Spacer()
@@ -113,15 +113,15 @@ struct WallpaperPickerView: View {
                 .scaleEffect(isDragOver ? 1.1 : 1.0)
                 .animation(.spring(response: 0.3), value: isDragOver)
 
-            Text(isDragOver ? "释放以添加" : "拖拽文件到此处")
+            Text(isDragOver ? L10n.wallpaperAdd : L10n.wallpaperSelectHint)
                 .font(.system(size: Theme.FontSize.body, weight: .medium))
                 .foregroundColor(isDragOver ? .blue : .textSecondary)
 
-            Text("或点击下方按钮选择")
+            Text(L10n.wallpaperSelectHint)
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textQuaternary)
 
-            Button("选择文件") { openFilePicker() }
+            Button(L10n.wallpaperSelect) { openFilePicker() }
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.blue)
                 .padding(.horizontal, 16)
@@ -178,7 +178,7 @@ struct WallpaperPickerView: View {
 
     private var actionButtons: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Button("重新选择") {
+            Button(L10n.restore) {
                 openFilePicker()
             }
             .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -189,7 +189,7 @@ struct WallpaperPickerView: View {
             .buttonStyle(.plain)
 
             if selectedURL != nil {
-                Button("添加壁纸") {
+                Button(L10n.wallpaperAdd) {
                     addWallpaper()
                 }
                 .font(.system(size: Theme.FontSize.body, weight: .bold))
@@ -208,7 +208,7 @@ struct WallpaperPickerView: View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: "info.circle")
                 .font(.system(size: 9))
-            Text("支持 JPG / PNG / WebP / MP4 / MOV，建议 1920×1080 以上")
+            Text(L10n.wallpaperFormats)
         }
         .font(.system(size: Theme.FontSize.caption2))
         .foregroundColor(.textQuaternary)
@@ -259,7 +259,7 @@ struct WallpaperPickerView: View {
         let validVideoExts = ["mp4", "mov", "m4v"]
 
         guard validImageExts.contains(ext) || validVideoExts.contains(ext) else {
-            errorMessage = "不支持的文件格式: .\(ext)"
+            errorMessage = L10n.error
             showError = true
             return
         }
@@ -267,7 +267,7 @@ struct WallpaperPickerView: View {
         // 检查文件大小（限制 100MB）
         if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let size = attrs[.size] as? Int, size > 100 * 1024 * 1024 {
-            errorMessage = "文件过大，最大支持 100MB"
+            errorMessage = L10n.error
             showError = true
             return
         }

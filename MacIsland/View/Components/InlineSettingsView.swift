@@ -15,6 +15,7 @@ import ServiceManagement
 /// 内联设置视图 — 嵌入 MaxExpand 设置标签页，深色背景适配
 struct InlineSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var loc = LocalizationManager.shared
     @State private var newDomain = ""
     @State private var communityUsername = UserDefaults.standard.string(forKey: "communityUploadUsername") ?? ""
     @State private var selectedCategory: SettingsCategory = .appearance
@@ -61,7 +62,7 @@ struct InlineSettingsView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 12))
                 .foregroundColor(.textTertiary)
-            TextField("搜索设置…", text: $searchQuery)
+            TextField("\(L10n.search)…", text: $searchQuery)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textPrimary)
@@ -139,7 +140,7 @@ struct InlineSettingsView: View {
         let hits = SettingsCatalog.search(searchQuery)
         return VStack(spacing: Theme.Spacing.md) {
             if hits.isEmpty {
-                Text("未找到匹配的设置")
+                Text(L10n.search + " - " + L10n.noData)
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                     .frame(maxWidth: .infinity)
@@ -185,7 +186,7 @@ struct InlineSettingsView: View {
 
     private var appearanceSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("外观") {
+            settingsGroup(L10n.settingsAppearance) {
                 describedRow("appearanceMode") {
                     Picker("", selection: $settings.appearanceMode) {
                         ForEach(AppAppearance.allCases) { mode in
@@ -232,7 +233,7 @@ struct InlineSettingsView: View {
 
     private var wallpaperSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("壁纸存储") {
+            settingsGroup(L10n.wallpaperPath) {
                 VStack(alignment: .leading, spacing: 6) {
                     descriptionText("customWallpaperPath")
 
@@ -256,11 +257,11 @@ struct InlineSettingsView: View {
                     }
 
                     if settings.customWallpaperPath.isEmpty {
-                        Text("默认：Application Support/MacIsland/Wallpapers")
+                        Text(L10n.wallpaperPathDefault)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textQuaternary)
                     } else {
-                        Button("恢复默认") {
+                        Button(L10n.restore) {
                             settings.customWallpaperPath = ""
                         }
                         .font(.system(size: Theme.FontSize.caption2))
@@ -276,7 +277,7 @@ struct InlineSettingsView: View {
 
     private var animationSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("动画") {
+            settingsGroup(L10n.settingsAnimation) {
                 describedRow("animationSpeed") {
                     Picker("", selection: $settings.animationSpeed) {
                         ForEach(AnimationSpeed.allCases, id: \.self) { speed in
@@ -302,7 +303,7 @@ struct InlineSettingsView: View {
 
     private var clipboardSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("剪贴板") {
+            settingsGroup(L10n.settingsClipboard) {
                 describedRow("clipboardEnabled") {
                     Toggle("", isOn: $settings.clipboardEnabled)
                         .toggleStyle(.switch)
@@ -312,9 +313,9 @@ struct InlineSettingsView: View {
 
                 describedRow("clipboardUrlDetectMode") {
                     Picker("", selection: $settings.clipboardUrlDetectMode) {
-                        Text("仅 HTTPS").tag(ClipboardUrlDetectMode.httpsOnly)
-                        Text("HTTP + HTTPS").tag(ClipboardUrlDetectMode.httpHttps)
-                        Text("仅域名").tag(ClipboardUrlDetectMode.domainOnly)
+                        Text(L10n.settingsHttpsOnly).tag(ClipboardUrlDetectMode.httpsOnly)
+                        Text(L10n.settingsHttpHttps).tag(ClipboardUrlDetectMode.httpHttps)
+                        Text(L10n.settingsDomainOnly).tag(ClipboardUrlDetectMode.domainOnly)
                     }
                     .labelsHidden()
                     .frame(width: 120)
@@ -327,13 +328,13 @@ struct InlineSettingsView: View {
 
     private var blacklistEditor: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("域名黑名单")
+            Text(L10n.settingsBlacklist)
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.textSecondary)
             descriptionText("blacklistedDomains")
 
             if settings.blacklistedDomains.isEmpty {
-                Text("暂无")
+                Text(L10n.settingsBlacklistEmpty)
                     .font(.system(size: Theme.FontSize.caption2))
                     .foregroundColor(.textQuaternary)
             } else {
@@ -364,7 +365,7 @@ struct InlineSettingsView: View {
                     .padding(.vertical, 4)
                     .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
 
-                Button("添加") {
+                Button(L10n.add) {
                     let domain = newDomain.trimmingCharacters(in: .whitespacesAndNewlines)
                         .lowercased()
                         .replacingOccurrences(of: "https://", with: "")
@@ -386,14 +387,14 @@ struct InlineSettingsView: View {
 
     private var musicSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("音乐与歌词") {
+            settingsGroup(L10n.musicLyrics) {
                 describedRow("preferredLyricsSource") {
                     Picker("", selection: $settings.preferredLyricsSource) {
-                        Text("自动").tag("auto")
-                        Text("网易云").tag("netease")
-                        Text("QQ 音乐").tag("qqmusic")
-                        Text("酷狗").tag("kugou")
-                        Text("LRCLIB").tag("lrclib")
+                        Text(L10n.translateAuto).tag("auto")
+                        Text(L10n.musicNetease).tag("netease")
+                        Text(L10n.musicQQ).tag("qqmusic")
+                        Text(L10n.musicKugou).tag("kugou")
+                        Text(L10n.musicLRCLIB).tag("lrclib")
                     }
                     .labelsHidden()
                     .frame(width: 100)
@@ -406,7 +407,7 @@ struct InlineSettingsView: View {
 
     private var weatherSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("天气") {
+            settingsGroup(L10n.weatherTitle) {
                 describedRow("weatherManualCity") {
                     TextField(SettingItemMeta.meta("weatherManualCity")?.hint ?? "",
                               text: $settings.weatherManualCity)
@@ -432,7 +433,7 @@ struct InlineSettingsView: View {
                             .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
                     }
 
-                    Button("清除手动设置") {
+                    Button(L10n.weatherClear) {
                         settings.weatherManualCity = ""
                         settings.weatherManualLocationID = ""
                     }
@@ -454,7 +455,7 @@ struct InlineSettingsView: View {
 
     private var communitySection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            settingsGroup("社区") {
+            settingsGroup(L10n.settingsCommunity) {
                 describedRow("communityUploadUsername") {
                     TextField(SettingItemMeta.meta("communityUploadUsername")?.hint ?? "",
                               text: $communityUsername)
@@ -482,15 +483,15 @@ struct InlineSettingsView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.orange)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("辅助功能权限未授予")
+                        Text(L10n.shortcutPermissionDenied)
                             .font(.system(size: Theme.FontSize.caption))
                             .foregroundColor(.textPrimary)
-                        Text("快捷键不可用，请在系统设置中授权")
+                        Text(L10n.shortcutOpenSettings)
                             .font(.system(size: Theme.FontSize.caption2))
                             .foregroundColor(.textTertiary)
                     }
                     Spacer()
-                    Button("授权") {
+                    Button(L10n.shortcutAuth) {
                         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
                         NSWorkspace.shared.open(url)
                     }
@@ -507,13 +508,13 @@ struct InlineSettingsView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    Text("辅助功能权限已授予")
+                    Text(L10n.shortcutPermissionGranted)
                         .font(.system(size: Theme.FontSize.caption))
                         .foregroundColor(.textSecondary)
                 }
             }
 
-            settingsGroup("全局快捷键") {
+            settingsGroup(L10n.shortcutTitle) {
                 ForEach(HotkeyAction.allCases, id: \.self) { action in
                     InlineHotkeyRow(
                         action: action,
@@ -526,7 +527,7 @@ struct InlineSettingsView: View {
                     }
                 }
 
-                Button("恢复默认快捷键") {
+                Button(L10n.shortcutReset) {
                     settings.resetHotkeyBindings()
                     recordingAction = nil
                 }
@@ -537,15 +538,15 @@ struct InlineSettingsView: View {
         }
         .alert(item: $conflictAlert) { alert in
             Alert(
-                title: Text("快捷键冲突"),
-                message: Text("「\(alert.combo.displayString)」已被「\(alert.conflictAction.displayName)」使用。"),
-                primaryButton: .default(Text("交换")) {
+                title: Text(L10n.shortcutConflict),
+                message: Text("「\(alert.combo.displayString)」\(L10n.shortcutConflictMsg)「\(alert.conflictAction.displayName)」。"),
+                primaryButton: .default(Text(L10n.shortcutSwap)) {
                     let oldBinding = settings.hotkeyBindings[alert.newAction]
                     settings.hotkeyBindings[alert.newAction] = alert.combo
                     settings.hotkeyBindings[alert.conflictAction] = oldBinding
                     recordingAction = nil
                 },
-                secondaryButton: .cancel(Text("取消")) {
+                secondaryButton: .cancel(Text(L10n.cancel)) {
                     recordingAction = nil
                 }
             )
@@ -576,15 +577,15 @@ struct InlineSettingsView: View {
                 .font(.system(size: 40))
                 .foregroundColor(.textSecondary)
 
-            Text("MacIsland")
+            Text(L10n.aboutTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .bold))
                 .foregroundColor(.textPrimary)
 
-            Text("版本 \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")")
+            Text("\(L10n.version) \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")")
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
 
-            Text("macOS 灵动岛桌面助手")
+            Text(L10n.aboutSubtitle)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textQuaternary)
         }
@@ -678,7 +679,7 @@ struct InlineSettingsView: View {
                     try SMAppService.mainApp.unregister()
                 }
             } catch {
-                print("Login Item 设置失败: \(error)")
+                print("Login Item error: \(error)")
             }
         }
     }
@@ -689,7 +690,7 @@ struct InlineSettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.message = "选择壁纸存储目录"
+        panel.message = L10n.wallpaperSelect
 
         IslandStore.isPanelPresented = true
         let result = panel.runModal()
@@ -778,7 +779,7 @@ private class InlineKeyRecorderNSView: NSView {
 
     func updateVisual() {
         if isRecording {
-            label.stringValue = "按下…"
+            label.stringValue = L10n.shortcutPressKey
             label.textColor = .controlAccentColor
             layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
             layer?.borderColor = NSColor.controlAccentColor.withAlphaComponent(0.5).cgColor
@@ -829,7 +830,7 @@ private class InlineKeyRecorderNSView: NSView {
         if flags.contains(.option)  { parts += "⌥" }
         if flags.contains(.shift)   { parts += "⇧" }
         if flags.contains(.command) { parts += "⌘" }
-        label.stringValue = parts.isEmpty ? "按下…" : parts
+        label.stringValue = parts.isEmpty ? L10n.shortcutPressKey : parts
     }
 }
 

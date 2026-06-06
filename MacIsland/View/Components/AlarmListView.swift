@@ -37,18 +37,18 @@ struct AlarmListView: View {
                 .foregroundColor(.white.opacity(0.15))
                 .padding(.top, 20)
 
-            Text("闹钟")
+            Text(L10n.alarmTitle)
                 .font(.system(size: Theme.FontSize.headline, weight: .semibold))
                 .foregroundColor(.textPrimary)
 
-            Text("设置提醒闹钟，支持每日重复")
+            Text(L10n.alarmSet)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
 
             Button {
                 showAddAlarm = true
             } label: {
-                Label("添加闹钟", systemImage: "plus")
+                Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
@@ -66,7 +66,7 @@ struct AlarmListView: View {
     private var alarmListView: some View {
         VStack(spacing: Theme.Spacing.sm) {
             HStack {
-                Text("\(store.items.count) 个闹钟")
+                Text("\(store.items.count) \(L10n.count)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
@@ -94,14 +94,14 @@ struct AlarmListView: View {
 
     private var addAlarmForm: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            TextField("闹钟名称", text: $newLabel)
+            TextField(L10n.alarmLabel, text: $newLabel)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body))
                 .foregroundColor(.textPrimary)
 
             // 时间选择
             HStack(spacing: Theme.Spacing.sm) {
-                Text("时间")
+                Text(L10n.eventDate)
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Picker("", selection: $newHour) {
@@ -122,7 +122,7 @@ struct AlarmListView: View {
 
             // 重复日选择
             HStack(spacing: 4) {
-                Text("重复")
+                Text(L10n.alarmRepeat)
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 ForEach(Weekday.allCases) { day in
@@ -144,7 +144,7 @@ struct AlarmListView: View {
             }
 
             HStack {
-                Button("取消") {
+                Button(L10n.cancel) {
                     showAddAlarm = false
                     newLabel = ""
                     newRepeatDays = []
@@ -155,10 +155,10 @@ struct AlarmListView: View {
 
                 Spacer()
 
-                Button("添加") {
+                Button(L10n.add) {
                     let label = newLabel.trimmingCharacters(in: .whitespacesAndNewlines)
                     store.addAlarm(
-                        label: label.isEmpty ? "闹钟" : label,
+                        label: label.isEmpty ? L10n.alarmTitle : label,
                         hour: newHour,
                         minute: newMinute,
                         repeatDays: newRepeatDays
@@ -196,7 +196,7 @@ struct AlarmListView: View {
                     .lineLimit(1)
 
                 if item.isOneTime {
-                    Text("单次")
+                    Text(L10n.alarmOnce)
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(.textQuaternary)
                 } else {

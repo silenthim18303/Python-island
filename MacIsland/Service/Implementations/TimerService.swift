@@ -150,12 +150,12 @@ final class TimerService: TimerServiceProtocol, ObservableObject {
             if reminderTimePoints.contains(remaining) && !firedReminders.contains(remaining) {
                 firedReminders.insert(remaining)
                 let label = formatReminderLabel(remaining)
-                onNotification?("⏱ 倒计时提醒", "还剩 \(label)")
+                onNotification?(L10n.timerNotifCountdown, "\(L10n.timerNotifTimeUp) \(label)")
             }
 
             if countdown.remainingSeconds <= 0 {
                 countdown.state = .completed
-                onNotification?("⏱ 倒计时", "时间到！")
+                onNotification?(L10n.timerNotifTimeUp, L10n.alarmTimeUp)
                 stopTickIfNeeded()
             }
         }
@@ -172,14 +172,14 @@ final class TimerService: TimerServiceProtocol, ObservableObject {
             let count = pomodoro.completedCount
             if count % settings.pomodoroLongBreakInterval == 0 {
                 pomodoro.phase = .longBreak
-                onNotification?("🍅 专注结束", "休息一下吧，已完成 \(count) 个番茄")
+                onNotification?(L10n.timerNotifFocusEnd, "\(L10n.timerNotifRest) \(count) \(L10n.timerPomodoro)")
             } else {
                 pomodoro.phase = .shortBreak
-                onNotification?("🍅 专注结束", "休息 \(settings.pomodoroShortBreakMinutes) 分钟")
+                onNotification?(L10n.timerNotifFocusEnd, "\(L10n.timerBreak) \(settings.pomodoroShortBreakMinutes) \(L10n.minutes)")
             }
         } else {
             pomodoro.phase = .work
-            onNotification?("🍅 休息结束", "开始专注！")
+            onNotification?(L10n.timerNotifBreakEnd, "\(L10n.timerStart)!")
         }
 
         let duration = pomodoroDuration(for: pomodoro.phase)
