@@ -485,7 +485,23 @@ final class SystemMusicService: MusicServiceProtocol, ObservableObject {
     init(mediaKeySender: MediaKeySenderProtocol = DefaultMediaKeySender()) {
         self.mediaKeySender = mediaKeySender
         // MediaRemote private API is blocked on macOS 26+ — no initialization needed
+
+        // 订阅音乐状态变化，更新小组件数据
+        $info.combineLatest($hasMedia)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info, hasMedia in
+                WidgetDataManager.shared.updateMusic(
+                    hasMedia: hasMedia,
+                    title: info.title,
+                    artist: info.artist,
+                    isPlaying: info.isPlaying,
+                    progress: info.progress
+                )
+            }
+            .store(in: &cancellables)
     }
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Monitoring
 

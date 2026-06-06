@@ -24,6 +24,28 @@ final class EventStore: ObservableObject {
 
     private init() {
         items = Self.load(defaults: defaults)
+
+        // 订阅事件变化，同步小组件
+        $items
+            .receive(on: RunLoop.main)
+            .sink { [weak self] items in
+                self?.updateWidgetData(items)
+            }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    private func updateWidgetData(_ items: [EventItem]) {
+        let widgetItems = items.filter { $0.enabled }.prefix(10).map { item -> [String: Any] in
+            [
+                "id": item.id.uuidString,
+                "name": item.title,
+                "targetDate": item.targetDate.timeIntervalSince1970,
+                "type": item.eventType.rawValue
+            ]
+        }
+        WidgetDataManager.shared.updateEvents(items: widgetItems)
     }
 
     // MARK: - CRUD

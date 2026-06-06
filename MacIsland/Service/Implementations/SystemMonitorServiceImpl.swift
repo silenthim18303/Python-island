@@ -29,6 +29,32 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
 
     init(monitor: SystemMonitorProtocol = DefaultSystemMonitor()) {
         self.monitor = monitor
+
+        // 订阅系统监控数据变化，同步小组件
+        $stats
+            .receive(on: RunLoop.main)
+            .sink { [weak self] stats in
+                self?.updateWidgetData(stats)
+            }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    private func updateWidgetData(_ stats: SystemStats) {
+        WidgetDataManager.shared.updateSystemMonitor(
+            cpuUsage: stats.cpuUsage,
+            cpuTemperature: stats.cpuTemperature,
+            cpuCoreCount: stats.cpuCoreCount,
+            memoryUsage: stats.memoryPercent,
+            memoryUsed: stats.memoryUsed,
+            memoryTotal: stats.memoryTotal,
+            diskUsage: stats.diskPercent,
+            diskUsed: stats.diskUsed,
+            diskTotal: stats.diskTotal,
+            batteryLevel: Int(stats.batteryLevel),
+            batteryCharging: stats.batteryIsCharging
+        )
     }
 
     func startMonitoring() {

@@ -24,8 +24,45 @@ final class TimerService: TimerServiceProtocol, ObservableObject {
 
     // MARK: - Init
 
+    init() {
+        // 订阅计时器状态变化，更新小组件数据
+        $pomodoro.combineLatest($countdown)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] pomodoro, countdown in
+                self?.updateWidgetData(pomodoro: pomodoro, countdown: countdown)
+            }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
     deinit {
         tickTimer?.invalidate()
+    }
+
+    private func updateWidgetData(pomodoro: PomodoroData, countdown: CountdownData) {
+        if pomodoro.running {
+            WidgetDataManager.shared.updateTimer(
+                type: "pomodoro",
+                remainingSeconds: pomodoro.remaining,
+                isRunning: true,
+                completedPomodoros: pomodoro.completedCount
+            )
+        } else if countdown.state == .running {
+            WidgetDataManager.shared.updateTimer(
+                type: "countdown",
+                remainingSeconds: countdown.remainingSeconds,
+                isRunning: true,
+                completedPomodoros: pomodoro.completedCount
+            )
+        } else {
+            WidgetDataManager.shared.updateTimer(
+                type: "idle",
+                remainingSeconds: 0,
+                isRunning: false,
+                completedPomodoros: pomodoro.completedCount
+            )
+        }
     }
 
     /// 设置通知回调（由 IslandStore 注入）

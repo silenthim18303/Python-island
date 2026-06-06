@@ -26,6 +26,35 @@ final class TodoStore: ObservableObject {
 
     private init() {
         items = Self.load(defaults: defaults)
+
+        // 订阅待办变化，同步小组件
+        $items
+            .receive(on: RunLoop.main)
+            .sink { [weak self] items in
+                self?.updateWidgetData(items)
+            }
+            .store(in: &cancellables)
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    private func updateWidgetData(_ items: [TodoItem]) {
+        let activeItems = items.filter { $0.deletedAt == nil }
+        let completedCount = activeItems.filter { $0.done }.count
+
+        let widgetItems = activeItems.prefix(10).map { item -> [String: Any] in
+            [
+                "id": item.id.uuidString,
+                "title": item.text,
+                "completed": item.done
+            ]
+        }
+
+        WidgetDataManager.shared.updateTodo(
+            totalCount: activeItems.count,
+            completedCount: completedCount,
+            items: widgetItems
+        )
     }
 
     // MARK: - CRUD
