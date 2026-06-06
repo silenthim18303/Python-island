@@ -64,6 +64,15 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
                 cityName: locInfo.city,
                 districtName: locInfo.district
             )
+
+            // 更新小组件数据
+            WidgetDataManager.shared.updateWeather(
+                temperature: nowData.temp,
+                description: nowData.text,
+                iconSystemName: WeatherIconMapper.iconName(for: nowData.code),
+                humidity: nowData.humidity,
+                windSpeed: nowData.windSpeed
+            )
         }
     }
 
