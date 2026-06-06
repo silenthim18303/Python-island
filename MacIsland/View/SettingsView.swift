@@ -249,7 +249,7 @@ private struct GeneralSettingsView: View {
                 Text(L10n.musicNetease).tag("netease")
                 Text(L10n.musicQQ).tag("qqmusic")
                 Text(L10n.musicKugou).tag("kugou")
-                Text("LRCLIB").tag("lrclib")
+                Text(L10n.musicLRCLIB).tag("lrclib")
             } label: { SettingLabel(key: "preferredLyricsSource") }
         }
     }
