@@ -346,7 +346,7 @@ struct WallpaperCommunityView: View {
                     store.toggleWallpaperPrivacy(wallpaper)
                 } label: {
                     Label(
-                        store.isWallpaperPrivate(wallpaper) ? "取消私有" : "设为私有",
+                        store.isWallpaperPrivate(wallpaper) ? "取消私有" : L10n.wallpaperSetPrivate,
                         systemImage: store.isWallpaperPrivate(wallpaper) ? "eye" : "eye.slash"
                     )
                 }
@@ -589,7 +589,7 @@ struct WallpaperDetailSheet: View {
                         HStack(spacing: 6) {
                             if isDownloading { ProgressView().controlSize(.mini) }
                             else { Image(systemName: "arrow.down.circle.fill") }
-                            Text(isDownloading ? "下载中…" : "下载")
+                            Text(isDownloading ? "下载中…" : L10n.wallpaperDownload)
                         }
                         .font(.system(size: Theme.FontSize.body, weight: .medium))
                         .foregroundColor(.white)
@@ -609,7 +609,7 @@ struct WallpaperDetailSheet: View {
                             store.toggleWallpaperPrivacy(wallpaper)
                         } label: {
                             Label(
-                                store.isWallpaperPrivate(wallpaper) ? "取消私有" : "设为私有",
+                                store.isWallpaperPrivate(wallpaper) ? "取消私有" : L10n.wallpaperSetPrivate,
                                 systemImage: store.isWallpaperPrivate(wallpaper) ? "eye" : "eye.slash"
                             )
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))
@@ -665,7 +665,7 @@ struct WallpaperDetailSheet: View {
                 }
             }
         } message: {
-            Text("确定要删除「\(wallpaper.name)」吗？")
+            Text("\(L10n.delete)「\(wallpaper.name)」？")
         }
     }
 

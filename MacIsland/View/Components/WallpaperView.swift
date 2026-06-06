@@ -63,7 +63,7 @@ struct WallpaperView: View {
             }
         } message: {
             if let target = uploadTarget {
-                Text("将「\(target.name)」上传到社区壁纸仓库，需经审核后展示。\n上传用户：\(uploadUsername)")
+                Text("\(L10n.wallpaperUploadConfirm)\n\(L10n.settingsUsername): \(uploadUsername)")
             }
         }
         .sheet(item: $selectedLocalWallpaper) { wallpaper in
