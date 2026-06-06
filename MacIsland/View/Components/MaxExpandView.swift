@@ -45,10 +45,10 @@ struct MaxExpandView: View {
             case .alarm: return L10n.tabAlarm
             case .bookmark: return L10n.tabBookmark
             case .ai: return L10n.tabAI
-            case .notifications: return "通知"
+            case .notifications: return L10n.tabNotifications
             case .settings: return L10n.tabSettings
             case .toolbox: return L10n.tabToolbox
-            case .wallpaper: return "壁纸"
+            case .wallpaper: return L10n.tabWallpaper
             }
         }
     }

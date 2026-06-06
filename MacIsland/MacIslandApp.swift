@@ -107,7 +107,7 @@ struct MenuBarView: View {
                     Image(systemName: isVisible ? "eye.slash" : "eye")
                         .frame(width: 16)
 
-                    Text(isVisible ? "隐藏灵动岛" : "显示灵动岛")
+                    Text(isVisible ? L10n.menuHideIsland : L10n.menuShowIsland)
 
                     Spacer()
                 }
@@ -124,7 +124,7 @@ struct MenuBarView: View {
                     Image(systemName: "arrow.down.right.and.arrow.up.left")
                         .frame(width: 16)
 
-                    Text("折叠岛")
+                    Text(L10n.menuCollapse)
 
                     Spacer()
                 }
@@ -143,7 +143,7 @@ struct MenuBarView: View {
                     Image(systemName: "gearshape")
                         .frame(width: 16)
 
-                    Text("设置")
+                    Text(L10n.menuSettings)
 
                     Spacer()
                 }
@@ -162,7 +162,7 @@ struct MenuBarView: View {
                     Image(systemName: "power")
                         .frame(width: 16)
 
-                    Text("退出 MacIsland")
+                    Text(L10n.menuQuit)
 
                     Spacer()
                 }

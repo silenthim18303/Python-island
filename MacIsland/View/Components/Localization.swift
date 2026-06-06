@@ -69,6 +69,8 @@ enum L10n {
     private static func t(_ key: String) -> String { LocalizationManager.shared.localize(key) }
 
     // MARK: - Tab
+    static var taboverview: String { t("tab_overview")}
+    static var tabmusic: String { t("tab_music")}
     static var tabTodo: String { t("tab_todo") }
     static var tabMemo: String { t("tab_memo") }
     static var tabEvent: String { t("tab_event") }
@@ -431,6 +433,57 @@ enum L10n {
     static var closePanel: String { t("close_panel") }
     static var collapseOverview: String { t("collapse_overview") }
     static var skip: String { t("skip") }
+
+    // MARK: - Menu Bar
+    static var menuHideIsland: String { t("menu_hide_island") }
+    static var menuShowIsland: String { t("menu_show_island") }
+    static var menuCollapse: String { t("menu_collapse") }
+    static var menuSettings: String { t("menu_settings") }
+    static var menuQuit: String { t("menu_quit") }
+
+    // MARK: - Service Errors
+    static var errorClipboardLink: String { t("error_clipboard_link") }
+    static var errorWeatherLocation: String { t("error_weather_location") }
+    static var errorWeatherFetch: String { t("error_weather_fetch") }
+    static var errorLyricsNotFound: String { t("error_lyrics_not_found") }
+    static var errorAIConnection: String { t("error_ai_connection") }
+    static var errorAIRequest: String { t("error_ai_request") }
+    static var errorGitHubLogin: String { t("error_github_login") }
+    static var errorGitHubToken: String { t("error_github_token") }
+    static var errorGitHubSize: String { t("error_github_size") }
+    static var errorGitHubVideo: String { t("error_github_video") }
+    static var errorGitHubCompress: String { t("error_github_compress") }
+    static var errorGitHubBranch: String { t("error_github_branch") }
+    static var errorGitHubBranchNotFound: String { t("error_github_branch_not_found") }
+    static var errorGitHubBranchInfo: String { t("error_github_branch_info") }
+    static var errorGitHubFileCreate: String { t("error_github_file_create") }
+    static var errorGitHubFileInfo: String { t("error_github_file_info") }
+    static var errorGitHubFileDelete: String { t("error_github_file_delete") }
+    static var errorGitHubPR: String { t("error_github_pr") }
+    static var errorGitHubRepo: String { t("error_github_repo") }
+    static var errorGitHubPermission: String { t("error_github_permission") }
+    static var errorGitHubHTTP: String { t("error_github_http") }
+    static var errorGitHubNetwork: String { t("error_github_network") }
+
+    // MARK: - Timer Notifications
+    static var timerNotifCountdown: String { t("timer_notif_countdown") }
+    static var timerNotifTimeUp: String { t("timer_notif_time_up") }
+    static var timerNotifFocusEnd: String { t("timer_notif_focus_end") }
+    static var timerNotifBreakEnd: String { t("timer_notif_break_end") }
+    static var timerNotifRest: String { t("timer_notif_rest") }
+
+    // MARK: - AI System
+    static var aiSystemPrompt: String { t("ai_system_prompt") }
+
+    // MARK: - Default Values
+    static var defaultAlarmLabel: String { t("default_alarm_label") }
+
+    // MARK: - Navigation Tab Names
+    static var navSettings: String { t("nav_settings") }
+    static var navTools: String { t("nav_tools") }
+
+    // MARK: - Date Format
+    static var dateFormatCN: String { t("date_format_cn") }
 }
 
 // MARK: - Language Settings View
@@ -452,6 +505,7 @@ struct LanguageSettingsView: View {
 
 private let zhStrings: [String: String] = [
     // Tab
+    "tab_overview":"概览", "tab_music":"音乐",
     "tab_todo": "待办", "tab_memo": "便签", "tab_event": "倒数日",
     "tab_alarm": "闹钟", "tab_bookmark": "书签", "tab_ai": "AI",
     "tab_settings": "设置", "tab_toolbox": "工具", "tab_notifications": "通知",
@@ -618,12 +672,44 @@ private let zhStrings: [String: String] = [
     "date_format_weekday": "周",
     // Misc Extended
     "close_panel": "关闭", "collapse_overview": "收起到概览", "skip": "跳过",
+    // Menu Bar
+    "menu_hide_island": "隐藏灵动岛", "menu_show_island": "显示灵动岛",
+    "menu_collapse": "折叠岛", "menu_settings": "设置", "menu_quit": "退出 MacIsland",
+    // Service Errors
+    "error_clipboard_link": "🔗 链接检测",
+    "error_weather_location": "获取位置失败", "error_weather_fetch": "获取天气失败",
+    "error_lyrics_not_found": "未找到歌词",
+    "error_ai_connection": "连接失败", "error_ai_request": "API 请求失败",
+    "error_github_login": "请先登录 GitHub", "error_github_token": "请先在设置中登录 GitHub",
+    "error_github_size": "文件大小超过 100MB 限制", "error_github_video": "无法读取视频文件",
+    "error_github_compress": "图片压缩失败",
+    "error_github_branch": "创建分支失败",
+    "error_github_branch_not_found": "分支不存在，请先在仓库中创建至少一个提交",
+    "error_github_branch_info": "无法读取分支信息",
+    "error_github_file_create": "文件创建失败", "error_github_file_info": "无法获取文件信息",
+    "error_github_file_delete": "文件删除失败", "error_github_pr": "创建 PR 失败",
+    "error_github_repo": "社区仓库暂未开放，请稍后再试",
+    "error_github_permission": "权限不足（HTTP 403），请确认 Token 有 repo 权限",
+    "error_github_http": "服务器返回 HTTP", "error_github_network": "网络错误",
+    // Timer Notifications
+    "timer_notif_countdown": "⏱ 倒计时提醒", "timer_notif_time_up": "⏱ 倒计时",
+    "timer_notif_focus_end": "🍅 专注结束", "timer_notif_break_end": "🍅 休息结束",
+    "timer_notif_rest": "休息一下吧，已完成",
+    // AI System
+    "ai_system_prompt": "你是 MacIsland 的 AI 助手。简洁、友好、有帮助。",
+    // Default Values
+    "default_alarm_label": "闹钟",
+    // Navigation
+    "nav_settings": "设置", "nav_tools": "工具",
+    // Date Format
+    "date_format_cn": "yyyy年M月d日 EEEE",
 ]
 
 // MARK: - 英文翻译
 
 private let enStrings: [String: String] = [
     // Tab
+    "tab_overview":"Overview", "tab_music":"Music",
     "tab_todo": "Todo", "tab_memo": "Memo", "tab_event": "Events",
     "tab_alarm": "Alarm", "tab_bookmark": "Bookmarks", "tab_ai": "AI",
     "tab_settings": "Settings", "tab_toolbox": "Tools", "tab_notifications": "Notifications",
@@ -790,12 +876,44 @@ private let enStrings: [String: String] = [
     "date_format_weekday": "",
     // Misc Extended
     "close_panel": "Close", "collapse_overview": "Collapse", "skip": "Skip",
+    // Menu Bar
+    "menu_hide_island": "Hide Island", "menu_show_island": "Show Island",
+    "menu_collapse": "Collapse", "menu_settings": "Settings", "menu_quit": "Quit MacIsland",
+    // Service Errors
+    "error_clipboard_link": "🔗 Link Detected",
+    "error_weather_location": "Failed to get location", "error_weather_fetch": "Failed to fetch weather",
+    "error_lyrics_not_found": "Lyrics not found",
+    "error_ai_connection": "Connection failed", "error_ai_request": "API request failed",
+    "error_github_login": "Please login to GitHub first", "error_github_token": "Please login to GitHub in settings first",
+    "error_github_size": "File size exceeds 100MB limit", "error_github_video": "Cannot read video file",
+    "error_github_compress": "Image compression failed",
+    "error_github_branch": "Failed to create branch",
+    "error_github_branch_not_found": "Branch not found, please create at least one commit in the repo first",
+    "error_github_branch_info": "Cannot read branch info",
+    "error_github_file_create": "File creation failed", "error_github_file_info": "Cannot get file info",
+    "error_github_file_delete": "File deletion failed", "error_github_pr": "PR creation failed",
+    "error_github_repo": "Community repo not available, please try again later",
+    "error_github_permission": "Insufficient permissions (HTTP 403), please confirm Token has repo access",
+    "error_github_http": "Server returned HTTP", "error_github_network": "Network error",
+    // Timer Notifications
+    "timer_notif_countdown": "⏱ Countdown Reminder", "timer_notif_time_up": "⏱ Countdown",
+    "timer_notif_focus_end": "🍅 Focus Complete", "timer_notif_break_end": "🍅 Break Over",
+    "timer_notif_rest": "Take a break, completed",
+    // AI System
+    "ai_system_prompt": "You are MacIsland's AI assistant. Concise, friendly, and helpful.",
+    // Default Values
+    "default_alarm_label": "Alarm",
+    // Navigation
+    "nav_settings": "Settings", "nav_tools": "Tools",
+    // Date Format
+    "date_format_cn": "EEEE, MMMM d, yyyy",
 ]
 
 // MARK: - 日文翻译
 
 private let jaStrings: [String: String] = [
     // Tab
+    "tab_overview":"概要","tab_music":"音楽",
     "tab_todo": "やること", "tab_memo": "メモ", "tab_event": "イベント",
     "tab_alarm": "アラーム", "tab_bookmark": "ブックマーク", "tab_ai": "AI",
     "tab_settings": "設定", "tab_toolbox": "ツール", "tab_notifications": "通知",
@@ -962,4 +1080,35 @@ private let jaStrings: [String: String] = [
     "date_format_weekday": "",
     // Misc Extended
     "close_panel": "閉じる", "collapse_overview": "折りたたむ", "skip": "スキップ",
+    // Menu Bar
+    "menu_hide_island": "アイランドを隠す", "menu_show_island": "アイランドを表示",
+    "menu_collapse": "折りたたむ", "menu_settings": "設定", "menu_quit": "MacIsland を終了",
+    // Service Errors
+    "error_clipboard_link": "🔗 リンク検出",
+    "error_weather_location": "位置情報の取得に失敗", "error_weather_fetch": "天気の取得に失敗",
+    "error_lyrics_not_found": "歌詞が見つかりません",
+    "error_ai_connection": "接続失敗", "error_ai_request": "API リクエスト失敗",
+    "error_github_login": "先に GitHub にログインしてください", "error_github_token": "設定で先に GitHub にログインしてください",
+    "error_github_size": "ファイルサイズが 100MB 制限を超えています", "error_github_video": "動画ファイルを読み込めません",
+    "error_github_compress": "画像圧縮に失敗",
+    "error_github_branch": "ブランチ作成に失敗",
+    "error_github_branch_not_found": "ブランチが見つかりません。リポジトリに少なくとも1つのコミットを作成してください",
+    "error_github_branch_info": "ブランチ情報を読み込めません",
+    "error_github_file_create": "ファイル作成に失敗", "error_github_file_info": "ファイル情報を取得できません",
+    "error_github_file_delete": "ファイル削除に失敗", "error_github_pr": "PR 作成に失敗",
+    "error_github_repo": "コミュニティリポジトリは利用できません。後でもう一度お試しください",
+    "error_github_permission": "権限不足（HTTP 403）。Token に repo 権限があることを確認してください",
+    "error_github_http": "サーバーが HTTP を返しました", "error_github_network": "ネットワークエラー",
+    // Timer Notifications
+    "timer_notif_countdown": "⏱ カウントダウンリマインダー", "timer_notif_time_up": "⏱ カウントダウン",
+    "timer_notif_focus_end": "🍅 集中完了", "timer_notif_break_end": "🍅 休憩終了",
+    "timer_notif_rest": "休憩しましょう、完了",
+    // AI System
+    "ai_system_prompt": "あなたは MacIsland の AI アシスタントです。簡潔で、親切で、役に立つ回答をします。",
+    // Default Values
+    "default_alarm_label": "アラーム",
+    // Navigation
+    "nav_settings": "設定", "nav_tools": "ツール",
+    // Date Format
+    "date_format_cn": "yyyy年M月d日 EEEE",
 ]

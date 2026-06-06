@@ -30,8 +30,8 @@ struct ExpandedView: View {
 
         var displayName: String {
             switch self {
-            case .overview: return L10n.tabTodo
-            case .music: return L10n.tabTodo
+            case .overview: return L10n.taboverview
+            case .music: return L10n.tabmusic
             case .tools: return L10n.tabToolbox
             case .monitor: return L10n.monitorTitle
             }
@@ -151,7 +151,7 @@ struct ExpandedView: View {
     private var dateTimeSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(formatDate("yyyy年M月d日 EEEE"))
+                Text(formatDate(L10n.dateFormatCN))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
 

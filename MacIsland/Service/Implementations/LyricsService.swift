@@ -86,7 +86,7 @@ final class LyricsService: LyricsServiceProtocol, ObservableObject {
         print("[Lyrics] All providers failed")
         await MainActor.run {
             self.currentLyrics = .empty
-            self.lastError = "未找到歌词"
+            self.lastError = L10n.errorLyricsNotFound
         }
     }
 

@@ -116,7 +116,7 @@ final class IslandStore: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             self?.setMaxExpand()
-            self?.maxExpandInitialTab = "设置"
+            self?.maxExpandInitialTab = L10n.navSettings
         }
     }
 
@@ -175,7 +175,7 @@ final class IslandStore: ObservableObject {
     func setExpanded() {
         // 从倒计时态展开时，自动切到工具 Tab
         if state == .countdown {
-            expandedInitialTab = "工具"
+            expandedInitialTab = L10n.navTools
         }
         previousState = state
         cancelIdleTimer()

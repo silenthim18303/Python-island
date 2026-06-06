@@ -233,9 +233,9 @@ final class WallpaperStore: ObservableObject {
         } catch {
             let nsError = error as NSError
             if nsError.code == NSURLErrorTimedOut || nsError.code == NSURLErrorCannotFindHost {
-                communityError = "社区仓库暂未开放，请稍后再试"
+                communityError = L10n.errorGitHubRepo
             } else {
-                communityError = "获取失败: \(error.localizedDescription)"
+                communityError = "\(L10n.error): \(error.localizedDescription)"
             }
         }
     }
@@ -307,7 +307,7 @@ final class WallpaperStore: ObservableObject {
         let github = GitHubService.shared
         guard github.isAuthenticated else {
             print("[Wallpaper] 删除失败: 未登录 GitHub")
-            return .failure("请先登录 GitHub")
+            return .failure(L10n.errorGitHubLogin)
         }
 
         // 移除本地已下载的文件
@@ -347,16 +347,16 @@ final class WallpaperStore: ObservableObject {
         let github = GitHubService.shared
 
         guard github.isAuthenticated else {
-            return .failure("请先在设置中登录 GitHub")
+            return .failure(L10n.errorGitHubToken)
         }
 
         // 文件大小校验
         guard let attrs = try? FileManager.default.attributesOfItem(atPath: sourceURL.path),
               let fileSize = attrs[.size] as? Int64 else {
-            return .failure("无法读取文件信息")
+            return .failure(L10n.error)
         }
         guard fileSize <= GitHubService.uploadFilesizeLimit else {
-            return .failure("文件大小超过 100MB 限制")
+            return .failure(L10n.errorGitHubSize)
         }
 
         let name = sourceURL.deletingPathExtension().lastPathComponent
@@ -367,13 +367,13 @@ final class WallpaperStore: ObservableObject {
         if isVideo {
             // 视频：直接读取（无法压缩）
             guard let data = try? Data(contentsOf: sourceURL) else {
-                return .failure("无法读取视频文件")
+                return .failure(L10n.errorGitHubVideo)
             }
             fileData = data
         } else {
             // 图片：压缩后再上传，大幅减少内存和传输量
             guard let compressed = Self.compressImage(at: sourceURL, maxDimension: 2048, quality: 0.8) else {
-                return .failure("图片压缩失败")
+                return .failure(L10n.errorGitHubCompress)
             }
             fileData = compressed
         }
