@@ -62,7 +62,7 @@ struct InlineSettingsView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 12))
                 .foregroundColor(.textTertiary)
-            TextField("搜索设置…", text: $searchQuery)
+            TextField("\(L10n.search)…", text: $searchQuery)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textPrimary)
@@ -391,9 +391,9 @@ struct InlineSettingsView: View {
                 describedRow("preferredLyricsSource") {
                     Picker("", selection: $settings.preferredLyricsSource) {
                         Text(L10n.translateAuto).tag("auto")
-                        Text("网易云").tag("netease")
-                        Text("QQ 音乐").tag("qqmusic")
-                        Text("酷狗").tag("kugou")
+                        Text(L10n.musicNetease).tag("netease")
+                        Text(L10n.musicQQ).tag("qqmusic")
+                        Text(L10n.musicKugou).tag("kugou")
                         Text("LRCLIB").tag("lrclib")
                     }
                     .labelsHidden()
@@ -491,7 +491,7 @@ struct InlineSettingsView: View {
                             .foregroundColor(.textTertiary)
                     }
                     Spacer()
-                    Button("授权") {
+                    Button(L10n.shortcutAuth) {
                         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
                         NSWorkspace.shared.open(url)
                     }
@@ -546,7 +546,7 @@ struct InlineSettingsView: View {
                     settings.hotkeyBindings[alert.conflictAction] = oldBinding
                     recordingAction = nil
                 },
-                secondaryButton: .cancel(Text("取消")) {
+                secondaryButton: .cancel(Text(L10n.cancel)) {
                     recordingAction = nil
                 }
             )
@@ -679,7 +679,7 @@ struct InlineSettingsView: View {
                     try SMAppService.mainApp.unregister()
                 }
             } catch {
-                print("Login Item 设置失败: \(error)")
+                print("Login Item error: \(error)")
             }
         }
     }
@@ -690,7 +690,7 @@ struct InlineSettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.message = "选择壁纸存储目录"
+        panel.message = L10n.wallpaperSelect
 
         IslandStore.isPanelPresented = true
         let result = panel.runModal()
@@ -779,7 +779,7 @@ private class InlineKeyRecorderNSView: NSView {
 
     func updateVisual() {
         if isRecording {
-            label.stringValue = "按下…"
+            label.stringValue = L10n.shortcutPressKey
             label.textColor = .controlAccentColor
             layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
             layer?.borderColor = NSColor.controlAccentColor.withAlphaComponent(0.5).cgColor
@@ -830,7 +830,7 @@ private class InlineKeyRecorderNSView: NSView {
         if flags.contains(.option)  { parts += "⌥" }
         if flags.contains(.shift)   { parts += "⇧" }
         if flags.contains(.command) { parts += "⌘" }
-        label.stringValue = parts.isEmpty ? "按下…" : parts
+        label.stringValue = parts.isEmpty ? L10n.shortcutPressKey : parts
     }
 }
 

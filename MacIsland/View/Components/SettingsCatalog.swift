@@ -156,85 +156,88 @@ struct SettingItemMeta: Identifiable {
 
     // MARK: - Catalog
 
-    static let all: [SettingItemMeta] = [
-        // 外观
-        .init("appearanceMode", .appearance,
-              title: "外观模式", description: "切换深色/浅色/跟随系统主题。",
-              keywords: ["theme", "dark", "light", "深色", "浅色", "主题"]),
-        .init("accentColor", .appearance,
-              title: "强调色", description: "自定义界面强调色。",
-              keywords: ["accent", "color", "颜色", "强调色"]),
-        .init("language", .appearance,
-              title: "语言", description: "切换界面显示语言（中文/English/日本語）。",
-              keywords: ["language", "中文", "english", "日本語", "japanese"]),
-        .init("launchAtLogin", .appearance,
-              title: "开机自启动", description: "登录系统后自动启动 MacIsland。",
-              keywords: ["login", "startup", "自启"]),
-        .init("islandOpacity", .appearance,
-              title: "灵动岛透明度", description: "调整灵动岛整体不透明度（10%–100%）。",
-              keywords: ["opacity", "透明"]),
-        .init("wallpaperOpacity", .appearance,
-              title: "壁纸透明度", description: "独立于灵动岛整体透明度的壁纸不透明度。",
-              keywords: ["opacity", "壁纸", "透明"]),
+    /// 动态生成设置项元数据（使用当前语言）
+    static var all: [SettingItemMeta] {
+        [
+            // 外观
+            .init("appearanceMode", .appearance,
+                  title: L10n.settingsTheme, description: L10n.settingsTheme + "。",
+                  keywords: ["theme", "dark", "light", "深色", "浅色", "主题"]),
+            .init("accentColor", .appearance,
+                  title: L10n.settingsAccentColor, description: L10n.settingsAccentColor + "。",
+                  keywords: ["accent", "color", "颜色", "强调色"]),
+            .init("language", .appearance,
+                  title: L10n.settingsLanguage, description: L10n.settingsLanguage + "。",
+                  keywords: ["language", "中文", "english", "日本語", "japanese"]),
+            .init("launchAtLogin", .appearance,
+                  title: L10n.settingsAutostart, description: L10n.settingsAutostart + "。",
+                  keywords: ["login", "startup", "自启"]),
+            .init("islandOpacity", .appearance,
+                  title: L10n.settingsOpacity, description: L10n.settingsOpacity + "。",
+                  keywords: ["opacity", "透明"]),
+            .init("wallpaperOpacity", .appearance,
+                  title: L10n.settingsWallpaperOpacity, description: L10n.settingsWallpaperOpacity + "。",
+                  keywords: ["opacity", "壁纸", "透明"]),
 
-        // 壁纸
-        .init("customWallpaperPath", .wallpaper,
-              title: "存储路径", description: "自定义壁纸缓存目录，留空使用默认位置。",
-              hint: "默认路径",
-              keywords: ["path", "目录", "缓存"]),
+            // 壁纸
+            .init("customWallpaperPath", .wallpaper,
+                  title: L10n.wallpaperPath, description: L10n.wallpaperPath + "。",
+                  hint: L10n.wallpaperPathDefault,
+                  keywords: ["path", "目录", "缓存"]),
 
-        // 动画
-        .init("animationSpeed", .animation,
-              title: "动画速度", description: "灵动岛展开/折叠的过渡时长。",
-              keywords: ["speed", "速度"]),
-        .init("springAnimation", .animation,
-              title: "弹簧动画", description: "启用更有弹性的弹簧过渡曲线。",
-              keywords: ["spring", "弹簧"]),
+            // 动画
+            .init("animationSpeed", .animation,
+                  title: L10n.settingsSpeed, description: L10n.settingsSpeed + "。",
+                  keywords: ["speed", "速度"]),
+            .init("springAnimation", .animation,
+                  title: L10n.settingsSpring, description: L10n.settingsSpring + "。",
+                  keywords: ["spring", "弹簧"]),
 
-        // 剪贴板
-        .init("clipboardEnabled", .clipboard,
-              title: "链接检测", description: "复制链接时在灵动岛快速提示。",
-              keywords: ["link", "检测"]),
-        .init("clipboardUrlDetectMode", .clipboard,
-              title: "URL 检测模式", description: "选择被识别为链接的 URL 形式。",
-              keywords: ["url", "http", "https", "domain"]),
-        .init("blacklistedDomains", .clipboard,
-              title: "域名黑名单", description: "命中黑名单的域名不会触发链接提示。",
-              hint: "example.com",
-              keywords: ["blacklist", "黑名单", "domain"]),
+            // 剪贴板
+            .init("clipboardEnabled", .clipboard,
+                  title: L10n.settingsLinkDetect, description: L10n.settingsLinkDetect + "。",
+                  keywords: ["link", "检测"]),
+            .init("clipboardUrlDetectMode", .clipboard,
+                  title: L10n.settingsUrlMode, description: L10n.settingsUrlMode + "。",
+                  keywords: ["url", "http", "https", "domain"]),
+            .init("blacklistedDomains", .clipboard,
+                  title: L10n.settingsBlacklist, description: L10n.settingsBlacklist + "。",
+                  hint: "example.com",
+                  keywords: ["blacklist", "黑名单", "domain"]),
 
-        // 通知中心
-        .init("dndEnabled", .notifications,
-              title: "免打扰", description: "在指定时段内静默所有通知。",
-              keywords: ["dnd", "mute", "静音", "免打扰"]),
-        .init("dndTimeRange", .notifications,
-              title: "免打扰时段", description: "设置免打扰的开始和结束时间。",
-              keywords: ["time", "时段", "时间"]),
+            // 通知中心
+            .init("dndEnabled", .notifications,
+                  title: L10n.notifDND, description: L10n.notifDND + "。",
+                  keywords: ["dnd", "mute", "静音", "免打扰"]),
+            .init("dndTimeRange", .notifications,
+                  title: L10n.notifDNDTime, description: L10n.notifDNDTime + "。",
+                  keywords: ["time", "时段", "时间"]),
 
-        // 音乐与歌词
-        .init("preferredLyricsSource", .music,
-              title: "歌词源", description: "优先使用的歌词数据来源。",
-              keywords: ["lyrics", "netease", "网易", "qq", "酷狗", "lrclib"]),
+            // 音乐与歌词
+            .init("preferredLyricsSource", .music,
+                  title: L10n.settingsLyricsSource, description: L10n.settingsLyricsSource + "。",
+                  keywords: ["lyrics", "netease", "网易", "qq", "酷狗", "lrclib"]),
 
-        // 天气
-        .init("weatherManualCity", .weather,
-              title: "手动城市", description: "指定城市名，留空则自动定位。",
-              hint: "自动定位",
-              keywords: ["city", "城市", "定位"]),
-        .init("weatherManualLocationID", .weather,
-              title: "Location ID", description: "和风天气城市 ID，配合手动城市使用。",
-              hint: "101010100",
-              keywords: ["location", "id", "和风"]),
+            // 天气
+            .init("weatherManualCity", .weather,
+                  title: L10n.weatherCity, description: L10n.weatherCity + "。",
+                  hint: L10n.weatherAuto,
+                  keywords: ["city", "城市", "定位"]),
+            .init("weatherManualLocationID", .weather,
+                  title: L10n.weatherLocationID, description: L10n.weatherLocationID + "。",
+                  hint: "101010100",
+                  keywords: ["location", "id", "和风"]),
 
-        // 社区
-        .init("communityUploadUsername", .community,
-              title: "上传用户名", description: "上传社区壁纸时显示的作者名。",
-              hint: "设置用户名",
-              keywords: ["username", "用户名", "上传"]),
+            // 社区
+            .init("communityUploadUsername", .community,
+                  title: L10n.settingsUsername, description: L10n.settingsUsername + "。",
+                  hint: L10n.settingsUsername,
+                  keywords: ["username", "用户名", "上传"]),
 
         // 快捷键
         .init("hotkeyBindings", .shortcuts,
-              title: "全局快捷键", description: "自定义显示/播放控制等全局热键。",
+              title: L10n.shortcutTitle, description: L10n.shortcutTitle + "。",
               keywords: ["hotkey", "shortcut", "热键"]),
-    ]
+        ]
+    }
 }

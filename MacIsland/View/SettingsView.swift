@@ -246,9 +246,9 @@ private struct GeneralSettingsView: View {
         Section(L10n.musicLyrics) {
             Picker(selection: $settings.preferredLyricsSource) {
                 Text(L10n.translateAuto).tag("auto")
-                Text("网易云").tag("netease")
-                Text("QQ 音乐").tag("qqmusic")
-                Text("酷狗").tag("kugou")
+                Text(L10n.musicNetease).tag("netease")
+                Text(L10n.musicQQ).tag("qqmusic")
+                Text(L10n.musicKugou).tag("kugou")
                 Text("LRCLIB").tag("lrclib")
             } label: { SettingLabel(key: "preferredLyricsSource") }
         }

@@ -229,6 +229,9 @@ enum L10n {
     static var musicNoPlayback: String { t("music_no_playback") }
     static var musicLyrics: String { t("music_lyrics") }
     static var musicSource: String { t("music_source") }
+    static var musicNetease: String { t("music_netease") }
+    static var musicQQ: String { t("music_qq") }
+    static var musicKugou: String { t("music_kugou") }
 
     // MARK: - Weather
     static var weatherTitle: String { t("weather_title") }
@@ -482,6 +485,7 @@ private let zhStrings: [String: String] = [
     // Music
     "music_now_playing": "正在播放", "music_no_playback": "暂无播放",
     "music_lyrics": "歌词", "music_source": "歌词源",
+    "music_netease": "网易云", "music_qq": "QQ 音乐", "music_kugou": "酷狗",
     // Weather
     "weather_title": "天气", "weather_wind": "风速", "weather_humidity": "湿度",
     "weather_auto": "自动定位", "weather_city": "手动城市", "weather_location_id": "Location ID",
@@ -635,6 +639,7 @@ private let enStrings: [String: String] = [
     // Music
     "music_now_playing": "Now Playing", "music_no_playback": "No Playback",
     "music_lyrics": "Lyrics", "music_source": "Lyrics Source",
+    "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou",
     // Weather
     "weather_title": "Weather", "weather_wind": "Wind", "weather_humidity": "Humidity",
     "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_location_id": "Location ID",
@@ -788,6 +793,7 @@ private let jaStrings: [String: String] = [
     // Music
     "music_now_playing": "再生中", "music_no_playback": "再生なし",
     "music_lyrics": "歌詞", "music_source": "歌詞ソース",
+    "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou",
     // Weather
     "weather_title": "天気", "weather_wind": "風速", "weather_humidity": "湿度",
     "weather_auto": "自動位置", "weather_city": "手動都市", "weather_location_id": "Location ID",
