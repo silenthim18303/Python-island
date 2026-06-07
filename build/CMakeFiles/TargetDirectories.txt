@@ -1,3 +1,0 @@
-D:/DynamicIsland-imgui-win/build/CMakeFiles/DynamicIsland.dir
-D:/DynamicIsland-imgui-win/build/CMakeFiles/edit_cache.dir
-D:/DynamicIsland-imgui-win/build/CMakeFiles/rebuild_cache.dir

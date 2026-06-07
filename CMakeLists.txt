@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
-project(DynamicIsland VERSION 1.0.0 LANGUAGES CXX)
 
 # 强制指定编译器
-set(CMAKE_C_COMPILER "C:/Program Files/mingw64/bin/gcc.exe" CACHE FILEPATH "" FORCE)
-set(CMAKE_CXX_COMPILER "C:/Program Files/mingw64/bin/g++.exe" CACHE FILEPATH "" FORCE)
+#set(CMAKE_C_COMPILER "D:/Program/JetBrains/CLion/bin/mingw/bin/gcc.exe" CACHE FILEPATH "" FORCE)
+#set(CMAKE_CXX_COMPILER "D:/Program/JetBrains/CLion/bin/mingw/bin/g++.exe" CACHE FILEPATH "" FORCE)
+
+project(DynamicIsland VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +27,9 @@ set(IMGUI_SOURCES
 
 set(PROJECT_SOURCES
     src/main.cpp
+    src/Logger.cpp
+    src/window.cpp
+    src/ui.cpp
     src/sysinfo.cpp
     src/scheduler.cpp
     src/trayicon.cpp
@@ -41,6 +45,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src
 )
 
+# 文件中转站功能开关 (0=禁用, 1=启用)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    USE_FILE_TRANSFER=0
+)
+
 target_link_libraries(${PROJECT_NAME}
     d3d11 dxgi d3dcompiler dwmapi pdh wbemuuid taskschd
     shell32 ole32 oleaut32 uuid winmm gdi32 user32
@@ -48,6 +57,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/
 )

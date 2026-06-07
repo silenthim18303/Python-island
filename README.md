@@ -40,6 +40,7 @@
   - Direct3D 11（系统自带）
   - Windows SDK（包含 DWM、taskschd、Pdh、iphlpapi 等）
   - ImGui（已随仓库提供）
+  - 支持 C++17 的编译器
 
 ## 构建方法
 
@@ -69,7 +70,8 @@
    cmake --build .
    ```
 
-> 注意：当前 CMakeLists.txt 硬编码了 MinGW 路径，在其他环境下请移除或修改相应变量。
+> 注意：你可以从 `CMakeLists.txt` 中注释掉 MinGW 编译器路径，CMake 会自动检测编译器。或者是手动指定编译器路径。
+
 
 ## 使用方法
 
@@ -103,12 +105,16 @@
 
 ## 文件中转站功能(beta)
 
-文件中转站功能默认禁用，可通过修改 `src/main.cpp` 中的宏启用：
+文件中转站功能默认禁用，可通过修改 `CMakeLists.txt` 中的编译选项启用：
 
-```cpp
-// 文件中转站功能开关 (0=禁用, 1=启用)
-#define USE_FILE_TRANSFER 1
+```cmake
+# 文件中转站功能开关 (0=禁用, 1=启用)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    USE_FILE_TRANSFER=1
+)
 ```
+
+修改后重新执行 cmake 配置并编译即可生效。
 
 **功能特性**：
 - 支持文件拖放到灵动岛
@@ -171,24 +177,33 @@
 ```
 /
 ├─ CMakeLists.txt
-├─ include/imgui/      # Dear ImGui 源码
-├─ src/                # 应用源代码
-│   ├ config.*
-│   ├ sysinfo.*
-│   ├ scheduler.*
-│   ├ trayicon.*
-│   └ main.cpp
-├─ assets/             # 字体、图标等资源
-├─ LICENSE             # AGPL‑3.0
-└─ README.md           # 本文档
+├─ include/                # 依赖
+├─ src/                    # 应用源代码
+│   ├ config.*             # 配置管理 (JSON 读写)
+│   ├ sysinfo.*            # 系统指标采集 (CPU/GPU/内存/网络)
+│   ├ scheduler.*          # 任务计划程序 (开机启动注册)
+│   ├ trayicon.*           # 托盘图标与菜单
+│   ├ transferstation.*    # 文件中转站 (可选)
+│   ├ window.*             # 窗口管理、D3D 设备、WndProc
+│   ├ ui.*                 # 灵动岛 UI 绘制 (主界面/设置)
+│   ├ Logger.cpp           # 日志系统 (文件 + 控制台)
+│   ├ logging.h            # 日志宏 (LOG_INFO 等)
+│   ├ mingw_compat.h       # MinGW 头文件兼容层
+│   ├ island.h             # 状态机定义 (待整合)
+│   └ main.cpp             # 程序入口、初始化、主循环
+├─ LICENSE                 # AGPL‑3.0
+└─ README.md               
 ```
 
 ### 主要模块
 - **config**：管理 config.json，定义配置结构体
-- **sysinfo**：后台线程采集系统指标并暴露给 UI
+- **sysinfo**：后台线程采集系统指标（CPU/GPU/内存/网络/电池）
 - **trayicon**：托盘图标与菜单交互封装
 - **scheduler**：封装对 Windows 任务计划程序的操作，用于注册开机启动
-- **main**：程序入口，初始化 ImGui / D3D11 /窗口/逻辑循环
+- **window**：窗口创建、D3D11 设备管理、WndProc 消息处理
+- **ui**：灵动岛界面绘制（收起/展开状态、设置窗口）
+- **Logger**：线程安全日志系统，支持文件输出和可选控制台输出
+- **mingw_compat**：MinGW 下缺失的 Windows COM 接口兼容定义
 
 ## 常见问题
 
@@ -209,8 +224,7 @@
 ## 开发说明
 
 - **UI 界面**：依赖 ImGui，渲染使用 imgui_impl_win32.cpp 和 imgui_impl_dx11.cpp
-- **图标资源**：位于 assets/，程序运行时会从该目录加载 icon.png
-- **日志**：写入 dynamicisland.log，用于调试
+- **日志**：写入 `dynamicisland.log`，可通过取消 `main.cpp` 中的注释启用控制台输出
 - **系统监控**：通过 PDH、WMI、NVML 动态链接获取数据
 - **任务计划器**：接口封装对 COM 的使用，可注册隐藏启动任务
 

@@ -1,4 +1,5 @@
 #include "sysinfo.h"
+#include "logging.h"
 #include <psapi.h>
 #include <dxgi.h>
 #include <wbemidl.h>
@@ -109,6 +110,9 @@ void SysInfoManager::MonitoringLoop() {
         if (tick % 5 == 0) {
             UpdateGPU();
         }
+
+        LOG_DEBUG("System data refreshed (tick=%d, CPU=%.1f%%, Mem=%.1f%%)",
+                  tick, GetCpuUsage(), GetMemUsage());
         
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         tick++;

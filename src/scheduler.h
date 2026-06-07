@@ -5,6 +5,9 @@
 #include <comdef.h>
 #include <taskschd.h>
 
+// ILogonTrigger 兼容层
+#include "mingw_compat.h"
+
 #pragma comment(lib, "taskschd.lib")
 #pragma comment(lib, "comsupp.lib")
 

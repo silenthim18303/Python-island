@@ -1,3 +1,0 @@
-"C:\Program Files\cmake\bin\cmake.exe" -E rm -f CMakeFiles\DynamicIsland.dir/objects.a
-C:\PROGRA~1\mingw64\bin\ar.exe qc CMakeFiles\DynamicIsland.dir/objects.a @CMakeFiles\DynamicIsland.dir\objects1.rsp
-C:\PROGRA~1\mingw64\bin\G__~1.EXE  -municode -static-libgcc -static-libstdc++ -static -mwindows -Wl,--whole-archive CMakeFiles\DynamicIsland.dir/objects.a -Wl,--no-whole-archive -o DynamicIsland.exe -Wl,--out-implib,libDynamicIsland.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\DynamicIsland.dir\linkLibs.rsp
