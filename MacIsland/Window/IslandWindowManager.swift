@@ -34,7 +34,8 @@ private class ActivatablePanel: NSPanel {
 // MARK: - No-op Hosting View
 
 /// 子类化 NSHostingView，拦截 setFrameSize 防止布局递归
-private class NoAutoResizeHostingView<Content: View>: NSHostingView<Content> {
+/// 使用非泛型子类避免 Swift 6.3.2 优化器崩溃
+private final class NoAutoResizeHostingView: NSHostingView<AnyView> {
     var blockResize = true
 
     override func setFrameSize(_ newSize: NSSize) {
@@ -53,7 +54,7 @@ final class IslandWindowManager {
     static let shared = IslandWindowManager()
 
     private var panel: NSPanel?
-    private var hostingView: NoAutoResizeHostingView<AnyView>?
+    private var hostingView: NoAutoResizeHostingView?
     private var currentState: IslandState = .idle
     private var lastAdaptiveHeight: CGFloat = 0
     private var isResizing = false
@@ -242,16 +243,16 @@ final class IslandWindowManager {
     }
 
     @discardableResult
-    private func configureContentView<Content: View>(_ panel: NSPanel, with content: Content, size: CGSize) -> NoAutoResizeHostingView<AnyView> {
-        let hostingView = NoAutoResizeHostingView<AnyView>(rootView: AnyView(content))
+    private func configureContentView<Content: View>(_ panel: NSPanel, with content: Content, size: CGSize) -> NoAutoResizeHostingView {
+        let hostingView = NoAutoResizeHostingView(rootView: AnyView(content))
         hostingView.frame = NSRect(origin: .zero, size: size)
         hostingView.blockResize = false // 初始阶段允许设置尺寸
 
         panel.contentView = hostingView
         panel.contentView?.wantsLayer = true
         panel.contentView?.layer?.cornerRadius = IslandLayout.cornerRadius(for: .idle)
-        return hostingView
         panel.contentView?.layer?.masksToBounds = true
+        return hostingView
     }
 
     // MARK: - Frame Calculation

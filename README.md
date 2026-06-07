@@ -12,16 +12,16 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 设计参考自 Windows 版的 eIsland，但完全使用原生技术栈重写，借助 `NSPanel` 实现无边框悬浮窗口，借助 SwiftUI 实现状态驱动的形态动画。
 
-| 平台 | macOS 26.5+ |
+| 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v1.7.0 |
+| 版本 | v1.7.1 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v1.7.0)](https://github.com/MacIsland/MacIsland/releases/download/v1.7.0/MacIsland_v1.7.0.dmg)
+[📥 下载最新版本 (v1.7.1)](https://github.com/MacIsland/MacIsland/releases/download/v1.7.1/MacIsland_v1.7.1.dmg)
 
 ## 项目结构
 
@@ -152,9 +152,11 @@ MacIsland/
 
 1. 使用 Xcode 打开 `MacIsland.xcodeproj`。
 2. 依赖通过 Swift Package Manager 自动解析（QWeatherSDK）。
-3. 在 `QWeatherService` 中配置和风天气 API Key 后构建运行（macOS 26.5+）。
+3. 在 `QWeatherService` 中配置和风天气 API Key 后构建运行（macOS 15.0+）。
 4. 首次启动需在「系统设置 → 隐私与安全性」中授予**定位**与**辅助功能**权限。
 5. 社区壁纸功能需在设置中配置 GitHub 用户名并完成 Device Flow 授权。
+
+> ⚠️ **小组件使用说明**：macOS 要求应用位于 `/Applications` 目录才能正确发现和显示小组件。下载 DMG 后，请将 MacIsland.app 拖入 `/Applications` 文件夹，然后从该位置启动应用。
 
 ## 权限说明
 

@@ -439,8 +439,20 @@ enum L10n {
     static var menuHideIsland: String { t("menu_hide_island") }
     static var menuShowIsland: String { t("menu_show_island") }
     static var menuCollapse: String { t("menu_collapse") }
+    static var menuCheckForUpdates: String { t("menu_check_for_updates") }
     static var menuSettings: String { t("menu_settings") }
     static var menuQuit: String { t("menu_quit") }
+
+    // MARK: - Update
+    static var updateAvailableTitle: String { t("update_available_title") }
+    static func updateAvailableMessage(version: String) -> String {
+        t("update_available_message").replacingOccurrences(of: "%@", with: version)
+    }
+    static var updateDownload: String { t("update_download") }
+    static var updateLater: String { t("update_later") }
+    static var updateUpToDateTitle: String { t("update_up_to_date_title") }
+    static var updateUpToDateMessage: String { t("update_up_to_date_message") }
+    static var updateErrorTitle: String { t("update_error_title") }
 
     // MARK: - Service Errors
     static var errorClipboardLink: String { t("error_clipboard_link") }
@@ -706,7 +718,15 @@ private let zhStrings: [String: String] = [
     "close_panel": "关闭", "collapse_overview": "收起到概览", "skip": "跳过",
     // Menu Bar
     "menu_hide_island": "隐藏灵动岛", "menu_show_island": "显示灵动岛",
-    "menu_collapse": "折叠岛", "menu_settings": "设置", "menu_quit": "退出 MacIsland",
+    "menu_collapse": "折叠岛", "menu_check_for_updates": "检查更新", "menu_settings": "设置", "menu_quit": "退出 MacIsland",
+    // Update
+    "update_available_title": "发现新版本",
+    "update_available_message": "MacIsland %@ 已发布，是否立即更新？",
+    "update_download": "下载更新",
+    "update_later": "稍后提醒",
+    "update_up_to_date_title": "检查更新",
+    "update_up_to_date_message": "当前已是最新版本！",
+    "update_error_title": "检查更新失败",
     // Service Errors
     "error_clipboard_link": "🔗 链接检测",
     "error_weather_location": "获取位置失败", "error_weather_fetch": "获取天气失败",
@@ -931,7 +951,15 @@ private let enStrings: [String: String] = [
     "close_panel": "Close", "collapse_overview": "Collapse", "skip": "Skip",
     // Menu Bar
     "menu_hide_island": "Hide Island", "menu_show_island": "Show Island",
-    "menu_collapse": "Collapse", "menu_settings": "Settings", "menu_quit": "Quit MacIsland",
+    "menu_collapse": "Collapse", "menu_check_for_updates": "Check for Updates", "menu_settings": "Settings", "menu_quit": "Quit MacIsland",
+    // Update
+    "update_available_title": "Update Available",
+    "update_available_message": "MacIsland %@ is available. Would you like to update?",
+    "update_download": "Download Update",
+    "update_later": "Remind Me Later",
+    "update_up_to_date_title": "Check for Updates",
+    "update_up_to_date_message": "You're up to date!",
+    "update_error_title": "Update Check Failed",
     // Service Errors
     "error_clipboard_link": "🔗 Link Detected",
     "error_weather_location": "Failed to get location", "error_weather_fetch": "Failed to fetch weather",
@@ -1156,7 +1184,15 @@ private let jaStrings: [String: String] = [
     "close_panel": "閉じる", "collapse_overview": "折りたたむ", "skip": "スキップ",
     // Menu Bar
     "menu_hide_island": "アイランドを隠す", "menu_show_island": "アイランドを表示",
-    "menu_collapse": "折りたたむ", "menu_settings": "設定", "menu_quit": "MacIsland を終了",
+    "menu_collapse": "折りたたむ", "menu_check_for_updates": "アップデートを確認", "menu_settings": "設定", "menu_quit": "MacIsland を終了",
+    // Update
+    "update_available_title": "アップデートがあります",
+    "update_available_message": "MacIsland %@ が利用可能です。アップデートしますか？",
+    "update_download": "ダウンロード",
+    "update_later": "後で通知",
+    "update_up_to_date_title": "アップデートの確認",
+    "update_up_to_date_message": "最新バージョンです！",
+    "update_error_title": "アップデート確認失敗",
     // Service Errors
     "error_clipboard_link": "🔗 リンク検出",
     "error_weather_location": "位置情報の取得に失敗", "error_weather_fetch": "天気の取得に失敗",

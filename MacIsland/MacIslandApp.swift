@@ -78,6 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 /// 菜单栏控制视图
 struct MenuBarView: View {
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var updateManager = UpdateManager.shared
     @State private var isVisible = true
 
     var body: some View {
@@ -133,6 +134,34 @@ struct MenuBarView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 4)
 
+            // 检查更新
+            Button {
+                Task {
+                    await updateManager.checkForUpdates()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: updateManager.isChecking ? "arrow.triangle.2.circlepath.circle" : "arrow.triangle.2.circlepath")
+                        .frame(width: 16)
+                        .rotationEffect(.degrees(updateManager.isChecking ? 360 : 0))
+                        .animation(updateManager.isChecking ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: updateManager.isChecking)
+
+                    Text(L10n.menuCheckForUpdates)
+
+                    Spacer()
+
+                    // 显示更新状态
+                    if case .available(let version, _, _) = updateManager.status {
+                        Text("v\(version)")
+                            .font(.system(size: 10))
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+
             // 设置（打开灵动岛设置标签）
             Button {
                 IslandWindowManager.shared.show()
@@ -173,5 +202,80 @@ struct MenuBarView: View {
             .padding(.bottom, 8)
         }
         .frame(width: 200)
+        .onChange(of: updateManager.status) { _, newStatus in
+            handleUpdateStatus(newStatus)
+        }
+    }
+
+    /// 处理更新状态变化
+    private func handleUpdateStatus(_ status: UpdateStatus) {
+        switch status {
+        case .available(let version, let downloadUrl, let releaseNotes):
+            showUpdateAlert(version: version, downloadUrl: downloadUrl, releaseNotes: releaseNotes)
+        case .upToDate:
+            showUpToDateAlert()
+        case .error(let message):
+            showErrorAlert(message: message)
+        default:
+            break
+        }
+    }
+
+    /// 显示更新提示
+    private func showUpdateAlert(version: String, downloadUrl: String, releaseNotes: String?) {
+        let alert = NSAlert()
+        alert.messageText = L10n.updateAvailableTitle
+        alert.informativeText = L10n.updateAvailableMessage(version: version)
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: L10n.updateDownload)
+        alert.addButton(withTitle: L10n.updateLater)
+
+        if let notes = releaseNotes, !notes.isEmpty {
+            alert.accessoryView = createReleaseNotesView(notes)
+        }
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            Task {
+                await updateManager.downloadAndInstall(url: downloadUrl)
+            }
+        }
+    }
+
+    /// 显示已是最新版本
+    private func showUpToDateAlert() {
+        let alert = NSAlert()
+        alert.messageText = L10n.updateUpToDateTitle
+        alert.informativeText = L10n.updateUpToDateMessage
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    /// 显示错误提示
+    private func showErrorAlert(message: String) {
+        let alert = NSAlert()
+        alert.messageText = L10n.updateErrorTitle
+        alert.informativeText = message
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    /// 创建更新日志视图
+    private func createReleaseNotesView(_ notes: String) -> NSView {
+        let scrollView = NSScrollView()
+        let textView = NSTextView()
+
+        textView.string = notes
+        textView.isEditable = false
+        textView.font = NSFont.systemFont(ofSize: 12)
+        textView.textColor = NSColor.secondaryLabelColor
+
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = true
+        scrollView.frame = NSRect(x: 0, y: 0, width: 300, height: 100)
+
+        return scrollView
     }
 }
