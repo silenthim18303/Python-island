@@ -85,6 +85,18 @@ MacIsland/
 │       ├── MarqueeText.swift        # 跑马灯滚动文本
 │       └── ...
 │
+├── MacIslandWidgets/           # 小组件扩展
+│   ├── MacIslandWidgets.swift  # WidgetBundle 入口
+│   ├── WidgetShared.swift      # 共享常量、主题、格式化工具
+│   ├── WidgetLocalization.swift # 小组件多语言支持（中/英/日）
+│   ├── WeatherWidget.swift     # 天气小组件（小/中/大）
+│   ├── MusicWidget.swift       # 音乐小组件（小/中/大）
+│   ├── TimerWidget.swift       # 计时器小组件（小/中/大）
+│   ├── SystemMonitorWidget.swift # 系统监控小组件（小/中/大）
+│   ├── TodoWidget.swift        # 待办小组件（小/中）
+│   ├── ClipboardWidget.swift   # 剪贴板小组件（小/中）
+│   └── EventWidget.swift       # 倒数日小组件（小/中）
+│
 └── Service/                    # 服务层（协议 + 实现 + DI）
     ├── DI/ServiceContainer.swift   # 依赖注入容器，统一生命周期
     ├── Protocols/                  # 各服务协议定义
@@ -104,7 +116,10 @@ MacIsland/
         ├── SystemMonitorServiceImpl.swift # CPU/内存/磁盘/电池/网络监控
         ├── HotkeyService.swift            # 全局快捷键（⌥⌘）
         ├── AIService.swift                # AI 对话（Ollama + OpenAI）
-        └── GitHubService.swift            # GitHub API（Device Flow OAuth + 壁纸上传/删除）
+        ├── GitHubService.swift            # GitHub API（Device Flow OAuth + 壁纸上传/删除）
+        ├── WidgetDataManager.swift        # 小组件数据同步（JSON 文件共享）
+        ├── UpdateManager.swift            # 自动更新（GitHub API）
+        └── LaunchAtLoginManager.swift     # 开机自启管理（SMAppService）
 ```
 
 ### 架构要点
@@ -123,6 +138,7 @@ MacIsland/
 - ✅ **菜单栏常驻**：`MenuBarExtra` 提供显隐切换与退出；Dock 图标隐藏（accessory 模式）。
 - ✅ **七态平滑切换**：空闲胶囊、悬停速览、展开面板、最大展开、通知、歌词、倒计时，动画速度/弹簧可配置。
 - ✅ **全局快捷键**：`⌥⌘I` 显隐、`⌥⌘P` 播放/暂停、`⌥⌘←/→` 上/下一首（需辅助功能权限，含防抖）。
+- ✅ **自动更新**：基于 GitHub API 的应用内检查更新，支持手动检查和自动更新。
 
 ### 音乐与歌词
 - ✅ **音乐控制**：基于分布式通知 + `CGWindowList` + AppleScript 检测系统播放器（Apple Music、Spotify、QQ/酷狗/酷我/网易云音乐等），支持播放/暂停/上一首/下一首、进度与音量控制。
@@ -134,7 +150,13 @@ MacIsland/
 
 ### 系统监控
 - ✅ **CPU/内存/磁盘/电池/网络**：实时采集与展示，含核心数、温度、上下行速度。
-- ✅ **桌面小组件**：天气、系统监控、计时器小组件，支持小/中/大三种尺寸。
+
+### 桌面小组件
+- ✅ **7 种小组件**：天气、音乐、计时器、系统监控、待办、剪贴板、倒数日。
+- ✅ **3 种尺寸**：小（Small）、中（Medium）、大（Large）。
+- ✅ **多语言支持**：中文、英文、日文三语言，跟随主应用语言设置。
+- ✅ **独立深浅色**：可选择跟随灵动岛、跟随系统、始终浅色或始终深色。
+- ✅ **实时数据同步**：通过 JSON 文件共享数据，确保小组件显示最新信息。
 
 ### 壁纸系统
 - ✅ **本地壁纸**：文件选择器 + 拖拽添加，详情弹窗预览+信息+操作。
@@ -148,6 +170,12 @@ MacIsland/
 - ✅ **工具箱**：剪贴板历史、编码转换、文件哈希校验、本地文件搜索、翻译。
 - ✅ **AI 助手**：支持 Ollama + OpenAI API 兼容，自动端口探测。
 - ✅ **待办/便签/倒数日/闹钟/书签**：完整 CRUD + UserDefaults 持久化。
+- ✅ **开机自启**：支持 macOS 13+ SMAppService API，向下兼容 SMLoginItemSetEnabled。
+
+### 多语言支持
+- ✅ **中文**：简体中文完整支持。
+- ✅ **英文**：English complete support。
+- ✅ **日文**：日本語完全サポート。
 
 ## 构建与运行
 
@@ -179,9 +207,38 @@ MacIsland/
 - 🎯 **语音唤醒**：自定义唤醒词，免触控操作
 
 ### 其他规划
-- 📱 **iPhone 配对**：通过 Local Network 与 iPhone 配对，同步通知/音乐控制
-- 📦 **开机自启优化**：更可靠的 Launch Agent 实现
-- ✅ **自动更新**：已实现，基于 GitHub API 的应用内检查更新
+- 📱 **iPhone 配对**：通过 Local Network 与 iPhone 配对，同步通知/音乐控制（暂移除，后续重新上线）
+- 🔄 **小组件交互**：支持小组件直接操作（完成待办、播放/暂停音乐等）
+
+## 更新日志
+
+### v1.9.0 (2026-06-08)
+- ✅ 小组件独立深浅色设置（跟随灵动岛/跟随系统/浅色/深色）
+- ✅ 小组件多语言支持（中/英/日）
+- ✅ 优化小组件布局，新增大组件支持
+
+### v1.8.9 (2026-06-08)
+- ✅ 小组件语言包系统
+- ✅ 所有小组件支持中文、英文、日文
+
+### v1.8.8 (2026-06-08)
+- ✅ 优化开机自启功能
+- ✅ 新增 LaunchAtLoginManager 统一管理
+
+### v1.8.7 (2026-06-08)
+- ✅ 暂时移除手机连接功能（后续调整上线）
+
+### v1.8.2 (2026-06-08)
+- ✅ 优化系统监控中组件布局
+- ✅ 新增大组件支持
+
+### v1.7.1 (2026-06-07)
+- ✅ 修复小组件数据同步问题
+- ✅ 修复壁纸本地化问题
+
+### v1.7.0 (2026-06-07)
+- ✅ 快捷键优化
+- ✅ 多语言完善
 
 ## 致谢
 
