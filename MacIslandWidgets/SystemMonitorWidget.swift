@@ -85,8 +85,8 @@ struct SystemMonitorEntry: TimelineEntry {
     var temperatureString: String { cpuTemperature > 0 ? "\(Int(cpuTemperature))°C" : "--" }
     var updateString: String { WidgetFormat.relativeTime(updatedAt) }
     var networkTitle: String {
-        guard networkConnected else { return "离线" }
-        return networkType.isEmpty ? "在线" : networkType
+        guard networkConnected else { return WidgetL10n.monitorOffline }
+        return networkType.isEmpty ? WidgetL10n.monitorOnline : networkType
     }
 
     var cpuColor: Color { cpuUsage > 80 ? .red : cpuUsage > 60 ? .orange : .green }
@@ -116,8 +116,8 @@ struct SystemMonitorWidget: Widget {
             SystemMonitorWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("系统监控")
-        .description("CPU、内存、磁盘、电池、网络状态")
+        .configurationDisplayName(WidgetL10n.monitorDisplayName)
+        .description(WidgetL10n.monitorDescription)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -142,7 +142,7 @@ struct SystemMonitorWidgetView: View {
     private var smallView: some View {
         VStack(alignment: .leading, spacing: 8) {
             if entry.hasData {
-                WidgetHeader(icon: "cpu", title: "系统", trailing: entry.updateString, color: .green)
+                WidgetHeader(icon: "cpu", title: WidgetL10n.monitorSystem, trailing: entry.updateString, color: .green)
 
                 MonitorRow(icon: "cpu", label: "CPU", value: entry.cpuString,
                            detail: entry.temperatureString, color: entry.cpuColor)
@@ -153,12 +153,12 @@ struct SystemMonitorWidgetView: View {
                     CompactStatus(icon: entry.batteryIcon, value: entry.batteryString, color: entry.batteryColor)
                     Spacer(minLength: 4)
                     CompactStatus(icon: entry.networkConnected ? "arrow.down" : "wifi.slash",
-                                  value: entry.networkConnected ? entry.formatSpeed(entry.downloadSpeed) : "离线",
+                                  value: entry.networkConnected ? entry.formatSpeed(entry.downloadSpeed) : WidgetL10n.monitorOffline,
                                   color: entry.networkConnected ? .cyan : .secondary)
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "cpu", message: "系统数据未同步")
+                WidgetEmptyState(icon: "cpu", message: WidgetL10n.monitorSyncHint)
                 Spacer()
             }
         }
@@ -170,7 +170,7 @@ struct SystemMonitorWidgetView: View {
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 10) {
             if entry.hasData {
-                WidgetHeader(icon: "desktopcomputer", title: "系统监控", trailing: entry.updateString, color: .green)
+                WidgetHeader(icon: "desktopcomputer", title: WidgetL10n.monitorDisplayName, trailing: entry.updateString, color: .green)
 
                 HStack(spacing: 12) {
                     // 左侧：3个进度条
@@ -190,7 +190,7 @@ struct SystemMonitorWidgetView: View {
                         HStack(spacing: 8) {
                             StatusBadge(icon: entry.batteryIcon, value: entry.batteryString, color: entry.batteryColor)
                             StatusBadge(icon: entry.networkConnected ? "wifi" : "wifi.slash",
-                                        value: entry.networkConnected ? entry.networkType : "离线",
+                                        value: entry.networkConnected ? entry.networkType : WidgetL10n.monitorOffline,
                                         color: entry.networkConnected ? .cyan : .secondary)
                         }
 
@@ -203,7 +203,7 @@ struct SystemMonitorWidgetView: View {
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "desktopcomputer", message: "打开 MacIsland 同步系统状态")
+                WidgetEmptyState(icon: "desktopcomputer", message: WidgetL10n.monitorOpenHint)
                 Spacer()
             }
         }
@@ -215,14 +215,14 @@ struct SystemMonitorWidgetView: View {
     private var largeView: some View {
         VStack(alignment: .leading, spacing: 12) {
             if entry.hasData {
-                WidgetHeader(icon: "desktopcomputer", title: "系统监控", trailing: entry.updateString, color: .green)
+                WidgetHeader(icon: "desktopcomputer", title: WidgetL10n.monitorDisplayName, trailing: entry.updateString, color: .green)
 
                 // CPU 和内存仪表盘
                 HStack(spacing: 16) {
-                    CircularGauge(value: entry.cpuUsage / 100, label: "CPU", detail: entry.temperatureString, color: entry.cpuColor)
-                    CircularGauge(value: entry.memoryUsage / 100, label: "内存",
+                    CircularGauge(value: entry.cpuUsage / 100, label: WidgetL10n.monitorCPU, detail: entry.temperatureString, color: entry.cpuColor)
+                    CircularGauge(value: entry.memoryUsage / 100, label: WidgetL10n.monitorMemory,
                                   detail: String(format: "%.1fG/%.0fG", entry.memoryUsed, entry.memoryTotal), color: entry.memoryColor)
-                    CircularGauge(value: entry.diskUsage / 100, label: "磁盘",
+                    CircularGauge(value: entry.diskUsage / 100, label: WidgetL10n.monitorDisk,
                                   detail: String(format: "%.0fG/%.0fG", entry.diskUsed, entry.diskTotal), color: entry.diskColor)
                 }
 
@@ -233,18 +233,18 @@ struct SystemMonitorWidgetView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible()),
                 ], spacing: 8) {
-                    SystemDetailCard(icon: entry.batteryIcon, title: "电池", value: entry.batteryString,
-                                     subtitle: entry.batteryCharging ? "充电中" : "放电中", color: entry.batteryColor)
-                    SystemDetailCard(icon: entry.networkConnected ? "wifi" : "wifi.slash", title: "网络",
+                    SystemDetailCard(icon: entry.batteryIcon, title: WidgetL10n.monitorBattery, value: entry.batteryString,
+                                     subtitle: entry.batteryCharging ? WidgetL10n.monitorCharging : WidgetL10n.monitorDischarging, color: entry.batteryColor)
+                    SystemDetailCard(icon: entry.networkConnected ? "wifi" : "wifi.slash", title: WidgetL10n.monitorNetwork,
                                      value: entry.networkTitle, subtitle: entry.localIP, color: entry.networkConnected ? .cyan : .secondary)
-                    SystemDetailCard(icon: "arrow.down", title: "下载速度",
+                    SystemDetailCard(icon: "arrow.down", title: WidgetL10n.monitorDownload,
                                      value: entry.formatSpeed(entry.downloadSpeed), subtitle: "", color: .cyan)
-                    SystemDetailCard(icon: "arrow.up", title: "上传速度",
+                    SystemDetailCard(icon: "arrow.up", title: WidgetL10n.monitorUpload,
                                      value: entry.formatSpeed(entry.uploadSpeed), subtitle: "", color: .blue)
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "desktopcomputer", message: "打开 MacIsland 同步系统状态数据")
+                WidgetEmptyState(icon: "desktopcomputer", message: WidgetL10n.monitorOpenHint)
                 Spacer()
             }
         }

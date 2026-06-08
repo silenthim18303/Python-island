@@ -69,7 +69,7 @@ struct WeatherEntry: TimelineEntry {
     var updateString: String { WidgetFormat.relativeTime(updatedAt) }
 
     var locationTitle: String {
-        if cityName.isEmpty && districtName.isEmpty { return "当前位置" }
+        if cityName.isEmpty && districtName.isEmpty { return WidgetL10n.weatherCurrentLocation }
         if districtName.isEmpty { return cityName }
         if cityName.isEmpty { return districtName }
         let city = cityName.hasSuffix("市") ? String(cityName.dropLast()) : cityName
@@ -87,8 +87,8 @@ struct WeatherWidget: Widget {
             WeatherWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("天气")
-        .description("显示当前天气信息")
+        .configurationDisplayName(WidgetL10n.weatherDisplayName)
+        .description(WidgetL10n.weatherDescription)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -130,11 +130,11 @@ struct WeatherWidgetView: View {
                         .foregroundStyle(.yellow, .orange)
                 }
 
-                WidgetInfoRow(icon: "thermometer.medium", title: "高低温", value: entry.rangeString, color: .orange)
-                WidgetInfoRow(icon: "humidity.fill", title: "湿度", value: entry.humidityString, color: .cyan)
+                WidgetInfoRow(icon: "thermometer.medium", title: WidgetL10n.weatherHighLow, value: entry.rangeString, color: .orange)
+                WidgetInfoRow(icon: "humidity.fill", title: WidgetL10n.weatherHumidity, value: entry.humidityString, color: .cyan)
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "cloud.sun", message: "天气尚未同步")
+                WidgetEmptyState(icon: "cloud.sun", message: WidgetL10n.weatherSyncHint)
                 Spacer()
             }
         }
@@ -165,14 +165,14 @@ struct WeatherWidgetView: View {
                     Divider()
 
                     VStack(spacing: 7) {
-                        WidgetInfoRow(icon: "thermometer.medium", title: "高低温", value: entry.rangeString, color: .orange)
-                        WidgetInfoRow(icon: "humidity.fill", title: "湿度", value: entry.humidityString, color: .cyan)
-                        WidgetInfoRow(icon: "wind", title: "风速", value: entry.windString, color: .blue)
+                        WidgetInfoRow(icon: "thermometer.medium", title: WidgetL10n.weatherHighLow, value: entry.rangeString, color: .orange)
+                        WidgetInfoRow(icon: "humidity.fill", title: WidgetL10n.weatherHumidity, value: entry.humidityString, color: .cyan)
+                        WidgetInfoRow(icon: "wind", title: WidgetL10n.weatherWindSpeed, value: entry.windString, color: .blue)
                     }
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "cloud.sun", message: "打开 MacIsland 同步天气")
+                WidgetEmptyState(icon: "cloud.sun", message: WidgetL10n.weatherOpenHint)
                 Spacer()
             }
         }
@@ -216,12 +216,12 @@ struct WeatherWidgetView: View {
                 ], spacing: 10) {
                     WeatherDetailCard(icon: "thermometer.medium", title: "最高温", value: "\(Int(entry.temperatureMax))°", color: .red)
                     WeatherDetailCard(icon: "thermometer.low", title: "最低温", value: "\(Int(entry.temperatureMin))°", color: .blue)
-                    WeatherDetailCard(icon: "humidity.fill", title: "湿度", value: entry.humidityString, color: .cyan)
-                    WeatherDetailCard(icon: "wind", title: "风速", value: entry.windString, color: .green)
+                    WeatherDetailCard(icon: "humidity.fill", title: WidgetL10n.weatherHumidity, value: entry.humidityString, color: .cyan)
+                    WeatherDetailCard(icon: "wind", title: WidgetL10n.weatherWindSpeed, value: entry.windString, color: .green)
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "cloud.sun", message: "打开 MacIsland 同步天气数据")
+                WidgetEmptyState(icon: "cloud.sun", message: WidgetL10n.weatherOpenHint)
                 Spacer()
             }
         }

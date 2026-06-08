@@ -279,6 +279,7 @@ enum L10n {
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
     static var settingsWallpaperOpacity: String { t("settings_wallpaper_opacity") }
+    static var settingsWidgetAppearance: String { t("settings_widget_appearance") }
     static var settingsAnimation: String { t("settings_animation") }
     static var settingsClipboard: String { t("settings_clipboard") }
     static var settingsAppearance: String { t("settings_appearance") }
@@ -515,6 +516,7 @@ enum L10n {
     static var descAutostart: String { t("desc_autostart") }
     static var descIslandOpacity: String { t("desc_island_opacity") }
     static var descWallpaperOpacity: String { t("desc_wallpaper_opacity") }
+    static var descWidgetAppearance: String { t("desc_widget_appearance") }
     static var descWallpaperPath: String { t("desc_wallpaper_path") }
     static var descAnimationSpeed: String { t("desc_animation_speed") }
     static var descSpringAnimation: String { t("desc_spring_animation") }
@@ -654,7 +656,8 @@ private let zhStrings: [String: String] = [
     // Settings
     "settings_general": "通用", "settings_shortcuts": "快捷键", "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
-    "settings_wallpaper_opacity": "壁纸透明度", "settings_animation": "动画",
+    "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
+    "settings_animation": "动画",
     "settings_clipboard": "剪贴板", "settings_appearance": "外观",
     "settings_accent_color": "强调色", "settings_language": "语言",
     "settings_theme": "外观模式", "settings_theme_dark": "深色", "settings_theme_light": "浅色",
@@ -781,6 +784,7 @@ private let zhStrings: [String: String] = [
     "desc_autostart": "登录系统后自动启动 MacIsland。",
     "desc_island_opacity": "调整灵动岛整体不透明度（10%–100%）。",
     "desc_wallpaper_opacity": "独立于灵动岛整体透明度的壁纸不透明度。",
+    "desc_widget_appearance": "设置小组件的深浅色模式，可选择跟随灵动岛或独立设置。",
     "desc_wallpaper_path": "自定义壁纸缓存目录，留空使用默认位置。",
     "desc_animation_speed": "灵动岛展开/折叠的过渡时长。",
     "desc_spring_animation": "启用更有弹性的弹簧过渡曲线。",
@@ -892,7 +896,8 @@ private let enStrings: [String: String] = [
     // Settings
     "settings_general": "General", "settings_shortcuts": "Shortcuts", "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
-    "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_animation": "Animation",
+    "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
+    "settings_animation": "Animation",
     "settings_clipboard": "Clipboard", "settings_appearance": "Appearance",
     "settings_accent_color": "Accent Color", "settings_language": "Language",
     "settings_theme": "Theme", "settings_theme_dark": "Dark", "settings_theme_light": "Light",
@@ -1019,6 +1024,7 @@ private let enStrings: [String: String] = [
     "desc_autostart": "Automatically launch MacIsland after login.",
     "desc_island_opacity": "Adjust island opacity (10%–100%).",
     "desc_wallpaper_opacity": "Wallpaper opacity independent of island opacity.",
+    "desc_widget_appearance": "Set widget light/dark mode, can follow island or set independently.",
     "desc_wallpaper_path": "Custom wallpaper cache directory. Leave empty for default.",
     "desc_animation_speed": "Transition duration for expand/collapse animations.",
     "desc_spring_animation": "Enable bouncy spring animation curves.",
@@ -1130,7 +1136,8 @@ private let jaStrings: [String: String] = [
     // Settings
     "settings_general": "一般", "settings_shortcuts": "ショートカット", "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
-    "settings_wallpaper_opacity": "壁紙透明度", "settings_animation": "アニメーション",
+    "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",
+    "settings_animation": "アニメーション",
     "settings_clipboard": "クリップボード", "settings_appearance": "外観",
     "settings_accent_color": "アクセントカラー", "settings_language": "言語",
     "settings_theme": "テーマ", "settings_theme_dark": "ダーク", "settings_theme_light": "ライト",
@@ -1257,6 +1264,7 @@ private let jaStrings: [String: String] = [
     "desc_autostart": "ログイン後に MacIsland を自動起動します。",
     "desc_island_opacity": "アイランドの不透明度を調整（10%–100%）。",
     "desc_wallpaper_opacity": "アイランドとは独立した壁紙の不透明度。",
+    "desc_widget_appearance": "ウィジェットのライト/ダークモードを設定します。アイランドに従うか独立して設定できます。",
     "desc_wallpaper_path": "壁紙キャッシュディレクトリを指定。空欄でデフォルト。",
     "desc_animation_speed": "展開/折りたたみアニメーションの遷移時間。",
     "desc_spring_animation": "バウンスするスプリングアニメーションを有効化。",

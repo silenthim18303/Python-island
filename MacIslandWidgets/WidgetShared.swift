@@ -17,6 +17,20 @@ enum WidgetConstants {
         UserDefaults(suiteName: appGroupID) ?? UserDefaults.standard
     }
 
+    /// 解析小组件颜色方案
+    static var resolvedColorScheme: ColorScheme {
+        let scheme = sharedDefaults.string(forKey: "widget_color_scheme") ?? "system"
+        switch scheme {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            // 跟随系统或跟随灵动岛（默认深色）
+            return .dark
+        }
+    }
+
     /// 从 App Group 容器的 JSON 文件读取数据
     private static var cachedData: [String: Any]?
 
@@ -85,6 +99,7 @@ enum WidgetTheme {
 extension View {
     func macIslandWidgetBackground() -> some View {
         self
+            .environment(\.colorScheme, WidgetConstants.resolvedColorScheme)
             .containerBackground(for: .widget) {
                 Color("WidgetBackground")
             }
@@ -101,12 +116,12 @@ enum WidgetFormat {
     }
 
     static func relativeTime(_ date: Date?) -> String {
-        guard let date else { return "未同步" }
+        guard let date else { return "--" }
         let seconds = max(Int(Date().timeIntervalSince(date)), 0)
-        if seconds < 60 { return "刚刚" }
-        if seconds < 3600 { return "\(seconds / 60)分钟前" }
-        if seconds < 86_400 { return "\(seconds / 3600)小时前" }
-        return "\(seconds / 86_400)天前"
+        if seconds < 60 { return WidgetL10n.justNow }
+        if seconds < 3600 { return "\(seconds / 60)\(WidgetL10n.minutesAgo)" }
+        if seconds < 86_400 { return "\(seconds / 3600)\(WidgetL10n.hoursAgo)" }
+        return "\(seconds / 86_400)\(WidgetL10n.daysAgo)"
     }
 
     static func speed(_ bytesPerSecond: Double) -> String {
