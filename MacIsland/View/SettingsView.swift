@@ -10,6 +10,33 @@ import ApplicationServices
 import Combine
 import ServiceManagement
 
+// MARK: - Launch At Login Toggle
+
+/// 开机自启切换组件
+struct LaunchAtLoginToggle: View {
+    @StateObject private var manager = LaunchAtLoginManager.shared
+
+    var body: some View {
+        Toggle(isOn: Binding(
+            get: { manager.isEnabled },
+            set: { manager.setEnabled($0) }
+        )) {
+            SettingLabel(key: "launchAtLogin")
+        }
+        .onChange(of: manager.isEnabled) { _, newValue in
+            // 同步到 AppSettings（可选）
+            AppSettings.shared.launchAtLogin = newValue
+        }
+        .alert("开机自启", isPresented: .constant(manager.error != nil)) {
+            Button("确定") { manager.error = nil }
+        } message: {
+            if let error = manager.error {
+                Text(error)
+            }
+        }
+    }
+}
+
 // MARK: - Settings View
 
 /// 原生偏好设置窗口 — 左侧分类侧栏 + 右侧表单，顶部支持搜索
@@ -137,8 +164,7 @@ private struct GeneralSettingsView: View {
             LabeledContent { LanguageSettingsView().labelsHidden() }
             label: { SettingLabel(key: "language") }
 
-            Toggle(isOn: $settings.launchAtLogin) { SettingLabel(key: "launchAtLogin") }
-                .onChange(of: settings.launchAtLogin) { _, v in setLaunchAtLogin(v) }
+            LaunchAtLoginToggle()
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -326,20 +352,6 @@ private struct GeneralSettingsView: View {
         panel.message = L10n.wallpaperSelect
         guard panel.runModal() == .OK, let url = panel.url else { return }
         settings.setCustomWallpaperDirectory(url)
-    }
-
-    private func setLaunchAtLogin(_ enabled: Bool) {
-        if #available(macOS 13.0, *) {
-            do {
-                if enabled {
-                    try SMAppService.mainApp.register()
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
-            } catch {
-                print("Login Item error: \(error)")
-            }
-        }
     }
 }
 

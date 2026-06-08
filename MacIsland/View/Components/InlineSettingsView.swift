@@ -10,6 +10,26 @@ import ApplicationServices
 import Combine
 import ServiceManagement
 
+// MARK: - Launch At Login Toggle (Inline)
+
+/// 开机自启切换组件（内联版本，深色背景适配）
+struct LaunchAtLoginToggleInline: View {
+    @StateObject private var manager = LaunchAtLoginManager.shared
+
+    var body: some View {
+        Toggle("", isOn: Binding(
+            get: { manager.isEnabled },
+            set: { manager.setEnabled($0) }
+        ))
+        .toggleStyle(.switch)
+        .controlSize(.small)
+        .labelsHidden()
+        .onChange(of: manager.isEnabled) { _, newValue in
+            AppSettings.shared.launchAtLogin = newValue
+        }
+    }
+}
+
 // MARK: - Inline Settings View
 
 /// 内联设置视图 — 嵌入 MaxExpand 设置标签页，深色背景适配
@@ -207,13 +227,7 @@ struct InlineSettingsView: View {
                 }
 
                 describedRow("launchAtLogin") {
-                    Toggle("", isOn: $settings.launchAtLogin)
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
-                        .labelsHidden()
-                        .onChange(of: settings.launchAtLogin) { _, newValue in
-                            setLaunchAtLogin(newValue)
-                        }
+                    LaunchAtLoginToggleInline()
                 }
 
                 sliderRow("islandOpacity",
@@ -679,20 +693,6 @@ struct InlineSettingsView: View {
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private func setLaunchAtLogin(_ enabled: Bool) {
-        if #available(macOS 13.0, *) {
-            do {
-                if enabled {
-                    try SMAppService.mainApp.register()
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
-            } catch {
-                print("Login Item error: \(error)")
-            }
         }
     }
 
