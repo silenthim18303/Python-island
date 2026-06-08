@@ -114,10 +114,10 @@ struct TimerEntry: TimelineEntry {
 
     var statusText: String {
         switch state {
-        case .idle: return "空闲"
-        case .running: return "运行中"
-        case .paused: return "已暂停"
-        case .completed: return "已完成"
+        case .idle: return WidgetL10n.timerIdleStatus
+        case .running: return WidgetL10n.timerRunning
+        case .paused: return WidgetL10n.timerPaused
+        case .completed: return WidgetL10n.timerCompletedStatus
         }
     }
 
@@ -141,8 +141,8 @@ struct TimerWidget: Widget {
             TimerWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("计时器")
-        .description("番茄钟和倒计时")
+        .configurationDisplayName(WidgetL10n.timerDisplayName)
+        .description(WidgetL10n.timerDescription)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -170,7 +170,7 @@ struct TimerWidgetView: View {
 
             if entry.type == .idle {
                 Spacer()
-                WidgetEmptyState(icon: "clock", message: "暂无计时任务")
+                WidgetEmptyState(icon: "clock", message: WidgetL10n.timerNoTask)
                 Spacer()
             } else {
                 ZStack {
@@ -191,7 +191,7 @@ struct TimerWidgetView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                Text(entry.type == .pomodoro ? "\(entry.completedPomodoros) 个番茄完成" : "总时长 \(entry.totalTimeString)")
+                Text(entry.type == .pomodoro ? "\(entry.completedPomodoros) \(WidgetL10n.timerPomodoroCompleted)" : "\(WidgetL10n.timerTotalTime) \(entry.totalTimeString)")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -208,7 +208,7 @@ struct TimerWidgetView: View {
 
             if entry.type == .idle {
                 Spacer()
-                WidgetEmptyState(icon: "clock", message: "番茄钟和倒计时空闲中")
+                WidgetEmptyState(icon: "clock", message: WidgetL10n.timerNoTaskDetail)
                 Spacer()
             } else {
                 HStack(spacing: 14) {
@@ -233,8 +233,8 @@ struct TimerWidgetView: View {
                     Divider()
 
                     VStack(spacing: 7) {
-                        WidgetInfoRow(icon: "flag.checkered", title: "状态", value: entry.statusText, color: entry.statusColor)
-                        WidgetInfoRow(icon: "clock.arrow.circlepath", title: "总时长", value: entry.totalTimeString, color: .blue)
+                        WidgetInfoRow(icon: "flag.checkered", title: WidgetL10n.timerStatus, value: entry.statusText, color: entry.statusColor)
+                        WidgetInfoRow(icon: "clock.arrow.circlepath", title: WidgetL10n.timerTotalTime, value: entry.totalTimeString, color: .blue)
                         if entry.type == .pomodoro {
                             WidgetInfoRow(icon: "checkmark.circle.fill", title: "完成", value: "\(entry.completedPomodoros) 个番茄", color: .green)
                         } else {
@@ -256,7 +256,7 @@ struct TimerWidgetView: View {
 
             if entry.type == .idle {
                 Spacer()
-                WidgetEmptyState(icon: "clock", message: "番茄钟和倒计时空闲中\n从主应用启动计时")
+                WidgetEmptyState(icon: "clock", message: WidgetL10n.timerNoTaskDetail)
                 Spacer()
             } else {
                 // 大号进度环
@@ -287,10 +287,10 @@ struct TimerWidgetView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible()),
                 ], spacing: 8) {
-                    TimerDetailCard(icon: "flag.checkered", title: "状态", value: entry.statusText, color: entry.statusColor)
-                    TimerDetailCard(icon: "clock.arrow.circlepath", title: "总时长", value: entry.totalTimeString, color: .blue)
+                    TimerDetailCard(icon: "flag.checkered", title: WidgetL10n.timerStatus, value: entry.statusText, color: entry.statusColor)
+                    TimerDetailCard(icon: "clock.arrow.circlepath", title: WidgetL10n.timerTotalTime, value: entry.totalTimeString, color: .blue)
                     if entry.type == .pomodoro {
-                        TimerDetailCard(icon: "checkmark.circle.fill", title: "已完成", value: "\(entry.completedPomodoros) 个番茄", color: .green)
+                        TimerDetailCard(icon: "checkmark.circle.fill", title: WidgetL10n.timerCompleted, value: "\(entry.completedPomodoros) \(WidgetL10n.timerPomodoroCompleted)", color: .green)
                         TimerDetailCard(icon: "timer", title: "当前阶段", value: entry.currentPhase, color: .orange)
                     } else {
                         TimerDetailCard(icon: "hourglass", title: "剩余时间", value: entry.formattedTime, color: .orange)

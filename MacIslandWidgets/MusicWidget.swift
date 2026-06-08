@@ -76,8 +76,8 @@ struct MusicWidget: Widget {
             MusicWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("音乐")
-        .description("显示当前播放的音乐")
+        .configurationDisplayName(WidgetL10n.musicDisplayName)
+        .description(WidgetL10n.musicDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -101,7 +101,7 @@ struct MusicWidgetView: View {
             if entry.hasMedia {
                 WidgetHeader(
                     icon: entry.isPlaying ? "play.fill" : "pause.fill",
-                    title: "音乐",
+                    title: WidgetL10n.musicTitle,
                     trailing: entry.statusText,
                     color: .purple
                 )
@@ -112,7 +112,7 @@ struct MusicWidgetView: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
 
-                Text(entry.artist.isEmpty ? "未知艺人" : entry.artist)
+                Text(entry.artist.isEmpty ? WidgetL10n.musicUnknownArtist : entry.artist)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -128,7 +128,7 @@ struct MusicWidgetView: View {
                 .foregroundColor(.secondary)
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "music.note", message: "暂无播放")
+                WidgetEmptyState(icon: "music.note", message: WidgetL10n.musicNoPlayback)
                 Spacer()
             }
         }
@@ -138,7 +138,7 @@ struct MusicWidgetView: View {
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 10) {
             if entry.hasMedia {
-                WidgetHeader(icon: "music.note", title: "正在播放", trailing: entry.updateString, color: .purple)
+                WidgetHeader(icon: "music.note", title: WidgetL10n.musicNowPlaying, trailing: entry.updateString, color: .purple)
 
                 HStack(spacing: 12) {
                     albumArt(size: 50)
@@ -150,7 +150,7 @@ struct MusicWidgetView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
 
-                        Text(entry.artist.isEmpty ? "未知艺人" : entry.artist)
+                        Text(entry.artist.isEmpty ? WidgetL10n.musicUnknownArtist : entry.artist)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
@@ -167,7 +167,7 @@ struct MusicWidgetView: View {
                 }
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "music.note", message: "暂无播放内容")
+                WidgetEmptyState(icon: "music.note", message: WidgetL10n.musicNoContent)
                 Spacer()
             }
         }

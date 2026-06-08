@@ -87,8 +87,8 @@ struct ClipboardWidget: Widget {
             ClipboardWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("剪贴板")
-        .description("最近复制的内容")
+        .configurationDisplayName(WidgetL10n.clipboardDisplayName)
+        .description(WidgetL10n.clipboardDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -111,10 +111,10 @@ struct ClipboardWidgetView: View {
         VStack(alignment: .leading, spacing: 8) {
             if entry.recentItems.isEmpty {
                 Spacer()
-                WidgetEmptyState(icon: "doc.on.clipboard", message: "暂无剪贴板记录")
+                WidgetEmptyState(icon: "doc.on.clipboard", message: WidgetL10n.clipboardNoItems)
                 Spacer()
             } else {
-                WidgetHeader(icon: "doc.on.clipboard", title: "剪贴板", trailing: entry.updateString, color: .blue)
+                WidgetHeader(icon: "doc.on.clipboard", title: WidgetL10n.clipboardTitle, trailing: entry.updateString, color: .blue)
 
                 Text(entry.recentItems.first?.text ?? "")
                     .font(.system(size: 12, weight: .medium))
@@ -123,9 +123,9 @@ struct ClipboardWidgetView: View {
                     .minimumScaleFactor(0.8)
 
                 HStack {
-                    Label("\(entry.recentItems.count) 条", systemImage: "tray.full")
+                    Label("\(entry.recentItems.count) \(WidgetL10n.clipboardItems)", systemImage: "tray.full")
                     Spacer()
-                    Label(entry.recentItems.first?.isURL == true ? "链接" : "文本",
+                    Label(entry.recentItems.first?.isURL == true ? WidgetL10n.clipboardLink : WidgetL10n.clipboardText,
                           systemImage: entry.recentItems.first?.isURL == true ? "link" : "doc.text")
                 }
                 .font(.system(size: 9, weight: .medium))
@@ -137,13 +137,13 @@ struct ClipboardWidgetView: View {
 
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader(icon: "doc.on.clipboard", title: "剪贴板历史", trailing: "\(entry.recentItems.count) 条 · \(entry.updateString)", color: .blue)
+            WidgetHeader(icon: "doc.on.clipboard", title: WidgetL10n.clipboardHistory, trailing: "\(entry.recentItems.count) \(WidgetL10n.clipboardItems) · \(entry.updateString)", color: .blue)
 
             if entry.recentItems.isEmpty {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text("暂无复制内容")
+                    Text(WidgetL10n.clipboardNoContent)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -177,8 +177,8 @@ struct ClipboardWidgetView: View {
 
     private func timeAgo(_ date: Date) -> String {
         let interval = Date().timeIntervalSince(date)
-        if interval < 60 { return "刚刚" }
-        if interval < 3600 { return "\(Int(interval / 60))分" }
-        return "\(Int(interval / 3600))时"
+        if interval < 60 { return WidgetL10n.clipboardJustNow }
+        if interval < 3600 { return "\(Int(interval / 60))\(WidgetL10n.clipboardMinutesAgo)" }
+        return "\(Int(interval / 3600))\(WidgetL10n.clipboardHoursAgo)"
     }
 }

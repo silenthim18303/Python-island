@@ -101,12 +101,12 @@ enum WidgetFormat {
     }
 
     static func relativeTime(_ date: Date?) -> String {
-        guard let date else { return "未同步" }
+        guard let date else { return "--" }
         let seconds = max(Int(Date().timeIntervalSince(date)), 0)
-        if seconds < 60 { return "刚刚" }
-        if seconds < 3600 { return "\(seconds / 60)分钟前" }
-        if seconds < 86_400 { return "\(seconds / 3600)小时前" }
-        return "\(seconds / 86_400)天前"
+        if seconds < 60 { return WidgetL10n.justNow }
+        if seconds < 3600 { return "\(seconds / 60)\(WidgetL10n.minutesAgo)" }
+        if seconds < 86_400 { return "\(seconds / 3600)\(WidgetL10n.hoursAgo)" }
+        return "\(seconds / 86_400)\(WidgetL10n.daysAgo)"
     }
 
     static func speed(_ bytesPerSecond: Double) -> String {

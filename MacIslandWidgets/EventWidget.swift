@@ -61,9 +61,9 @@ struct EventEntry: TimelineEntry {
         }
 
         var daysString: String {
-            if isToday { return "今天" }
-            if isPast { return "已过 \(-daysRemaining) 天" }
-            return "\(daysRemaining) 天"
+            if isToday { return WidgetL10n.eventToday }
+            if isPast { return "\(-daysRemaining)\(WidgetL10n.eventDaysAgo)" }
+            return "\(daysRemaining)\(WidgetL10n.eventDays)"
         }
 
         var typeTitle: String {
@@ -133,8 +133,8 @@ struct EventWidget: Widget {
             EventWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("倒数日")
-        .description("即将到来的事件和倒计时")
+        .configurationDisplayName(WidgetL10n.eventDisplayName)
+        .description(WidgetL10n.eventDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -179,7 +179,7 @@ struct EventWidgetView: View {
                 .foregroundColor(.secondary)
             } else {
                 Spacer()
-                WidgetEmptyState(icon: "calendar", message: "暂无倒数日")
+                WidgetEmptyState(icon: "calendar", message: WidgetL10n.eventNoEvents)
                 Spacer()
             }
         }
@@ -188,13 +188,13 @@ struct EventWidgetView: View {
 
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader(icon: "calendar", title: "倒数日", trailing: "\(entry.events.count) 个 · \(entry.updateString)", color: .blue)
+            WidgetHeader(icon: "calendar", title: WidgetL10n.eventDisplayName, trailing: "\(entry.events.count) \(WidgetL10n.eventEvents) · \(entry.updateString)", color: .blue)
 
             if entry.events.isEmpty {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text("暂无即将到来的事件")
+                    Text(WidgetL10n.eventNoEvents)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                     Spacer()

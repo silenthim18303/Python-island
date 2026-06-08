@@ -105,8 +105,8 @@ struct TodoWidget: Widget {
             TodoWidgetView(entry: entry)
                 .macIslandWidgetBackground()
         }
-        .configurationDisplayName("待办事项")
-        .description("显示待办列表和完成进度")
+        .configurationDisplayName(WidgetL10n.todoDisplayName)
+        .description(WidgetL10n.todoDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -152,7 +152,7 @@ struct TodoWidgetView: View {
                     Text("\(entry.pendingCount)")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
-                    Text("待处理")
+                    Text(WidgetL10n.todoPending)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)
                 }
@@ -174,7 +174,7 @@ struct TodoWidgetView: View {
                         .foregroundColor(.primary)
                         .lineLimit(1)
 
-                    Text("待处理")
+                    Text(WidgetL10n.todoPending)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)
 
@@ -194,7 +194,7 @@ struct TodoWidgetView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 12))
                                 .foregroundColor(.green)
-                            Text(entry.totalCount == 0 ? "还没有待办" : "全部完成")
+                            Text(entry.totalCount == 0 ? WidgetL10n.todoSyncHint : WidgetL10n.todoAllDone)
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.primary)
                         }
