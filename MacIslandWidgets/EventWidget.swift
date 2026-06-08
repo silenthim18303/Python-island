@@ -30,6 +30,7 @@ struct EventTimelineProvider: TimelineProvider {
 
 struct EventEntry: TimelineEntry {
     let date: Date
+    let updatedAt: Date?
     let events: [EventItem]
 
     struct EventItem: Identifiable {
@@ -60,9 +61,23 @@ struct EventEntry: TimelineEntry {
         }
 
         var daysString: String {
-            if isToday { return "Today!" }
-            if isPast { return "\(-daysRemaining) days ago" }
-            return "\(daysRemaining) days"
+            if isToday { return "今天" }
+            if isPast { return "已过 \(-daysRemaining) 天" }
+            return "\(daysRemaining) 天"
+        }
+
+        var typeTitle: String {
+            switch type {
+            case .countdown: return "倒数"
+            case .birthday: return "生日"
+            case .anniversary: return "纪念"
+            case .holiday: return "假期"
+            case .exam: return "考试"
+            }
+        }
+
+        var dateString: String {
+            targetDate.formatted(.dateTime.month().day())
         }
     }
 
@@ -70,19 +85,20 @@ struct EventEntry: TimelineEntry {
         let now = Date()
         return EventEntry(
             date: now,
+            updatedAt: now,
             events: [
-                EventItem(id: "1", name: "Birthday Party", targetDate: Calendar.current.date(byAdding: .day, value: 5, to: now)!, type: .birthday),
-                EventItem(id: "2", name: "Project Deadline", targetDate: Calendar.current.date(byAdding: .day, value: 12, to: now)!, type: .countdown),
-                EventItem(id: "3", name: "Vacation", targetDate: Calendar.current.date(byAdding: .day, value: 30, to: now)!, type: .holiday),
+                EventItem(id: "1", name: "生日聚会", targetDate: Calendar.current.date(byAdding: .day, value: 5, to: now)!, type: .birthday),
+                EventItem(id: "2", name: "项目截止", targetDate: Calendar.current.date(byAdding: .day, value: 12, to: now)!, type: .countdown),
+                EventItem(id: "3", name: "假期开始", targetDate: Calendar.current.date(byAdding: .day, value: 30, to: now)!, type: .holiday),
             ]
         )
     }
 
     static func fromUserDefaults() -> EventEntry {
-        let d = WidgetConstants.sharedDefaults
+        let ts = WidgetConstants.double("widget_event_updated_at")
         var events: [EventItem] = []
 
-        if let data = d.data(forKey: "widget_event_items"),
+        if let data = WidgetConstants.data("widget_event_items"),
            let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
             for dict in json {
                 if let id = dict["id"] as? String,
@@ -90,21 +106,21 @@ struct EventEntry: TimelineEntry {
                    let timestamp = dict["targetDate"] as? TimeInterval,
                    let typeStr = dict["type"] as? String {
                     let type = EventItem.EventType(rawValue: typeStr) ?? .countdown
-                    events.append(EventItem(
-                        id: id,
-                        name: name,
-                        targetDate: Date(timeIntervalSince1970: timestamp),
-                        type: type
-                    ))
+                    events.append(EventItem(id: id, name: name, targetDate: Date(timeIntervalSince1970: timestamp), type: type))
                 }
             }
         }
 
-        // 按日期排序，最近的在前
         events.sort { $0.targetDate < $1.targetDate }
 
-        return EventEntry(date: Date(), events: events)
+        return EventEntry(
+            date: Date(),
+            updatedAt: ts > 0 ? Date(timeIntervalSince1970: ts) : nil,
+            events: events
+        )
     }
+
+    var updateString: String { WidgetFormat.relativeTime(updatedAt) }
 }
 
 // MARK: - Event Widget
@@ -115,7 +131,7 @@ struct EventWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: EventTimelineProvider()) { entry in
             EventWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .macIslandWidgetBackground()
         }
         .configurationDisplayName("倒数日")
         .description("即将到来的事件和倒计时")
@@ -138,28 +154,33 @@ struct EventWidgetView: View {
     }
 
     private var smallView: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             if let first = entry.events.first {
-                Image(systemName: first.iconSystemName)
-                    .font(.system(size: 20))
-                    .foregroundColor(eventColor(first.type))
+                WidgetHeader(icon: first.iconSystemName, title: first.typeTitle, trailing: entry.updateString, color: eventColor(first.type))
 
                 Text(first.name)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+
+                Text(first.daysString)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
-                Text(first.daysString)
-                    .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(.primary)
-
-                if entry.events.count > 1 {
-                    Text("+\(entry.events.count - 1) more")
-                        .font(.system(size: 9))
-                        .foregroundColor(.secondary)
+                HStack {
+                    Text(first.dateString)
+                    Spacer()
+                    if entry.events.count > 1 {
+                        Text("+\(entry.events.count - 1)")
+                    }
                 }
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
             } else {
-                WidgetEmptyState(icon: "calendar", message: "No events")
+                Spacer()
+                WidgetEmptyState(icon: "calendar", message: "暂无倒数日")
+                Spacer()
             }
         }
         .padding()
@@ -167,24 +188,13 @@ struct EventWidgetView: View {
 
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "calendar")
-                    .font(.system(size: 14))
-                    .foregroundColor(.accentColor)
-                Text("Events")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.primary)
-                Spacer()
-                Text("\(entry.events.count) events")
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-            }
+            WidgetHeader(icon: "calendar", title: "倒数日", trailing: "\(entry.events.count) 个 · \(entry.updateString)", color: .blue)
 
             if entry.events.isEmpty {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text("No upcoming events")
+                    Text("暂无即将到来的事件")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -205,9 +215,14 @@ struct EventWidgetView: View {
 
                         Spacer()
 
-                        Text(event.daysString)
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(event.isPast ? .secondary : .primary)
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text(event.daysString)
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundColor(event.isPast ? .secondary : .primary)
+                            Text(event.dateString)
+                                .font(.system(size: 8))
+                                .foregroundColor(.secondary)
+                        }
                     }
                     .padding(.vertical, 2)
                 }

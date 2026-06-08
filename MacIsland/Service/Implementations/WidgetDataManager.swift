@@ -7,52 +7,114 @@
 
 import Foundation
 import WidgetKit
-import Combine
 
-/// 小组件数据管理器 — 将主 app 数据写入 UserDefaults，供 WidgetKit 读取
+/// 小组件数据管理器 — 将主 app 数据写入共享 JSON 文件，供 WidgetKit 读取
 @MainActor
 final class WidgetDataManager {
     static let shared = WidgetDataManager()
 
-    /// 使用 App Group 共享 UserDefaults，主 app 和小组件都能访问
-    private let defaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
-    private var cancellables = Set<AnyCancellable>()
+    /// App Group 共享容器路径
+    private let containerURL: URL? = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: "group.geminimortal.MacIsland"
+    )
+    private var dataFileURL: URL? {
+        containerURL?.appendingPathComponent("widget_data.json")
+    }
 
-    private init() {}
+    /// 内存缓存
+    private var cache: [String: Any] = [:]
+
+    private init() {
+        if let url = dataFileURL, let data = try? Data(contentsOf: url),
+           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            cache = dict
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func set(_ key: String, _ value: Any) {
+        cache[key] = value
+    }
+
+    private func flush(_ kind: String) {
+        guard let url = dataFileURL else { return }
+        if let data = try? JSONSerialization.data(withJSONObject: cache, options: []) {
+            try? data.write(to: url, options: .atomic)
+        }
+        WidgetCenter.shared.reloadTimelines(ofKind: kind)
+    }
+
+    func reloadAllWidgets() {
+        guard let url = dataFileURL else { return }
+        if let data = try? JSONSerialization.data(withJSONObject: cache, options: []) {
+            try? data.write(to: url, options: .atomic)
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 
     // MARK: - Weather
 
-    func updateWeather(temperature: Double, description: String, iconSystemName: String, humidity: Int, windSpeed: Double) {
-        defaults.set(temperature, forKey: "widget_weather_temperature")
-        defaults.set(description, forKey: "widget_weather_description")
-        defaults.set(iconSystemName, forKey: "widget_weather_icon")
-        defaults.set(humidity, forKey: "widget_weather_humidity")
-        defaults.set(windSpeed, forKey: "widget_weather_windSpeed")
-
-        reloadWeatherWidget()
+    func updateWeather(
+        temperature: Double,
+        temperatureMax: Double,
+        temperatureMin: Double,
+        description: String,
+        iconSystemName: String,
+        humidity: Int,
+        windSpeed: Double,
+        cityName: String,
+        districtName: String
+    ) {
+        set("widget_weather_hasData", true)
+        set("widget_weather_temperature", temperature)
+        set("widget_weather_temperature_max", temperatureMax)
+        set("widget_weather_temperature_min", temperatureMin)
+        set("widget_weather_description", description)
+        set("widget_weather_icon", iconSystemName)
+        set("widget_weather_humidity", humidity)
+        set("widget_weather_windSpeed", windSpeed)
+        set("widget_weather_city", cityName)
+        set("widget_weather_district", districtName)
+        set("widget_weather_updated_at", Date().timeIntervalSince1970)
+        flush("WeatherWidget")
     }
 
     // MARK: - Music
 
     func updateMusic(hasMedia: Bool, title: String, artist: String, isPlaying: Bool, progress: Double) {
-        defaults.set(hasMedia, forKey: "widget_music_hasMedia")
-        defaults.set(title, forKey: "widget_music_title")
-        defaults.set(artist, forKey: "widget_music_artist")
-        defaults.set(isPlaying, forKey: "widget_music_isPlaying")
-        defaults.set(progress, forKey: "widget_music_progress")
-
-        reloadMusicWidget()
+        set("widget_music_hasMedia", hasMedia)
+        set("widget_music_title", title)
+        set("widget_music_artist", artist)
+        set("widget_music_isPlaying", isPlaying)
+        set("widget_music_progress", progress)
+        set("widget_music_updated_at", Date().timeIntervalSince1970)
+        flush("MusicWidget")
     }
 
     // MARK: - Timer
 
-    func updateTimer(type: String, remainingSeconds: Int, isRunning: Bool, completedPomodoros: Int) {
-        defaults.set(type, forKey: "widget_timer_type")
-        defaults.set(remainingSeconds, forKey: "widget_timer_remaining")
-        defaults.set(isRunning, forKey: "widget_timer_running")
-        defaults.set(completedPomodoros, forKey: "widget_timer_pomodoros")
-
-        reloadTimerWidget()
+    func updateTimer(
+        type: String,
+        remainingSeconds: Int,
+        totalSeconds: Int,
+        isRunning: Bool,
+        completedPomodoros: Int,
+        currentPhase: String,
+        state: String
+    ) {
+        let now = Date()
+        let clampedRemaining = max(remainingSeconds, 0)
+        set("widget_timer_type", type)
+        set("widget_timer_remaining", clampedRemaining)
+        set("widget_timer_total", max(totalSeconds, 0))
+        set("widget_timer_running", isRunning)
+        set("widget_timer_pomodoros", completedPomodoros)
+        set("widget_timer_phase", currentPhase)
+        set("widget_timer_state", state)
+        set("widget_timer_updated_at", now.timeIntervalSince1970)
+        set("widget_timer_target_at", isRunning ? now.addingTimeInterval(TimeInterval(clampedRemaining)).timeIntervalSince1970 : 0)
+        flush("TimerWidget")
     }
 
     // MARK: - System Monitor
@@ -61,75 +123,53 @@ final class WidgetDataManager {
         cpuUsage: Double, cpuTemperature: Double, cpuCoreCount: Int,
         memoryUsage: Double, memoryUsed: Double, memoryTotal: Double,
         diskUsage: Double, diskUsed: Double, diskTotal: Double,
-        batteryLevel: Int, batteryCharging: Bool
+        batteryLevel: Int, batteryCharging: Bool,
+        networkConnected: Bool, networkType: String, localIP: String,
+        uploadSpeed: Double, downloadSpeed: Double
     ) {
-        defaults.set(cpuUsage, forKey: "widget_cpu_usage")
-        defaults.set(cpuTemperature, forKey: "widget_cpu_temperature")
-        defaults.set(cpuCoreCount, forKey: "widget_cpu_cores")
-        defaults.set(memoryUsage, forKey: "widget_memory_usage")
-        defaults.set(memoryUsed, forKey: "widget_memory_used")
-        defaults.set(memoryTotal, forKey: "widget_memory_total")
-        defaults.set(diskUsage, forKey: "widget_disk_usage")
-        defaults.set(diskUsed, forKey: "widget_disk_used")
-        defaults.set(diskTotal, forKey: "widget_disk_total")
-        defaults.set(batteryLevel, forKey: "widget_battery_level")
-        defaults.set(batteryCharging, forKey: "widget_battery_charging")
-
-        reloadWidget("SystemMonitorWidget")
+        set("widget_cpu_usage", cpuUsage)
+        set("widget_cpu_temperature", cpuTemperature)
+        set("widget_cpu_cores", cpuCoreCount)
+        set("widget_memory_usage", memoryUsage)
+        set("widget_memory_used", memoryUsed)
+        set("widget_memory_total", memoryTotal)
+        set("widget_disk_usage", diskUsage)
+        set("widget_disk_used", diskUsed)
+        set("widget_disk_total", diskTotal)
+        set("widget_battery_level", batteryLevel)
+        set("widget_battery_charging", batteryCharging)
+        set("widget_network_connected", networkConnected)
+        set("widget_network_type", networkType)
+        set("widget_network_ip", localIP)
+        set("widget_network_upload", uploadSpeed)
+        set("widget_network_download", downloadSpeed)
+        set("widget_system_updated_at", Date().timeIntervalSince1970)
+        flush("SystemMonitorWidget")
     }
 
     // MARK: - Todo
 
     func updateTodo(totalCount: Int, completedCount: Int, items: [[String: Any]]) {
-        defaults.set(totalCount, forKey: "widget_todo_total")
-        defaults.set(completedCount, forKey: "widget_todo_completed")
-
-        if let data = try? JSONSerialization.data(withJSONObject: items) {
-            defaults.set(data, forKey: "widget_todo_items")
-        }
-
-        reloadWidget("TodoWidget")
+        set("widget_todo_total", totalCount)
+        set("widget_todo_completed", completedCount)
+        set("widget_todo_updated_at", Date().timeIntervalSince1970)
+        set("widget_todo_items", items)
+        flush("TodoWidget")
     }
 
     // MARK: - Clipboard
 
     func updateClipboard(items: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: items) {
-            defaults.set(data, forKey: "widget_clipboard_items")
-        }
-
-        reloadWidget("ClipboardWidget")
+        set("widget_clipboard_updated_at", Date().timeIntervalSince1970)
+        set("widget_clipboard_items", items)
+        flush("ClipboardWidget")
     }
 
     // MARK: - Events
 
     func updateEvents(items: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: items) {
-            defaults.set(data, forKey: "widget_event_items")
-        }
-
-        reloadWidget("EventWidget")
-    }
-
-    // MARK: - Widget Reload
-
-    private func reloadWeatherWidget() {
-        reloadWidget("WeatherWidget")
-    }
-
-    private func reloadMusicWidget() {
-        reloadWidget("MusicWidget")
-    }
-
-    private func reloadTimerWidget() {
-        reloadWidget("TimerWidget")
-    }
-
-    private func reloadWidget(_ kind: String) {
-        WidgetCenter.shared.reloadTimelines(ofKind: kind)
-    }
-
-    func reloadAllWidgets() {
-        WidgetCenter.shared.reloadAllTimelines()
+        set("widget_event_updated_at", Date().timeIntervalSince1970)
+        set("widget_event_items", items)
+        flush("EventWidget")
     }
 }

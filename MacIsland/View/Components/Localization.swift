@@ -169,6 +169,7 @@ enum L10n {
     static var fileSearchPlaceholder: String { t("file_search_placeholder") }
     static var fileSearchDepth: String { t("file_search_depth") }
     static var fileSearchExt: String { t("file_search_ext") }
+    static var fileSearchFolder: String { t("file_search_folder") }
     static var fileSearchResults: String { t("file_search_results") }
     static var fileSearchEmpty: String { t("file_search_empty") }
 
@@ -242,6 +243,7 @@ enum L10n {
     static var weatherHumidity: String { t("weather_humidity") }
     static var weatherAuto: String { t("weather_auto") }
     static var weatherCity: String { t("weather_city") }
+    static var weatherAPIKey: String { t("weather_api_key") }
     static var weatherLocationID: String { t("weather_location_id") }
     static var weatherClear: String { t("weather_clear") }
 
@@ -327,6 +329,7 @@ enum L10n {
     static var timerLongBreak: String { t("timer_long_break") }
     static var timerStart: String { t("timer_start") }
     static var timerPause: String { t("timer_pause") }
+    static var timerResume: String { t("timer_resume") }
     static var timerStop: String { t("timer_stop") }
 
     // MARK: - Monitor
@@ -366,13 +369,17 @@ enum L10n {
     static var wallpaperCommunityUpload: String { t("wallpaper_community_upload") }
     static var wallpaperRefresh: String { t("wallpaper_refresh") }
     static var wallpaperDownloaded: String { t("wallpaper_downloaded") }
+    static var wallpaperDownloading: String { t("wallpaper_downloading") }
     static var wallpaperPrivate: String { t("wallpaper_private") }
+    static var wallpaperRemovePrivate: String { t("wallpaper_remove_private") }
     static var wallpaperUploading: String { t("wallpaper_uploading") }
     static var wallpaperGitHub: String { t("wallpaper_github") }
     static var wallpaperGitHubUser: String { t("wallpaper_github_user") }
     static var wallpaperGitHubLogin: String { t("wallpaper_github_login") }
     static var wallpaperSelectHint: String { t("wallpaper_select_hint") }
     static var wallpaperRecommended: String { t("wallpaper_recommended") }
+    static var wallpaperFilterAll: String { t("wallpaper_filter_all") }
+    static var wallpaperFilterMine: String { t("wallpaper_filter_mine") }
 
     // MARK: - Event Extended
     static var eventTrack: String { t("event_track") }
@@ -426,6 +433,11 @@ enum L10n {
     static var monitorCapacity: String { t("monitor_capacity") }
     static var monitorUsed: String { t("monitor_used") }
     static var monitorCompressed: String { t("monitor_compressed") }
+    static var monitorSystem: String { t("monitor_system") }
+    static var monitorUser: String { t("monitor_user") }
+    static var monitorApp: String { t("monitor_app") }
+    static var monitorCharging: String { t("monitor_charging") }
+    static var monitorRemaining: String { t("monitor_remaining") }
 
     // MARK: - Date Format
     static var dateFormatWeekday: String { t("date_format_weekday") }
@@ -439,13 +451,26 @@ enum L10n {
     static var menuHideIsland: String { t("menu_hide_island") }
     static var menuShowIsland: String { t("menu_show_island") }
     static var menuCollapse: String { t("menu_collapse") }
+    static var menuCheckForUpdates: String { t("menu_check_for_updates") }
     static var menuSettings: String { t("menu_settings") }
     static var menuQuit: String { t("menu_quit") }
+
+    // MARK: - Update
+    static var updateAvailableTitle: String { t("update_available_title") }
+    static func updateAvailableMessage(version: String) -> String {
+        t("update_available_message").replacingOccurrences(of: "%@", with: version)
+    }
+    static var updateDownload: String { t("update_download") }
+    static var updateLater: String { t("update_later") }
+    static var updateUpToDateTitle: String { t("update_up_to_date_title") }
+    static var updateUpToDateMessage: String { t("update_up_to_date_message") }
+    static var updateErrorTitle: String { t("update_error_title") }
 
     // MARK: - Service Errors
     static var errorClipboardLink: String { t("error_clipboard_link") }
     static var errorWeatherLocation: String { t("error_weather_location") }
     static var errorWeatherFetch: String { t("error_weather_fetch") }
+    static var errorWeatherAPIKey: String { t("error_weather_api_key") }
     static var errorLyricsNotFound: String { t("error_lyrics_not_found") }
     static var errorAIConnection: String { t("error_ai_connection") }
     static var errorAIRequest: String { t("error_ai_request") }
@@ -499,6 +524,7 @@ enum L10n {
     static var descDnd: String { t("desc_dnd") }
     static var descDndTime: String { t("desc_dnd_time") }
     static var descLyricsSource: String { t("desc_lyrics_source") }
+    static var descWeatherAPIKey: String { t("desc_weather_api_key") }
     static var descWeatherCity: String { t("desc_weather_city") }
     static var descWeatherLocationID: String { t("desc_weather_location_id") }
     static var descUsername: String { t("desc_username") }
@@ -578,6 +604,7 @@ private let zhStrings: [String: String] = [
     "toolbox_translate": "翻译", "toolbox_mokugyo": "木鱼", "toolbox_break_reminder": "久坐提醒",
     // File Search
     "file_search_placeholder": "搜索文件名...", "file_search_depth": "深度",
+    "file_search_folder": "选择搜索目录",
     "file_search_ext": "扩展名", "file_search_results": "个结果",
     "file_search_empty": "输入文件名开始搜索",
     // Clipboard
@@ -610,7 +637,7 @@ private let zhStrings: [String: String] = [
     "music_netease": "网易云", "music_qq": "QQ 音乐", "music_kugou": "酷狗", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天气", "weather_wind": "风速", "weather_humidity": "湿度",
-    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_location_id": "Location ID",
+    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_location_id": "Location ID",
     "weather_clear": "清除手动设置",
     // Wallpaper
     "wallpaper_title": "壁纸", "wallpaper_local": "本地壁纸", "wallpaper_current": "当前壁纸",
@@ -651,7 +678,7 @@ private let zhStrings: [String: String] = [
     // Timer
     "timer_title": "计时器", "timer_pomodoro": "番茄钟", "timer_countdown": "倒计时",
     "timer_work": "专注", "timer_break": "短休", "timer_long_break": "长休",
-    "timer_start": "开始", "timer_pause": "暂停", "timer_stop": "停止",
+    "timer_start": "开始", "timer_pause": "暂停", "timer_resume": "继续", "timer_stop": "停止",
     // Monitor
     "monitor_title": "系统监控", "monitor_cpu": "CPU", "monitor_memory": "内存",
     "monitor_disk": "磁盘", "monitor_battery": "电池", "monitor_network": "网络",
@@ -667,11 +694,12 @@ private let zhStrings: [String: String] = [
     "ai_protocol": "有 API Key → OpenAI 兼容协议（/v1/chat/completions）\n无 API Key → Ollama 协议（/api/chat）",
     // Wallpaper Extended
     "wallpaper_community": "社区壁纸", "wallpaper_community_upload": "社区上传",
-    "wallpaper_refresh": "点击刷新获取社区壁纸", "wallpaper_downloaded": "已下载",
-    "wallpaper_private": "私有", "wallpaper_uploading": "上传中...",
+    "wallpaper_refresh": "点击刷新获取社区壁纸", "wallpaper_downloaded": "已下载", "wallpaper_downloading": "下载中…",
+    "wallpaper_private": "私有", "wallpaper_remove_private": "取消私有", "wallpaper_uploading": "上传中...",
     "wallpaper_github": "GitHub 登录", "wallpaper_github_user": "GitHub 用户名",
     "wallpaper_github_login": "请在浏览器中输入此代码",
     "wallpaper_select_hint": "或点击下方按钮选择", "wallpaper_recommended": "建议 1920×1080 以上",
+    "wallpaper_filter_all": "全部", "wallpaper_filter_mine": "我的",
     // Event Extended
     "event_track": "追踪重要日期：纪念日、生日、节日、考试",
     // Alarm Extended
@@ -699,6 +727,8 @@ private let zhStrings: [String: String] = [
     // Monitor Extended
     "monitor_cores": "核", "monitor_cycles": "次",
     "monitor_idle": "空闲", "monitor_capacity": "容量",
+    "monitor_system": "系统", "monitor_user": "用户",
+    "monitor_app": "应用", "monitor_charging": "充电中", "monitor_remaining": "剩余",
     "monitor_used": "已用", "monitor_compressed": "压缩",
     // Date Format
     "date_format_weekday": "周",
@@ -706,10 +736,18 @@ private let zhStrings: [String: String] = [
     "close_panel": "关闭", "collapse_overview": "收起到概览", "skip": "跳过",
     // Menu Bar
     "menu_hide_island": "隐藏灵动岛", "menu_show_island": "显示灵动岛",
-    "menu_collapse": "折叠岛", "menu_settings": "设置", "menu_quit": "退出 MacIsland",
+    "menu_collapse": "折叠岛", "menu_check_for_updates": "检查更新", "menu_settings": "设置", "menu_quit": "退出 MacIsland",
+    // Update
+    "update_available_title": "发现新版本",
+    "update_available_message": "MacIsland %@ 已发布，是否立即更新？",
+    "update_download": "下载更新",
+    "update_later": "稍后提醒",
+    "update_up_to_date_title": "检查更新",
+    "update_up_to_date_message": "当前已是最新版本！",
+    "update_error_title": "检查更新失败",
     // Service Errors
     "error_clipboard_link": "🔗 链接检测",
-    "error_weather_location": "获取位置失败", "error_weather_fetch": "获取天气失败",
+    "error_weather_location": "获取位置失败", "error_weather_fetch": "获取天气失败", "error_weather_api_key": "请先配置和风天气 API Key",
     "error_lyrics_not_found": "未找到歌词",
     "error_ai_connection": "连接失败", "error_ai_request": "API 请求失败",
     "error_github_login": "请先登录 GitHub", "error_github_token": "请先在设置中登录 GitHub",
@@ -752,6 +790,7 @@ private let zhStrings: [String: String] = [
     "desc_dnd": "在指定时段内静默所有灵动岛通知。",
     "desc_dnd_time": "设置免打扰的开始和结束时间。",
     "desc_lyrics_source": "优先使用的歌词数据来源。",
+    "desc_weather_api_key": "可填写自己的和风天气 API Key；留空时使用内置默认 Key。Key 保存在系统钥匙串，不写入 UserDefaults。",
     "desc_weather_city": "指定城市名，留空则自动定位。",
     "desc_weather_location_id": "和风天气城市 ID，配合手动城市使用。",
     "desc_username": "上传社区壁纸时显示的作者名。",
@@ -803,6 +842,7 @@ private let enStrings: [String: String] = [
     "toolbox_translate": "Translate", "toolbox_mokugyo": "Mokugyo", "toolbox_break_reminder": "Break Reminder",
     // File Search
     "file_search_placeholder": "Search filename...", "file_search_depth": "Depth",
+    "file_search_folder": "Choose Search Folder",
     "file_search_ext": "Extension", "file_search_results": "results",
     "file_search_empty": "Enter filename to search",
     // Clipboard
@@ -835,7 +875,7 @@ private let enStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "Weather", "weather_wind": "Wind", "weather_humidity": "Humidity",
-    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_location_id": "Location ID",
+    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
     "weather_clear": "Clear Manual Settings",
     // Wallpaper
     "wallpaper_title": "Wallpaper", "wallpaper_local": "Local Wallpaper", "wallpaper_current": "Current",
@@ -876,7 +916,7 @@ private let enStrings: [String: String] = [
     // Timer
     "timer_title": "Timer", "timer_pomodoro": "Pomodoro", "timer_countdown": "Countdown",
     "timer_work": "Work", "timer_break": "Break", "timer_long_break": "Long Break",
-    "timer_start": "Start", "timer_pause": "Pause", "timer_stop": "Stop",
+    "timer_start": "Start", "timer_pause": "Pause", "timer_resume": "Resume", "timer_stop": "Stop",
     // Monitor
     "monitor_title": "System Monitor", "monitor_cpu": "CPU", "monitor_memory": "Memory",
     "monitor_disk": "Disk", "monitor_battery": "Battery", "monitor_network": "Network",
@@ -892,11 +932,12 @@ private let enStrings: [String: String] = [
     "ai_protocol": "With API Key → OpenAI compatible (/v1/chat/completions)\nWithout → Ollama (/api/chat)",
     // Wallpaper Extended
     "wallpaper_community": "Community Wallpaper", "wallpaper_community_upload": "Community Upload",
-    "wallpaper_refresh": "Click to refresh community wallpapers", "wallpaper_downloaded": "Downloaded",
-    "wallpaper_private": "Private", "wallpaper_uploading": "Uploading...",
+    "wallpaper_refresh": "Click to refresh community wallpapers", "wallpaper_downloaded": "Downloaded", "wallpaper_downloading": "Downloading…",
+    "wallpaper_private": "Private", "wallpaper_remove_private": "Remove Private", "wallpaper_uploading": "Uploading...",
     "wallpaper_github": "GitHub Login", "wallpaper_github_user": "GitHub Username",
     "wallpaper_github_login": "Enter this code in browser",
     "wallpaper_select_hint": "Or click button below", "wallpaper_recommended": "Recommended 1920×1080+",
+    "wallpaper_filter_all": "All", "wallpaper_filter_mine": "Mine",
     // Event Extended
     "event_track": "Track important dates: anniversaries, birthdays, holidays, exams",
     // Alarm Extended
@@ -924,6 +965,8 @@ private let enStrings: [String: String] = [
     // Monitor Extended
     "monitor_cores": "cores", "monitor_cycles": "cycles",
     "monitor_idle": "Idle", "monitor_capacity": "Capacity",
+    "monitor_system": "System", "monitor_user": "User",
+    "monitor_app": "App", "monitor_charging": "Charging", "monitor_remaining": "Remaining",
     "monitor_used": "Used", "monitor_compressed": "Compressed",
     // Date Format
     "date_format_weekday": "",
@@ -931,10 +974,18 @@ private let enStrings: [String: String] = [
     "close_panel": "Close", "collapse_overview": "Collapse", "skip": "Skip",
     // Menu Bar
     "menu_hide_island": "Hide Island", "menu_show_island": "Show Island",
-    "menu_collapse": "Collapse", "menu_settings": "Settings", "menu_quit": "Quit MacIsland",
+    "menu_collapse": "Collapse", "menu_check_for_updates": "Check for Updates", "menu_settings": "Settings", "menu_quit": "Quit MacIsland",
+    // Update
+    "update_available_title": "Update Available",
+    "update_available_message": "MacIsland %@ is available. Would you like to update?",
+    "update_download": "Download Update",
+    "update_later": "Remind Me Later",
+    "update_up_to_date_title": "Check for Updates",
+    "update_up_to_date_message": "You're up to date!",
+    "update_error_title": "Update Check Failed",
     // Service Errors
     "error_clipboard_link": "🔗 Link Detected",
-    "error_weather_location": "Failed to get location", "error_weather_fetch": "Failed to fetch weather",
+    "error_weather_location": "Failed to get location", "error_weather_fetch": "Failed to fetch weather", "error_weather_api_key": "Please configure QWeather API Key first",
     "error_lyrics_not_found": "Lyrics not found",
     "error_ai_connection": "Connection failed", "error_ai_request": "API request failed",
     "error_github_login": "Please login to GitHub first", "error_github_token": "Please login to GitHub in settings first",
@@ -977,6 +1028,7 @@ private let enStrings: [String: String] = [
     "desc_dnd": "Silence all island notifications during specified hours.",
     "desc_dnd_time": "Set do-not-disturb start and end time.",
     "desc_lyrics_source": "Preferred lyrics data source.",
+    "desc_weather_api_key": "Optional QWeather API Key. Leave empty to use the bundled default. Keys are stored in Keychain, not UserDefaults.",
     "desc_weather_city": "Specify city name. Leave empty for auto location.",
     "desc_weather_location_id": "QWeather city ID, used with manual city.",
     "desc_username": "Author name shown when uploading community wallpapers.",
@@ -1028,6 +1080,7 @@ private let jaStrings: [String: String] = [
     "toolbox_translate": "翻訳", "toolbox_mokugyo": "木魚", "toolbox_break_reminder": "休憩リマインダー",
     // File Search
     "file_search_placeholder": "ファイル名を検索...", "file_search_depth": "深度",
+    "file_search_folder": "検索フォルダを選択",
     "file_search_ext": "拡張子", "file_search_results": "件",
     "file_search_empty": "ファイル名を入力して検索",
     // Clipboard
@@ -1060,7 +1113,7 @@ private let jaStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天気", "weather_wind": "風速", "weather_humidity": "湿度",
-    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_location_id": "Location ID",
+    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
     "weather_clear": "手動設定をクリア",
     // Wallpaper
     "wallpaper_title": "壁紙", "wallpaper_local": "ローカル壁紙", "wallpaper_current": "現在の壁紙",
@@ -1101,7 +1154,7 @@ private let jaStrings: [String: String] = [
     // Timer
     "timer_title": "タイマー", "timer_pomodoro": "ポモドーロ", "timer_countdown": "カウントダウン",
     "timer_work": "作業", "timer_break": "休憩", "timer_long_break": "長休憩",
-    "timer_start": "開始", "timer_pause": "一時停止", "timer_stop": "停止",
+    "timer_start": "開始", "timer_pause": "一時停止", "timer_resume": "再開", "timer_stop": "停止",
     // Monitor
     "monitor_title": "システムモニター", "monitor_cpu": "CPU", "monitor_memory": "メモリ",
     "monitor_disk": "ディスク", "monitor_battery": "バッテリー", "monitor_network": "ネットワーク",
@@ -1117,11 +1170,12 @@ private let jaStrings: [String: String] = [
     "ai_protocol": "API Key あり → OpenAI 互換 (/v1/chat/completions)\nなし → Ollama (/api/chat)",
     // Wallpaper Extended
     "wallpaper_community": "コミュニティ壁紙", "wallpaper_community_upload": "コミュニティアップロード",
-    "wallpaper_refresh": "クリックしてコミュニティ壁紙を更新", "wallpaper_downloaded": "ダウンロード済み",
-    "wallpaper_private": "プライベート", "wallpaper_uploading": "アップロード中...",
+    "wallpaper_refresh": "クリックしてコミュニティ壁紙を更新", "wallpaper_downloaded": "ダウンロード済み", "wallpaper_downloading": "ダウンロード中…",
+    "wallpaper_private": "プライベート", "wallpaper_remove_private": "プライベート解除", "wallpaper_uploading": "アップロード中...",
     "wallpaper_github": "GitHub ログイン", "wallpaper_github_user": "GitHub ユーザー名",
     "wallpaper_github_login": "ブラウザでこのコードを入力してください",
     "wallpaper_select_hint": "または下のボタンを選択", "wallpaper_recommended": "1920×1080 以上推奨",
+    "wallpaper_filter_all": "すべて", "wallpaper_filter_mine": "自分の",
     // Event Extended
     "event_track": "記念日、誕生日、祝日、試験の重要な日付を追跡",
     // Alarm Extended
@@ -1149,6 +1203,8 @@ private let jaStrings: [String: String] = [
     // Monitor Extended
     "monitor_cores": "コア", "monitor_cycles": "サイクル",
     "monitor_idle": "アイドル", "monitor_capacity": "容量",
+    "monitor_system": "システム", "monitor_user": "ユーザー",
+    "monitor_app": "アプリ", "monitor_charging": "充電中", "monitor_remaining": "残り",
     "monitor_used": "使用済み", "monitor_compressed": "圧縮",
     // Date Format
     "date_format_weekday": "",
@@ -1156,10 +1212,18 @@ private let jaStrings: [String: String] = [
     "close_panel": "閉じる", "collapse_overview": "折りたたむ", "skip": "スキップ",
     // Menu Bar
     "menu_hide_island": "アイランドを隠す", "menu_show_island": "アイランドを表示",
-    "menu_collapse": "折りたたむ", "menu_settings": "設定", "menu_quit": "MacIsland を終了",
+    "menu_collapse": "折りたたむ", "menu_check_for_updates": "アップデートを確認", "menu_settings": "設定", "menu_quit": "MacIsland を終了",
+    // Update
+    "update_available_title": "アップデートがあります",
+    "update_available_message": "MacIsland %@ が利用可能です。アップデートしますか？",
+    "update_download": "ダウンロード",
+    "update_later": "後で通知",
+    "update_up_to_date_title": "アップデートの確認",
+    "update_up_to_date_message": "最新バージョンです！",
+    "update_error_title": "アップデート確認失敗",
     // Service Errors
     "error_clipboard_link": "🔗 リンク検出",
-    "error_weather_location": "位置情報の取得に失敗", "error_weather_fetch": "天気の取得に失敗",
+    "error_weather_location": "位置情報の取得に失敗", "error_weather_fetch": "天気の取得に失敗", "error_weather_api_key": "先に QWeather API Key を設定してください",
     "error_lyrics_not_found": "歌詞が見つかりません",
     "error_ai_connection": "接続失敗", "error_ai_request": "API リクエスト失敗",
     "error_github_login": "先に GitHub にログインしてください", "error_github_token": "設定で先に GitHub にログインしてください",
@@ -1202,6 +1266,7 @@ private let jaStrings: [String: String] = [
     "desc_dnd": "指定時間内にアイランド通知をミュート。",
     "desc_dnd_time": "通知オフの開始・終了時間を設定。",
     "desc_lyrics_source": "優先する歌詞データソース。",
+    "desc_weather_api_key": "任意の QWeather API Key。空欄の場合は内蔵デフォルトを使用します。Key は UserDefaults ではなく Keychain に保存します。",
     "desc_weather_city": "都市名を指定。空欄で自動位置。",
     "desc_weather_location_id": "和風天気の都市 ID。手動都市と併用。",
     "desc_username": "コミュニティ壁紙アップロード時の著者名。",

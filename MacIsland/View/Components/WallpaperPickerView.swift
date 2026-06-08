@@ -254,6 +254,13 @@ struct WallpaperPickerView: View {
     }
 
     private func processSelectedFile(_ url: URL) {
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
         let ext = url.pathExtension.lowercased()
         let validImageExts = ["jpg", "jpeg", "png", "webp"]
         let validVideoExts = ["mp4", "mov", "m4v"]

@@ -46,10 +46,10 @@ struct RunCatMonitorView: View {
             title: "CPU", value: String(format: "%.1f%%", stats.cpuUsage),
             subtitle: stats.cpuTemperature > 0
                 ? "\(stats.cpuCoreCount) \(L10n.monitorCores) \(Int(stats.cpuTemperature))°C"
-                : "\(stats.cpuCoreCount) cores",
+                : "\(stats.cpuCoreCount) \(L10n.monitorCores)",
             rows: [
-                (L10n.monitorCPU + " System", String(format: "%.1f%%", stats.cpuSystem)),
-                (L10n.monitorCPU + " User", String(format: "%.1f%%", stats.cpuUser)),
+                (L10n.monitorSystem, String(format: "%.1f%%", stats.cpuSystem)),
+                (L10n.monitorUser, String(format: "%.1f%%", stats.cpuUser)),
             ],
             percent: stats.cpuUsage / 100, barColor: .blue
         )
@@ -63,8 +63,8 @@ struct RunCatMonitorView: View {
             title: L10n.monitorMemory, value: String(format: "%.1f%%", stats.memoryPercent),
             subtitle: String(format: "%.1fG / %.0fG", stats.memoryUsed, stats.memoryTotal),
             rows: [
-                ("App", String(format: "%.1fG", stats.memoryApp)),
-                ("Compressed", String(format: "%.1fG", stats.memoryCompressed)),
+                (L10n.monitorApp, String(format: "%.1fG", stats.memoryApp)),
+                (L10n.monitorCompressed, String(format: "%.1fG", stats.memoryCompressed)),
             ],
             percent: stats.memoryPercent / 100, barColor: .purple
         )
@@ -78,8 +78,8 @@ struct RunCatMonitorView: View {
             title: L10n.monitorDisk, value: String(format: "%.1f%%", stats.diskPercent),
             subtitle: String(format: "%.0fG / %.0fG", stats.diskUsed, stats.diskTotal),
             rows: [
-                ("Used", String(format: "%.0fG", stats.diskUsed)),
-                ("Idle", String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
+                (L10n.monitorUsed, String(format: "%.0fG", stats.diskUsed)),
+                (L10n.monitorIdle, String(format: "%.0fG", stats.diskTotal - stats.diskUsed)),
             ],
             percent: stats.diskPercent / 100, barColor: .green
         )
@@ -91,10 +91,10 @@ struct RunCatMonitorView: View {
         unifiedCard(
             icon: batteryIcon, color: batteryColor,
             title: L10n.monitorBattery, value: String(format: "%.0f%%", stats.batteryLevel),
-            subtitle: stats.batteryIsCharging ? "充电中" : "剩余",
+            subtitle: stats.batteryIsCharging ? L10n.monitorCharging : L10n.monitorRemaining,
             rows: [
-                ("Capacity", String(format: "%.0f%%", stats.batteryMaxCapacity)),
-                ("Cycles", "\(stats.batteryCycleCount) \(L10n.monitorCycles)"),
+                (L10n.monitorCapacity, String(format: "%.0f%%", stats.batteryMaxCapacity)),
+                (L10n.monitorCycles, "\(stats.batteryCycleCount) \(L10n.monitorCycles)"),
             ],
             percent: stats.batteryLevel / 100, barColor: batteryColor
         )

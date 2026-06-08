@@ -53,7 +53,12 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
             diskUsed: stats.diskUsed,
             diskTotal: stats.diskTotal,
             batteryLevel: Int(stats.batteryLevel),
-            batteryCharging: stats.batteryIsCharging
+            batteryCharging: stats.batteryIsCharging,
+            networkConnected: stats.networkConnected,
+            networkType: stats.networkType.rawValue,
+            localIP: stats.localIP,
+            uploadSpeed: stats.uploadSpeed,
+            downloadSpeed: stats.downloadSpeed
         )
     }
 

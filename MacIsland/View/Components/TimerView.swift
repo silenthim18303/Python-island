@@ -41,7 +41,7 @@ struct TimerView: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { mode = m }
                 } label: {
-                    Text(m.rawValue)
+                    Text(m == .pomodoro ? L10n.timerPomodoro : L10n.timerCountdown)
                         .font(.system(size: 11, weight: mode == m ? .semibold : .medium))
                         .foregroundColor(mode == m ? .white : .white.opacity(0.5))
                         .padding(.horizontal, 12)
@@ -122,7 +122,7 @@ private struct PomodoroSection: View {
                     .font(.system(size: 22, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white)
 
-                Text(data.phase.rawValue)
+                Text(data.phase.displayName)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(phaseColor(data.phase).opacity(0.8))
             }
@@ -177,7 +177,7 @@ private struct PomodoroSection: View {
                     timerService.selectPomodoroPhase(phase)
                 } label: {
                     VStack(spacing: 2) {
-                        Text(phase.rawValue)
+                        Text(phase.displayName)
                             .font(.system(size: 10, weight: selected ? .bold : .medium))
                         Text("\(minutes) \(L10n.timerMin)")
                             .font(.system(size: 8, design: .monospaced))
@@ -308,7 +308,7 @@ private struct CountdownSection: View {
                         timerService.resetCountdown()
                     }
                 case .paused:
-                    TimerButton(title: "继续", icon: "play.fill") {
+                    TimerButton(title: L10n.timerResume, icon: "play.fill") {
                         timerService.resumeCountdown()
                     }
                     TimerButton(title: L10n.reset, icon: "arrow.counterclockwise") {

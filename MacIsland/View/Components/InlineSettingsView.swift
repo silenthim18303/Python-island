@@ -262,7 +262,7 @@ struct InlineSettingsView: View {
                             .foregroundColor(.textQuaternary)
                     } else {
                         Button(L10n.restore) {
-                            settings.customWallpaperPath = ""
+                            settings.clearCustomWallpaperDirectory()
                         }
                         .font(.system(size: Theme.FontSize.caption2))
                         .foregroundColor(Color.appAccent)
@@ -408,6 +408,18 @@ struct InlineSettingsView: View {
     private var weatherSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             settingsGroup(L10n.weatherTitle) {
+                describedRow("weatherAPIKey") {
+                    SecureField(SettingItemMeta.meta("weatherAPIKey")?.hint ?? "",
+                                text: $settings.weatherAPIKey)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textPrimary)
+                        .frame(width: 140)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                }
+
                 describedRow("weatherManualCity") {
                     TextField(SettingItemMeta.meta("weatherManualCity")?.hint ?? "",
                               text: $settings.weatherManualCity)
@@ -697,7 +709,7 @@ struct InlineSettingsView: View {
         IslandStore.isPanelPresented = false
 
         guard result == .OK, let url = panel.url else { return }
-        settings.customWallpaperPath = url.path
+        settings.setCustomWallpaperDirectory(url)
     }
 }
 

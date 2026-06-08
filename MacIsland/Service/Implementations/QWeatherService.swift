@@ -14,7 +14,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
     @Published private(set) var weather: WeatherData = .empty
     @Published private(set) var isLoading = false
 
-    private let config: QWeatherConfig
+    private var config: QWeatherConfig
     private let networkClient: NetworkClientProtocol
     private let locationManager = CLLocationManager()
     private var currentLocation: CLLocation?
@@ -27,9 +27,18 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         setupLocationManager()
     }
 
+    func updateAPIKey(_ apiKey: String) {
+        config.apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     func fetchWeather() async {
         await MainActor.run { isLoading = true }
         defer { Task { @MainActor in isLoading = false } }
+
+        guard !config.apiKey.isEmpty else {
+            setError(L10n.errorWeatherAPIKey)
+            return
+        }
 
         // 第一步：获取位置信息（坐标 + GeoAPI 查询 locationID）
         let locationInfo = await fetchLocationInfo()
@@ -68,10 +77,14 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
             // 更新小组件数据
             WidgetDataManager.shared.updateWeather(
                 temperature: nowData.temp,
+                temperatureMax: forecast?.maxTemp ?? nowData.temp,
+                temperatureMin: forecast?.minTemp ?? nowData.temp,
                 description: nowData.text,
                 iconSystemName: WeatherIconMapper.iconName(for: nowData.code),
                 humidity: nowData.humidity,
-                windSpeed: nowData.windSpeed
+                windSpeed: nowData.windSpeed,
+                cityName: locInfo.city,
+                districtName: locInfo.district
             )
         }
     }
@@ -118,6 +131,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
     private func queryGeoAPI(lat: Double, lon: Double) async -> (id: String, city: String, district: String)? {
         let urlString = "\(config.baseURL)/geo/v2/city/lookup?location=\(lon),\(lat)"
         guard let url = URL(string: urlString) else { return nil }
+        guard !config.apiKey.isEmpty else { return nil }
 
         var request = URLRequest(url: url)
         request.setValue(config.apiKey, forHTTPHeaderField: "X-QW-Api-Key")
@@ -187,6 +201,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
     private func makeRequest<T: Codable, R>(urlString: String, handler: (T) -> R?) async -> R? {
         guard let url = URL(string: urlString) else { return nil }
+        guard !config.apiKey.isEmpty else { return nil }
 
         var request = URLRequest(url: url)
         request.setValue(config.apiKey, forHTTPHeaderField: "X-QW-Api-Key")
@@ -212,7 +227,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         weather = WeatherData(
             temperature: 0, temperatureMax: 0, temperatureMin: 0,
             humidity: 0, windSpeed: 0, windDir: "",
-            weatherCode: 0, description: "获取失败", iconSystemName: "exclamationmark.triangle",
+            weatherCode: 0, description: message, iconSystemName: "exclamationmark.triangle",
             cityName: "", districtName: ""
         )
     }
@@ -291,15 +306,15 @@ private class LocationDelegate: NSObject, CLLocationManagerDelegate {
 // MARK: - QWeather Configuration
 
 struct QWeatherConfig {
-    let apiKey: String
+    var apiKey: String
     let baseURL: String
     let locationID: String
     let cityName: String
     let districtName: String
 
-    static func fixed(locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
+    static func fixed(apiKey: String, locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
         return QWeatherConfig(
-            apiKey: "f878b3cb3f7b447fa2d9053de8982972",
+            apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
             baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
             locationID: locationID,
             cityName: cityName,
@@ -307,9 +322,9 @@ struct QWeatherConfig {
         )
     }
 
-    static func autoDetect(locationID: String) -> QWeatherConfig {
+    static func autoDetect(apiKey: String, locationID: String) -> QWeatherConfig {
         return QWeatherConfig(
-            apiKey: "f878b3cb3f7b447fa2d9053de8982972",
+            apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
             baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
             locationID: locationID,
             cityName: "",
@@ -318,6 +333,7 @@ struct QWeatherConfig {
     }
 
     static let `default` = QWeatherConfig.fixed(
+        apiKey: "",
         locationID: "101010100",
         cityName: "北京",
         districtName: "朝阳区"

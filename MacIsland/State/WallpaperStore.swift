@@ -38,6 +38,8 @@ final class WallpaperStore: ObservableObject {
     private let defaults = UserDefaults.standard
     private let wallpaperKey = "wallpaperItems"
     private let activeWallpaperIDKey = "activeWallpaperID"
+    private var scopedCustomDirectory: URL?
+    private var isAccessingScopedCustomDirectory = false
 
     private enum Keys {
         static let wallpaperItems = "wallpaperItems"
@@ -48,14 +50,38 @@ final class WallpaperStore: ObservableObject {
 
     /// 基础存储目录（支持自定义路径）
     private var baseDirectory: URL {
-        let customPath = AppSettings.shared.customWallpaperPath
-        if !customPath.isEmpty {
-            let url = URL(fileURLWithPath: customPath, isDirectory: true)
+        if let url = AppSettings.shared.customWallpaperDirectoryURL {
+            startAccessingCustomDirectoryIfNeeded(url)
             try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             return url
         }
+
+        stopAccessingCustomDirectoryIfNeeded()
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return appSupport.appendingPathComponent("MacIsland/Wallpapers", isDirectory: true)
+    }
+
+    private func startAccessingCustomDirectoryIfNeeded(_ url: URL) {
+        let standardizedURL = url.standardizedFileURL
+        if scopedCustomDirectory?.standardizedFileURL == standardizedURL,
+           isAccessingScopedCustomDirectory {
+            return
+        }
+
+        stopAccessingCustomDirectoryIfNeeded()
+        isAccessingScopedCustomDirectory = standardizedURL.startAccessingSecurityScopedResource()
+        scopedCustomDirectory = standardizedURL
+    }
+
+    private func stopAccessingCustomDirectoryIfNeeded() {
+        guard isAccessingScopedCustomDirectory else {
+            scopedCustomDirectory = nil
+            return
+        }
+
+        scopedCustomDirectory?.stopAccessingSecurityScopedResource()
+        scopedCustomDirectory = nil
+        isAccessingScopedCustomDirectory = false
     }
 
     /// 本地壁纸目录
@@ -101,6 +127,13 @@ final class WallpaperStore: ObservableObject {
 
     /// 从本地文件添加壁纸
     func addWallpaper(from sourceURL: URL) {
+        let isAccessingSource = sourceURL.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessingSource {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
         let fileName = sourceURL.lastPathComponent
         let destURL = localDirectory.appendingPathComponent(fileName)
 

@@ -7,6 +7,69 @@
 
 import SwiftUI
 import Combine
+import Security
+
+// MARK: - Secure Settings Storage
+
+private enum SettingsKeychainHelper {
+    private static let service = "geminimortal.MacIsland.settings"
+
+    static func save(key: String, value: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+        ]
+
+        SecItemDelete(query as CFDictionary)
+
+        guard !value.isEmpty, let data = value.data(using: .utf8) else { return }
+
+        var addQuery = query
+        addQuery[kSecValueData as String] = data
+        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        SecItemAdd(addQuery as CFDictionary, nil)
+    }
+
+    static func load(key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+        ]
+        var item: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    static func loadOrCreate(key: String, defaultValue: @autoclosure () -> String) -> String {
+        if let value = load(key: key), !value.isEmpty {
+            return value
+        }
+
+        let value = defaultValue()
+        save(key: key, value: value)
+        return value
+    }
+}
+
+private enum BundledWeatherCredential {
+    private static let obfuscatedAPIKey: [UInt8] = [
+        79, 74, 140, 60, 47, 165, 188, 74,
+        66, 220, 52, 46, 161, 234, 16, 22,
+        216, 48, 47, 173, 237, 19, 92, 220,
+        100, 114, 170, 228, 23, 87, 128, 50
+    ]
+
+    static var apiKey: String {
+        let bytes = obfuscatedAPIKey.enumerated().map { index, byte in
+            byte ^ UInt8(truncatingIfNeeded: index * 73 + 41)
+        }
+        return String(bytes: bytes, encoding: .utf8) ?? ""
+    }
+}
 
 // MARK: - Appearance Mode
 
@@ -172,12 +235,62 @@ final class AppSettings: ObservableObject {
     @Published var weatherManualLocationID: String {
         didSet { defaults.set(weatherManualLocationID, forKey: Keys.weatherManualLocationID) }
     }
+    /// 和风天气 API Key，保存在钥匙串中
+    @Published var weatherAPIKey: String {
+        didSet { SettingsKeychainHelper.save(key: Keys.weatherAPIKey, value: weatherAPIKey) }
+    }
+
+    var weatherEffectiveAPIKey: String {
+        let userKey = weatherAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !userKey.isEmpty {
+            return userKey
+        }
+        return SettingsKeychainHelper.loadOrCreate(
+            key: Keys.weatherBundledAPIKey,
+            defaultValue: BundledWeatherCredential.apiKey
+        )
+    }
 
     // MARK: - 壁纸存储
 
     /// 自定义壁纸存储路径（空=使用默认 Application Support 路径）
     @Published var customWallpaperPath: String {
-        didSet { defaults.set(customWallpaperPath, forKey: Keys.customWallpaperPath) }
+        didSet {
+            defaults.set(customWallpaperPath, forKey: Keys.customWallpaperPath)
+            if customWallpaperPath.isEmpty {
+                defaults.removeObject(forKey: Keys.customWallpaperBookmark)
+            }
+        }
+    }
+
+    var customWallpaperDirectoryURL: URL? {
+        guard !customWallpaperPath.isEmpty else { return nil }
+
+        if let bookmarkData = defaults.data(forKey: Keys.customWallpaperBookmark) {
+            var isStale = false
+            if let url = try? URL(
+                resolvingBookmarkData: bookmarkData,
+                options: .withSecurityScope,
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            ) {
+                if isStale {
+                    saveCustomWallpaperBookmark(for: url)
+                }
+                return url
+            }
+        }
+
+        return URL(fileURLWithPath: customWallpaperPath, isDirectory: true)
+    }
+
+    func setCustomWallpaperDirectory(_ url: URL) {
+        saveCustomWallpaperBookmark(for: url)
+        customWallpaperPath = url.path
+    }
+
+    func clearCustomWallpaperDirectory() {
+        customWallpaperPath = ""
     }
 
     private let defaults = UserDefaults.standard
@@ -206,7 +319,10 @@ final class AppSettings: ObservableObject {
         static let preferredLyricsSource = "preferredLyricsSource"
         static let weatherManualCity = "weatherManualCity"
         static let weatherManualLocationID = "weatherManualLocationID"
+        static let weatherAPIKey = "weatherAPIKey"
+        static let weatherBundledAPIKey = "weatherBundledAPIKey"
         static let customWallpaperPath = "customWallpaperPath"
+        static let customWallpaperBookmark = "customWallpaperBookmark"
     }
 
     private init() {
@@ -254,9 +370,12 @@ final class AppSettings: ObservableObject {
         // 天气
         weatherManualCity = defaults.string(forKey: Keys.weatherManualCity) ?? ""
         weatherManualLocationID = defaults.string(forKey: Keys.weatherManualLocationID) ?? ""
+        weatherAPIKey = SettingsKeychainHelper.load(key: Keys.weatherAPIKey) ?? ""
 
         // 壁纸存储
         customWallpaperPath = defaults.string(forKey: Keys.customWallpaperPath) ?? ""
+
+        _ = weatherEffectiveAPIKey
     }
 
     // MARK: - Hotkey Bindings Persistence
@@ -279,6 +398,15 @@ final class AppSettings: ObservableObject {
         if let data = try? JSONEncoder().encode(bindings) {
             defaults.set(data, forKey: Keys.hotkeyBindings)
         }
+    }
+
+    private func saveCustomWallpaperBookmark(for url: URL) {
+        guard let data = try? url.bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+        ) else { return }
+        defaults.set(data, forKey: Keys.customWallpaperBookmark)
     }
 
     /// 恢复所有快捷键为默认值

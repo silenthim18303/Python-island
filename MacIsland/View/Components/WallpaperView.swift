@@ -26,6 +26,13 @@ struct WallpaperView: View {
     enum Section: String, CaseIterable {
         case local = "local"
         case community = "community"
+
+        var displayName: String {
+            switch self {
+            case .local: return L10n.wallpaperLocal
+            case .community: return L10n.wallpaperCommunity
+            }
+        }
     }
 
     private var uploadUsername: String {
@@ -42,7 +49,7 @@ struct WallpaperView: View {
             // 分段选择
             Picker("", selection: $selectedSection) {
                 ForEach(Section.allCases, id: \.self) { section in
-                    Text(section.rawValue).tag(section)
+                    Text(section.displayName).tag(section)
                 }
             }
             .pickerStyle(.segmented)

@@ -16,6 +16,7 @@ struct FileSearchView: View {
     @State private var isSearching = false
     @State private var searchDepth: Int = 5
     @State private var fileExtension = ""
+    @State private var searchRoot: URL?
 
     var body: some View {
         VStack(spacing: Theme.Spacing.sm) {
@@ -69,6 +70,16 @@ struct FileSearchView: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+
+                Button {
+                    selectSearchRoot()
+                } label: {
+                    Image(systemName: searchRoot == nil ? "folder" : "folder.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(searchRoot == nil ? .textTertiary : .textSecondary)
+                }
+                .buttonStyle(.plain)
+                .help(L10n.fileSearchFolder)
 
                 Spacer()
 
@@ -150,6 +161,11 @@ struct FileSearchView: View {
     private func performSearch() {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return }
+        let root = searchRoot ?? selectSearchRootURL()
+        guard let root else { return }
+        searchRoot = root
+        let depth = searchDepth
+        let ext = fileExtension.trimmingCharacters(in: .whitespacesAndNewlines)
 
         isSearching = true
         searchResults = []
@@ -157,9 +173,9 @@ struct FileSearchView: View {
         Task.detached(priority: .userInitiated) {
             let results = Self.searchFiles(
                 query: query,
-                depth: searchDepth,
-                extension: fileExtension.trimmingCharacters(in: .whitespacesAndNewlines),
-                searchPath: FileManager.default.homeDirectoryForCurrentUser
+                depth: depth,
+                extension: ext,
+                searchPath: root
             )
             await MainActor.run {
                 searchResults = results
@@ -168,15 +184,40 @@ struct FileSearchView: View {
         }
     }
 
-    private static func searchFiles(query: String, depth: Int, extension ext: String, searchPath: URL) -> [SearchResult] {
+    private func selectSearchRoot() {
+        searchRoot = selectSearchRootURL()
+    }
+
+    private func selectSearchRootURL() -> URL? {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = false
+        panel.message = L10n.fileSearchFolder
+
+        IslandStore.isPanelPresented = true
+        let result = panel.runModal()
+        IslandStore.isPanelPresented = false
+
+        guard result == .OK else { return nil }
+        return panel.url
+    }
+
+    nonisolated private static func searchFiles(query: String, depth: Int, extension ext: String, searchPath: URL) -> [SearchResult] {
+        let isAccessing = searchPath.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                searchPath.stopAccessingSecurityScopedResource()
+            }
+        }
+
         let fm = FileManager.default
         guard let enumerator = fm.enumerator(at: searchPath,
                                             includingPropertiesForKeys: [.isDirectoryKey],
                                             options: [.skipsHiddenFiles]) else { return [] }
 
         var results: [SearchResult] = []
-        var currentDepth = 0
-        var depthStack: [Int] = []
 
         while let url = enumerator.nextObject() as? URL {
             let name = url.lastPathComponent
