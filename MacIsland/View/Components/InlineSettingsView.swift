@@ -128,6 +128,7 @@ struct InlineSettingsView: View {
             case .notifications: notificationsSection
             case .community:     communitySection
             case .shortcuts:     shortcutsSection
+            case .phone:         phoneSection
             case .about:         aboutSection
             }
         }
@@ -577,6 +578,14 @@ struct InlineSettingsView: View {
             settings.hotkeyBindings[action] = combo
             recordingAction = nil
         }
+    }
+
+    // MARK: - Phone Section
+
+    @EnvironmentObject var phoneService: PhoneServiceImpl
+
+    private var phoneSection: some View {
+        PhonePairingView(deviceService: phoneService)
     }
 
     // MARK: - About Section

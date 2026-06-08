@@ -130,6 +130,10 @@ final class AppSettings: ObservableObject {
     @Published var clipboardEnabled: Bool {
         didSet { defaults.set(clipboardEnabled, forKey: Keys.clipboardEnabled) }
     }
+    /// 手机配对自动启动
+    @Published var phoneAutoStart: Bool {
+        didSet { defaults.set(phoneAutoStart, forKey: Keys.phoneAutoStart) }
+    }
     /// 自定义快捷键绑定（HotkeyAction → KeyCombo），UserDefaults JSON 持久化
     @Published var hotkeyBindings: [HotkeyAction: KeyCombo] {
         didSet { Self.saveHotkeyBindings(hotkeyBindings, defaults: defaults) }
@@ -301,6 +305,7 @@ final class AppSettings: ObservableObject {
         static let animationSpeed = "animationSpeed"
         static let springAnimation = "springAnimation"
         static let clipboardEnabled = "clipboardEnabled"
+        static let phoneAutoStart = "phoneAutoStart"
         static let hotkeyBindings = "hotkeyBindings"
         static let pomodoroWorkMinutes = "pomodoroWorkMinutes"
         static let pomodoroShortBreakMinutes = "pomodoroShortBreakMinutes"
@@ -334,6 +339,7 @@ final class AppSettings: ObservableObject {
             .flatMap(AnimationSpeed.init) ?? .medium
         springAnimation = defaults.object(forKey: Keys.springAnimation) as? Bool ?? true
         clipboardEnabled = defaults.object(forKey: Keys.clipboardEnabled) as? Bool ?? true
+        phoneAutoStart = defaults.object(forKey: Keys.phoneAutoStart) as? Bool ?? false
         hotkeyBindings = Self.loadHotkeyBindings(defaults: defaults)
         pomodoroWorkMinutes = defaults.object(forKey: Keys.pomodoroWorkMinutes) as? Int ?? 25
         pomodoroShortBreakMinutes = defaults.object(forKey: Keys.pomodoroShortBreakMinutes) as? Int ?? 5

@@ -439,6 +439,13 @@ enum L10n {
     static var monitorCharging: String { t("monitor_charging") }
     static var monitorRemaining: String { t("monitor_remaining") }
 
+    // MARK: - Device Pairing
+    static var deviceNotConnected: String { t("device_not_connected") }
+    static var devicePairing: String { t("device_pairing") }
+    static var deviceStartPairing: String { t("device_start_pairing") }
+    static var deviceStopPairing: String { t("device_stop_pairing") }
+    static var deviceDisconnect: String { t("device_disconnect") }
+
     // MARK: - Date Format
     static var dateFormatWeekday: String { t("date_format_weekday") }
 
@@ -729,6 +736,9 @@ private let zhStrings: [String: String] = [
     "monitor_idle": "空闲", "monitor_capacity": "容量",
     "monitor_system": "系统", "monitor_user": "用户",
     "monitor_app": "应用", "monitor_charging": "充电中", "monitor_remaining": "剩余",
+    // Device Pairing
+    "device_not_connected": "未连接设备", "device_pairing": "设备配对",
+    "device_start_pairing": "开始配对", "device_stop_pairing": "停止配对", "device_disconnect": "断开连接",
     "monitor_used": "已用", "monitor_compressed": "压缩",
     // Date Format
     "date_format_weekday": "周",
@@ -967,6 +977,9 @@ private let enStrings: [String: String] = [
     "monitor_idle": "Idle", "monitor_capacity": "Capacity",
     "monitor_system": "System", "monitor_user": "User",
     "monitor_app": "App", "monitor_charging": "Charging", "monitor_remaining": "Remaining",
+    // Device Pairing
+    "device_not_connected": "No Device Connected", "device_pairing": "Device Pairing",
+    "device_start_pairing": "Start Pairing", "device_stop_pairing": "Stop Pairing", "device_disconnect": "Disconnect",
     "monitor_used": "Used", "monitor_compressed": "Compressed",
     // Date Format
     "date_format_weekday": "",
@@ -1205,6 +1218,9 @@ private let jaStrings: [String: String] = [
     "monitor_idle": "アイドル", "monitor_capacity": "容量",
     "monitor_system": "システム", "monitor_user": "ユーザー",
     "monitor_app": "アプリ", "monitor_charging": "充電中", "monitor_remaining": "残り",
+    // Device Pairing
+    "device_not_connected": "デバイス未接続", "device_pairing": "デバイスペアリング",
+    "device_start_pairing": "ペアリング開始", "device_stop_pairing": "ペアリング停止", "device_disconnect": "切断",
     "monitor_used": "使用済み", "monitor_compressed": "圧縮",
     // Date Format
     "date_format_weekday": "",
