@@ -143,6 +143,8 @@ MacIsland/
 - ✅ **电池状态**：实时显示配对设备的电量和充电状态
 - ✅ **Bonjour 发现**：通过 WiFi 自动发现同一网络下的设备
 - ✅ **MultipeerConnectivity**：支持蓝牙和 WiFi Direct 自动连接
+- 📱 **配套 App**：[iOS/Android/鸿蒙配套 App](CompanionApps/)
+- 📖 **详细指南**：[设备配对指南](docs/phone_connection_guide.md)
 
 ### 壁纸系统
 - ✅ **本地壁纸**：文件选择器 + 拖拽添加，详情弹窗预览+信息+操作。
