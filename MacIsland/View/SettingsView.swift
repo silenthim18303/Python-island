@@ -89,6 +89,8 @@ struct SettingsView: View {
             GeneralSettingsView(category: selection)
         case .shortcuts:
             ShortcutsSettingsView()
+        case .voice:
+            VoiceSettingsView()
         case .about:
             AboutSettingsView()
         }

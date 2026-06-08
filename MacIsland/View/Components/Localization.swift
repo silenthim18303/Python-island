@@ -275,6 +275,10 @@ enum L10n {
     // MARK: - Settings
     static var settingsGeneral: String { t("settings_general") }
     static var settingsShortcuts: String { t("settings_shortcuts") }
+    static var voiceTitle: String { t("voice_title") }
+    static var voiceControl: String { t("voice_control") }
+    static var voiceSpeech: String { t("voice_speech") }
+    static var voiceCommands: String { t("voice_commands") }
     static var settingsAbout: String { t("settings_about") }
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
@@ -654,7 +658,9 @@ private let zhStrings: [String: String] = [
     "ai_server": "服务地址", "ai_models": "个可用模型", "ai_local": "本地: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "发送", "ai_placeholder": "输入消息...",
     // Settings
-    "settings_general": "通用", "settings_shortcuts": "快捷键", "settings_about": "关于",
+    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音",
+    "voice_control": "语音控制", "voice_speech": "语音播报", "voice_commands": "语音指令",
+    "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
     "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
     "settings_animation": "动画",
@@ -894,7 +900,9 @@ private let enStrings: [String: String] = [
     "ai_server": "Server", "ai_models": "models available", "ai_local": "Local: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "Send", "ai_placeholder": "Type a message...",
     // Settings
-    "settings_general": "General", "settings_shortcuts": "Shortcuts", "settings_about": "About",
+    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice",
+    "voice_control": "Voice Control", "voice_speech": "Voice Speech", "voice_commands": "Voice Commands",
+    "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
     "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
     "settings_animation": "Animation",
@@ -1134,7 +1142,9 @@ private let jaStrings: [String: String] = [
     "ai_server": "サーバー", "ai_models": "個のモデル", "ai_local": "ローカル：Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "送信", "ai_placeholder": "メッセージを入力...",
     // Settings
-    "settings_general": "一般", "settings_shortcuts": "ショートカット", "settings_about": "について",
+    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声",
+    "voice_control": "音声制御", "voice_speech": "音声読み上げ", "voice_commands": "音声コマンド",
+    "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
     "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",
     "settings_animation": "アニメーション",

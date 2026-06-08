@@ -22,6 +22,7 @@ final class ServiceContainer {
     let timer: TimerService
     let clipboard: ClipboardService
     let hotkey: HotkeyService
+    let voice: VoiceService
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -53,6 +54,14 @@ final class ServiceContainer {
         self.timer = TimerService()
         self.clipboard = ClipboardService()
         self.hotkey = HotkeyService()
+        self.voice = VoiceService()
+
+        // Wire voice command callbacks
+        self.voice.onCommand = { [weak self] command, text in
+            Task { @MainActor in
+                self?.handleVoiceCommand(command, text: text)
+            }
+        }
 
         // Wire hotkey callbacks
         self.hotkey.onToggleIsland = { IslandWindowManager.shared.toggle() }
@@ -84,6 +93,53 @@ final class ServiceContainer {
         }
     }
 
+    // MARK: - Voice Command Handler
+
+    private func handleVoiceCommand(_ command: VoiceCommand, text: String) {
+        switch command {
+        case .play:
+            music.togglePlay()
+            voice.speak("正在播放")
+        case .pause:
+            music.togglePlay()
+            voice.speak("已暂停")
+        case .next:
+            music.nextTrack()
+            voice.speak("下一首")
+        case .previous:
+            music.previousTrack()
+            voice.speak("上一首")
+        case .expand:
+            IslandWindowManager.shared.show()
+            NotificationCenter.default.post(name: .openIslandSettings, object: nil)
+            voice.speak("已展开")
+        case .collapse:
+            IslandWindowManager.shared.collapse()
+            voice.speak("已收起")
+        case .show:
+            IslandWindowManager.shared.show()
+            voice.speak("已显示")
+        case .hide:
+            IslandWindowManager.shared.hide()
+            voice.speak("已隐藏")
+        case .weather:
+            voice.speak("正在获取天气信息")
+            Task { await weather.fetchWeather() }
+        case .timer:
+            let remaining = timer.pomodoro.remaining
+            if timer.pomodoro.running && remaining > 0 {
+                let minutes = remaining / 60
+                voice.speak("番茄钟还剩\(minutes)分钟")
+            } else {
+                voice.speak("计时器空闲中")
+            }
+        case .todo:
+            voice.speak("待办功能开发中")
+        case .help:
+            voice.speak("您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令")
+        }
+    }
+
     // MARK: - Lifecycle
 
     func startAll() {
@@ -99,5 +155,7 @@ final class ServiceContainer {
         monitor.stopMonitoring()
         clipboard.stopMonitoring()
         hotkey.stopMonitoring()
+        voice.stopListening()
+        voice.stopSpeaking()
     }
 }
