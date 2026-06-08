@@ -56,7 +56,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(serviceContainer.timer)
                 .environmentObject(serviceContainer.clipboard)
                 .environmentObject(serviceContainer.hotkey)
-                .environmentObject(serviceContainer.phone)
         )
 
         // 启动所有数据服务

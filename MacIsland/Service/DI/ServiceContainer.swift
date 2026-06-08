@@ -22,7 +22,6 @@ final class ServiceContainer {
     let timer: TimerService
     let clipboard: ClipboardService
     let hotkey: HotkeyService
-    let phone: PhoneServiceImpl
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -54,7 +53,6 @@ final class ServiceContainer {
         self.timer = TimerService()
         self.clipboard = ClipboardService()
         self.hotkey = HotkeyService()
-        self.phone = PhoneServiceImpl()
 
         // Wire hotkey callbacks
         self.hotkey.onToggleIsland = { IslandWindowManager.shared.toggle() }
@@ -94,11 +92,6 @@ final class ServiceContainer {
         clipboard.startMonitoring()
         hotkey.startMonitoring()
         Task { await weather.fetchWeather() }
-
-        // 手机配对自动启动
-        if AppSettings.shared.phoneAutoStart {
-            phone.startListening()
-        }
     }
 
     func stopAll() {
@@ -106,6 +99,5 @@ final class ServiceContainer {
         monitor.stopMonitoring()
         clipboard.stopMonitoring()
         hotkey.stopMonitoring()
-        phone.stopListening()
     }
 }

@@ -62,8 +62,6 @@ struct SettingsView: View {
             GeneralSettingsView(category: selection)
         case .shortcuts:
             ShortcutsSettingsView()
-        case .phone:
-            PhoneSettingsView()
         case .about:
             AboutSettingsView()
         }

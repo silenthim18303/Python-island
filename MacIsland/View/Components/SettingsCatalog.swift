@@ -55,7 +55,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case notifications // 通知中心
     case community     // 社区
     case shortcuts     // 快捷键
-    case phone         // 手机配对
     case about         // 关于
 
     var id: String { rawValue }
@@ -71,7 +70,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .notifications: return L10n.notifCenter
         case .community:     return L10n.settingsCommunity
         case .shortcuts:     return L10n.settingsShortcuts
-        case .phone:         return L10n.devicePairing
         case .about:         return L10n.settingsAbout
         }
     }
@@ -87,7 +85,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .notifications: return "bell.badge"
         case .community:     return "person.2"
         case .shortcuts:     return "command"
-        case .phone:         return "iphone"
         case .about:         return "info.circle"
         }
     }
@@ -104,7 +101,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .notifications: return ["通知", "免打扰", "历史", "notification", "dnd", "mute"]
         case .community:     return ["社区", "上传", "用户名", "community", "upload"]
         case .shortcuts:  return ["快捷键", "热键", "shortcut", "hotkey", "key"]
-        case .phone:      return ["手机", "配对", "iPhone", "Android", "鸿蒙", "HarmonyOS", "设备", "通知", "phone", "pairing", "device", "notification"]
         case .about:      return ["关于", "版本", "about", "version"]
         }
     }
