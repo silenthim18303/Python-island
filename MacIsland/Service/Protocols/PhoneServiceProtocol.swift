@@ -46,6 +46,36 @@ enum DeviceType: String, Codable {
     }
 }
 
+// MARK: - Connection Type
+
+enum ConnectionType: String, Codable {
+    case wifi           // WiFi 网络连接
+    case bluetooth      // 蓝牙连接
+    case hotspot        // 热点/WiFi Direct 连接
+    case wifiDirect     // WiFi Direct 连接
+    case unknown        // 未知连接方式
+
+    var displayName: String {
+        switch self {
+        case .wifi: return "WiFi"
+        case .bluetooth: return "蓝牙"
+        case .hotspot: return "热点"
+        case .wifiDirect: return "WiFi Direct"
+        case .unknown: return "未知"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .wifi: return "wifi"
+        case .bluetooth: return "bluetooth"
+        case .hotspot: return "personalhotspot"
+        case .wifiDirect: return "wifi.circle"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+}
+
 // MARK: - Message Type
 
 enum DeviceMessageType: String, Codable {
@@ -60,7 +90,7 @@ enum DeviceMessageType: String, Codable {
 
 enum DeviceConnectionState: String {
     case idle           // 未启动
-    case advertising    // Bonjour 广播中，等待连接
+    case advertising    // 广播中，等待连接
     case connecting     // 正在建立连接
     case connected      // 已连接
     case disconnected   // 已断开
@@ -125,6 +155,7 @@ struct ConnectedDeviceInfo: Codable {
     let model: String
     let systemVersion: String
     let deviceType: DeviceType
+    var connectionType: ConnectionType = .unknown
 
     var displayName: String { name }
 }
@@ -149,6 +180,8 @@ protocol DeviceServiceProtocol: AnyObject {
     var deviceBattery: DeviceBatteryStatus? { get }
     /// 连接状态
     var connectionState: DeviceConnectionState { get }
+    /// 当前连接方式
+    var connectionType: ConnectionType { get }
 
     func startListening()
     func stopListening()

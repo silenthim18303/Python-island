@@ -51,13 +51,31 @@ struct PhoneSettingsView: View {
                     }
                 }
 
+                // 支持的连接方式
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("支持的连接方式")
+                        .font(.headline)
+
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                    ], spacing: 12) {
+                        ConnectionMethodCard(icon: "wifi", name: "WiFi", description: "同一网络自动发现")
+                        ConnectionMethodCard(icon: "bluetooth", name: "蓝牙", description: "近距离自动连接")
+                        ConnectionMethodCard(icon: "personalhotspot", name: "热点", description: "WiFi Direct 连接")
+                    }
+                }
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .controlBackgroundColor)))
+
                 // 使用说明
                 VStack(alignment: .leading, spacing: 12) {
                     Text("使用说明")
                         .font(.headline)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        instructionRow(number: "1", text: "确保设备和 Mac 连接到同一 WiFi 网络")
+                        instructionRow(number: "1", text: "确保设备和 Mac 连接到同一 WiFi 网络，或开启蓝牙")
                         instructionRow(number: "2", text: "点击「开始配对」按钮")
                         instructionRow(number: "3", text: "在设备上打开 MacIsland 配套 App")
                         instructionRow(number: "4", text: "App 会自动发现并连接到 Mac")
@@ -144,6 +162,35 @@ private struct SupportedDeviceCard: View {
                 Text(description)
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor)))
+    }
+}
+
+// MARK: - Connection Method Card
+
+private struct ConnectionMethodCard: View {
+    let icon: String
+    let name: String
+    let description: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(.accentColor)
+
+            VStack(spacing: 4) {
+                Text(name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.primary)
+                Text(description)
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)

@@ -29,6 +29,9 @@ struct PhonePairingView: View {
                 }
             }
 
+            // 支持的连接方式
+            connectionMethodsSection
+
             // 使用说明
             instructionsSection
 
@@ -84,6 +87,28 @@ struct PhonePairingView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Connection Methods
+
+    private var connectionMethodsSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text("支持的连接方式")
+                .font(.system(size: Theme.FontSize.caption, weight: .semibold))
+                .foregroundColor(.textSecondary)
+
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+            ], spacing: 8) {
+                ConnectionMethodBadge(icon: "wifi", name: "WiFi", description: "同一网络")
+                ConnectionMethodBadge(icon: "bluetooth", name: "蓝牙", description: "近距离")
+                ConnectionMethodBadge(icon: "personalhotspot", name: "热点", description: "WiFi Direct")
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .background(RoundedRectangle(cornerRadius: Theme.Radius.md).fill(Color.fillSubtle))
+    }
+
     // MARK: - Instructions
 
     private var instructionsSection: some View {
@@ -93,7 +118,7 @@ struct PhonePairingView: View {
                 .foregroundColor(.textSecondary)
 
             VStack(alignment: .leading, spacing: 6) {
-                instructionRow(number: "1", text: "确保设备和 Mac 连接到同一 WiFi 网络")
+                instructionRow(number: "1", text: "确保设备和 Mac 连接到同一 WiFi 网络，或开启蓝牙")
                 instructionRow(number: "2", text: "点击「开始配对」按钮")
                 instructionRow(number: "3", text: "在设备上打开 MacIsland 配套 App")
                 instructionRow(number: "4", text: "App 会自动发现并连接到 Mac")
@@ -175,5 +200,30 @@ private struct DeviceBadge: View {
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
         .background(RoundedRectangle(cornerRadius: 6).fill(Color.secondary.opacity(0.1)))
+    }
+}
+
+// MARK: - Connection Method Badge
+
+private struct ConnectionMethodBadge: View {
+    let icon: String
+    let name: String
+    let description: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(.accentColor)
+            Text(name)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.textPrimary)
+            Text(description)
+                .font(.system(size: 9))
+                .foregroundColor(.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 6).fill(Color.secondary.opacity(0.08)))
     }
 }

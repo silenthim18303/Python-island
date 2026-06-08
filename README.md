@@ -14,14 +14,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v1.8.3 |
-| 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine |
+| 版本 | v1.8.5 |
+| 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / MultipeerConnectivity |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v1.8.3)](https://github.com/MacIsland/MacIsland/releases/download/v1.8.3/MacIsland_v1.8.3.dmg)
+[📥 下载最新版本 (v1.8.5)](https://github.com/MacIsland/MacIsland/releases/download/v1.8.5/MacIsland_v1.8.5.dmg)
 
 ## 项目结构
 
@@ -138,9 +138,11 @@ MacIsland/
 
 ### 设备配对
 - ✅ **多设备支持**：iPhone、iPad、Android、鸿蒙、Mac、Windows 等设备均可配对
+- ✅ **多连接方式**：支持 WiFi、蓝牙、热点/WiFi Direct 三种连接方式
 - ✅ **通知转发**：接收配对设备的通知并显示在灵动岛
 - ✅ **电池状态**：实时显示配对设备的电量和充电状态
 - ✅ **Bonjour 发现**：通过 WiFi 自动发现同一网络下的设备
+- ✅ **MultipeerConnectivity**：支持蓝牙和 WiFi Direct 自动连接
 
 ### 壁纸系统
 - ✅ **本地壁纸**：文件选择器 + 拖拽添加，详情弹窗预览+信息+操作。

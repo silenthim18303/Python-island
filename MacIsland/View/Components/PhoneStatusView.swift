@@ -127,6 +127,25 @@ struct PhoneStatusCard: View {
                 Spacer()
             }
 
+            // 连接方式
+            if deviceService.connectionState == .connected {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Image(systemName: deviceService.connectionType.systemImage)
+                        .font(.system(size: 14))
+                        .foregroundColor(.accentColor)
+                    Text("连接方式")
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textSecondary)
+                    Spacer()
+                    Text(deviceService.connectionType.displayName)
+                        .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                        .foregroundColor(.textPrimary)
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.1)))
+            }
+
             // 设备信息
             if let device = deviceService.connectedDevice {
                 Divider()
