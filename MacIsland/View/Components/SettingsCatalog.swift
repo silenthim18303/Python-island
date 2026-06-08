@@ -178,6 +178,9 @@ struct SettingItemMeta: Identifiable {
             .init("wallpaperOpacity", .appearance,
                   title: L10n.settingsWallpaperOpacity, description: L10n.descWallpaperOpacity,
                   keywords: ["opacity", "壁纸", "透明"]),
+            .init("widgetAppearance", .appearance,
+                  title: L10n.settingsWidgetAppearance, description: L10n.descWidgetAppearance,
+                  keywords: ["widget", "小组件", "深色", "浅色", "dark", "light"]),
 
             // 壁纸
             .init("customWallpaperPath", .wallpaper,

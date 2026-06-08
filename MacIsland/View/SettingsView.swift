@@ -185,6 +185,17 @@ private struct GeneralSettingsView: View {
                 }
                 Slider(value: $settings.wallpaperOpacity, in: 0.0...1.0, step: 0.05)
             }
+
+            LabeledContent {
+                Picker("", selection: $settings.widgetAppearanceMode) {
+                    ForEach(WidgetAppearanceMode.allCases) { mode in
+                        Label(mode.displayName, systemImage: mode.systemImage)
+                            .tag(mode)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 140)
+            } label: { SettingLabel(key: "widgetAppearance") }
         }
     }
 

@@ -114,6 +114,35 @@ enum AccentColorOption: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Widget Appearance Mode
+
+enum WidgetAppearanceMode: String, CaseIterable, Identifiable {
+    case followIsland  // 跟随灵动岛
+    case system        // 跟随系统
+    case light         // 始终浅色
+    case dark          // 始终深色
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .followIsland: return "跟随灵动岛"
+        case .system: return "跟随系统"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .followIsland: return "iphone"
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        }
+    }
+}
+
 // MARK: - App Settings
 
 /// 全局共享设置 — UserDefaults 持久化，灵动岛与设置窗口共用同一数据源
@@ -129,6 +158,13 @@ final class AppSettings: ObservableObject {
     }
     @Published var clipboardEnabled: Bool {
         didSet { defaults.set(clipboardEnabled, forKey: Keys.clipboardEnabled) }
+    }
+    /// 小组件外观模式
+    @Published var widgetAppearanceMode: WidgetAppearanceMode {
+        didSet {
+            defaults.set(widgetAppearanceMode.rawValue, forKey: Keys.widgetAppearanceMode)
+            syncWidgetAppearance()
+        }
     }
     /// 自定义快捷键绑定（HotkeyAction → KeyCombo），UserDefaults JSON 持久化
     @Published var hotkeyBindings: [HotkeyAction: KeyCombo] {
@@ -173,7 +209,13 @@ final class AppSettings: ObservableObject {
 
     /// 外观模式（深色/浅色/跟随系统）
     @Published var appearanceMode: AppAppearance {
-        didSet { defaults.set(appearanceMode.rawValue, forKey: Keys.appearanceMode) }
+        didSet {
+            defaults.set(appearanceMode.rawValue, forKey: Keys.appearanceMode)
+            // 如果小组件设置为跟随灵动岛，同步更新
+            if widgetAppearanceMode == .followIsland {
+                syncWidgetAppearance()
+            }
+        }
     }
     /// 强调色
     @Published var accentColorOption: AccentColorOption {
@@ -301,6 +343,7 @@ final class AppSettings: ObservableObject {
         static let animationSpeed = "animationSpeed"
         static let springAnimation = "springAnimation"
         static let clipboardEnabled = "clipboardEnabled"
+        static let widgetAppearanceMode = "widgetAppearanceMode"
         static let hotkeyBindings = "hotkeyBindings"
         static let pomodoroWorkMinutes = "pomodoroWorkMinutes"
         static let pomodoroShortBreakMinutes = "pomodoroShortBreakMinutes"
@@ -334,6 +377,8 @@ final class AppSettings: ObservableObject {
             .flatMap(AnimationSpeed.init) ?? .medium
         springAnimation = defaults.object(forKey: Keys.springAnimation) as? Bool ?? true
         clipboardEnabled = defaults.object(forKey: Keys.clipboardEnabled) as? Bool ?? true
+        widgetAppearanceMode = (defaults.string(forKey: Keys.widgetAppearanceMode))
+            .flatMap(WidgetAppearanceMode.init) ?? .followIsland
         hotkeyBindings = Self.loadHotkeyBindings(defaults: defaults)
         pomodoroWorkMinutes = defaults.object(forKey: Keys.pomodoroWorkMinutes) as? Int ?? 25
         pomodoroShortBreakMinutes = defaults.object(forKey: Keys.pomodoroShortBreakMinutes) as? Int ?? 5
@@ -376,6 +421,29 @@ final class AppSettings: ObservableObject {
         customWallpaperPath = defaults.string(forKey: Keys.customWallpaperPath) ?? ""
 
         _ = weatherEffectiveAPIKey
+
+        // 同步小组件外观到共享 UserDefaults
+        syncWidgetAppearance()
+    }
+
+    // MARK: - Widget Appearance Sync
+
+    /// 同步小组件外观设置到共享 UserDefaults
+    private func syncWidgetAppearance() {
+        let sharedDefaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
+
+        switch widgetAppearanceMode {
+        case .followIsland:
+            // 跟随灵动岛：将当前外观模式写入共享 UserDefaults
+            sharedDefaults.set(appearanceMode.rawValue, forKey: "widget_color_scheme")
+        case .system:
+            sharedDefaults.set("system", forKey: "widget_color_scheme")
+        case .light:
+            sharedDefaults.set("light", forKey: "widget_color_scheme")
+        case .dark:
+            sharedDefaults.set("dark", forKey: "widget_color_scheme")
+        }
+        sharedDefaults.synchronize()
     }
 
     // MARK: - Hotkey Bindings Persistence

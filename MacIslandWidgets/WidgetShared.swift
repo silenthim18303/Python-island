@@ -17,6 +17,20 @@ enum WidgetConstants {
         UserDefaults(suiteName: appGroupID) ?? UserDefaults.standard
     }
 
+    /// 解析小组件颜色方案
+    static var resolvedColorScheme: ColorScheme {
+        let scheme = sharedDefaults.string(forKey: "widget_color_scheme") ?? "system"
+        switch scheme {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            // 跟随系统或跟随灵动岛（默认深色）
+            return .dark
+        }
+    }
+
     /// 从 App Group 容器的 JSON 文件读取数据
     private static var cachedData: [String: Any]?
 
@@ -85,6 +99,7 @@ enum WidgetTheme {
 extension View {
     func macIslandWidgetBackground() -> some View {
         self
+            .environment(\.colorScheme, WidgetConstants.resolvedColorScheme)
             .containerBackground(for: .widget) {
                 Color("WidgetBackground")
             }
