@@ -127,11 +127,14 @@ struct PhonePairingView: View {
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible()),
+                GridItem(.flexible()),
             ], spacing: 8) {
                 DeviceBadge(icon: "iphone", name: "iPhone")
                 DeviceBadge(icon: "ipad", name: "iPad")
                 DeviceBadge(icon: "smartphone", name: "Android")
+                DeviceBadge(icon: "smartphone", name: "鸿蒙")
                 DeviceBadge(icon: "laptopcomputer", name: "Mac")
+                DeviceBadge(icon: "pc", name: "Windows")
             }
         }
         .padding(Theme.Spacing.md)

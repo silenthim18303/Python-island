@@ -74,11 +74,14 @@ struct PhoneSettingsView: View {
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
+                        GridItem(.flexible()),
                     ], spacing: 12) {
                         SupportedDeviceCard(icon: "iphone", name: "iPhone", description: "iOS 15+")
                         SupportedDeviceCard(icon: "ipad", name: "iPad", description: "iPadOS 15+")
                         SupportedDeviceCard(icon: "smartphone", name: "Android", description: "Android 10+")
+                        SupportedDeviceCard(icon: "smartphone", name: "鸿蒙", description: "HarmonyOS 4+")
                         SupportedDeviceCard(icon: "laptopcomputer", name: "Mac", description: "macOS 13+")
+                        SupportedDeviceCard(icon: "pc", name: "Windows", description: "Windows 10+")
                     }
                 }
                 .padding()

@@ -16,6 +16,7 @@ enum DeviceType: String, Codable {
     case mac
     case windows
     case linux
+    case harmonyos
     case unknown
 
     var displayName: String {
@@ -26,6 +27,7 @@ enum DeviceType: String, Codable {
         case .mac: return "Mac"
         case .windows: return "Windows"
         case .linux: return "Linux"
+        case .harmonyos: return "鸿蒙"
         case .unknown: return "设备"
         }
     }
@@ -38,6 +40,7 @@ enum DeviceType: String, Codable {
         case .mac: return "desktopcomputer"
         case .windows: return "pc"
         case .linux: return "terminal"
+        case .harmonyos: return "smartphone"
         case .unknown: return "device.phone.portrait"
         }
     }

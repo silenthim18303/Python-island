@@ -104,7 +104,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .notifications: return ["通知", "免打扰", "历史", "notification", "dnd", "mute"]
         case .community:     return ["社区", "上传", "用户名", "community", "upload"]
         case .shortcuts:  return ["快捷键", "热键", "shortcut", "hotkey", "key"]
-        case .phone:      return ["手机", "配对", "iPhone", "Android", "设备", "通知", "phone", "pairing", "device", "notification"]
+        case .phone:      return ["手机", "配对", "iPhone", "Android", "鸿蒙", "HarmonyOS", "设备", "通知", "phone", "pairing", "device", "notification"]
         case .about:      return ["关于", "版本", "about", "version"]
         }
     }
