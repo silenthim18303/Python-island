@@ -32,6 +32,7 @@ struct TodoEntry: TimelineEntry {
     let date: Date
     let totalCount: Int
     let completedCount: Int
+    let updatedAt: Date?
     let pendingItems: [TodoItem]
 
     struct TodoItem: Identifiable {
@@ -45,23 +46,23 @@ struct TodoEntry: TimelineEntry {
             date: Date(),
             totalCount: 8,
             completedCount: 3,
+            updatedAt: Date(),
             pendingItems: [
-                TodoItem(id: "1", title: "Review PR", isCompleted: false),
-                TodoItem(id: "2", title: "Update documentation", isCompleted: false),
-                TodoItem(id: "3", title: "Fix bug #123", isCompleted: false),
-                TodoItem(id: "4", title: "Deploy to staging", isCompleted: false),
+                TodoItem(id: "1", title: "整理今日任务", isCompleted: false),
+                TodoItem(id: "2", title: "更新文档", isCompleted: false),
+                TodoItem(id: "3", title: "修复反馈问题", isCompleted: false),
+                TodoItem(id: "4", title: "发布测试包", isCompleted: false),
             ]
         )
     }
 
     static func fromUserDefaults() -> TodoEntry {
-        let d = WidgetConstants.sharedDefaults
-        let totalCount = d.integer(forKey: "widget_todo_total")
-        let completedCount = d.integer(forKey: "widget_todo_completed")
+        let totalCount = WidgetConstants.int("widget_todo_total")
+        let completedCount = WidgetConstants.int("widget_todo_completed")
+        let ts = WidgetConstants.double("widget_todo_updated_at")
 
-        // 读取待办列表（JSON 格式）
         var items: [TodoItem] = []
-        if let data = d.data(forKey: "widget_todo_items"),
+        if let data = WidgetConstants.data("widget_todo_items"),
            let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
             for dict in json {
                 if let id = dict["id"] as? String,
@@ -76,6 +77,7 @@ struct TodoEntry: TimelineEntry {
             date: Date(),
             totalCount: totalCount,
             completedCount: completedCount,
+            updatedAt: ts > 0 ? Date(timeIntervalSince1970: ts) : nil,
             pendingItems: items.filter { !$0.isCompleted }
         )
     }
@@ -88,6 +90,9 @@ struct TodoEntry: TimelineEntry {
     var progressString: String {
         "\(completedCount)/\(totalCount)"
     }
+
+    var pendingCount: Int { max(totalCount - completedCount, 0) }
+    var updateString: String { WidgetFormat.relativeTime(updatedAt) }
 }
 
 // MARK: - Todo Widget
@@ -98,7 +103,7 @@ struct TodoWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodoTimelineProvider()) { entry in
             TodoWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .macIslandWidgetBackground()
         }
         .configurationDisplayName("待办事项")
         .description("显示待办列表和完成进度")
@@ -121,85 +126,94 @@ struct TodoWidgetView: View {
     }
 
     private var smallView: some View {
-        VStack(spacing: 8) {
-            // 进度环
-            ZStack {
-                Circle()
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 4)
-                    .frame(width: 44, height: 44)
+        VStack(alignment: .leading, spacing: 8) {
+            WidgetHeader(icon: "checklist", title: "待办", trailing: entry.updateString, color: .green)
 
-                Circle()
-                    .trim(from: 0, to: entry.progress)
-                    .stroke(Color.green, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                    .frame(width: 44, height: 44)
-                    .rotationEffect(.degrees(-90))
+            HStack(alignment: .center) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.secondary.opacity(0.18), lineWidth: 4)
+                        .frame(width: 46, height: 46)
 
-                Text(entry.progressString)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(.primary)
+                    Circle()
+                        .trim(from: 0, to: entry.progress)
+                        .stroke(Color.green, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .frame(width: 46, height: 46)
+                        .rotationEffect(.degrees(-90))
+
+                    Text(entry.progressString)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(.primary)
+                }
+
+                Spacer(minLength: 4)
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(entry.pendingCount)")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                    Text("待处理")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
             }
 
-            Text("\(entry.pendingItems.count) pending")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.secondary)
+            WidgetProgressBar(value: entry.progress, color: .green, height: 3)
         }
         .padding()
     }
 
     private var mediumView: some View {
-        HStack(spacing: 16) {
-            // 左侧：进度
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 5)
-                        .frame(width: 56, height: 56)
+        VStack(alignment: .leading, spacing: 9) {
+            WidgetHeader(icon: "checklist", title: "待办事项", trailing: entry.updateString, color: .green)
 
-                    Circle()
-                        .trim(from: 0, to: entry.progress)
-                        .stroke(Color.green, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                        .frame(width: 56, height: 56)
-                        .rotationEffect(.degrees(-90))
-
-                    Text("\(Int(entry.progress * 100))%")
-                        .font(.system(size: 12, weight: .bold))
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text("\(entry.pendingCount)")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    Text("待处理")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+
+                    WidgetProgressBar(value: entry.progress, color: .green, height: 4)
+
+                    Text("完成 \(entry.progressString)")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
                 }
+                .frame(width: 74, alignment: .leading)
 
-                Text(entry.progressString)
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-            }
-            .frame(width: 70)
+                Divider()
 
-            Divider()
-
-            // 右侧：待办列表
-            VStack(alignment: .leading, spacing: 6) {
-                if entry.pendingItems.isEmpty {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("All done!")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.primary)
-                    }
-                } else {
-                    ForEach(entry.pendingItems.prefix(4)) { item in
+                VStack(alignment: .leading, spacing: 5) {
+                    if entry.pendingItems.isEmpty {
                         HStack(spacing: 6) {
-                            Image(systemName: "circle")
-                                .font(.system(size: 8))
-                                .foregroundColor(.secondary)
-                            Text(item.title)
-                                .font(.system(size: 11))
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.green)
+                            Text(entry.totalCount == 0 ? "还没有待办" : "全部完成")
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.primary)
-                                .lineLimit(1)
+                        }
+                    } else {
+                        ForEach(entry.pendingItems.prefix(4)) { item in
+                            HStack(spacing: 6) {
+                                Image(systemName: "circle")
+                                    .font(.system(size: 7))
+                                    .foregroundColor(.green.opacity(0.8))
+                                    .frame(width: 10)
+                                Text(item.title)
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.primary)
+                                    .lineLimit(1)
+                            }
                         }
                     }
                 }
             }
-
-            Spacer()
         }
         .padding()
     }

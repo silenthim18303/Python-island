@@ -120,6 +120,7 @@ final class AIService: ObservableObject {
     @Published var isConnected = false
 
     private var currentTask: Task<Void, Never>?
+    private var currentGenerationID: UUID?
 
     private init() {
         self.serverURL = UserDefaults.standard.string(forKey: "aiServerURL") ?? "http://localhost:11434"
@@ -173,11 +174,31 @@ final class AIService: ObservableObject {
     }
 
     func send(content: String) async {
+        guard !isGenerating else { return }
+
+        let generationID = UUID()
+        currentGenerationID = generationID
+
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performGeneration(content: content, generationID: generationID)
+        }
+        currentTask = task
+        await task.value
+    }
+
+    private func performGeneration(content: String, generationID: UUID) async {
         let userMessage = AIMessage(role: .user, content: content)
         messages.append(userMessage)
 
         isGenerating = true
-        defer { isGenerating = false }
+        defer {
+            if currentGenerationID == generationID {
+                currentTask = nil
+                currentGenerationID = nil
+                isGenerating = false
+            }
+        }
 
         if apiKey.isEmpty {
             await sendOllama(content: content)
@@ -189,6 +210,7 @@ final class AIService: ObservableObject {
     func stopGeneration() {
         currentTask?.cancel()
         currentTask = nil
+        currentGenerationID = nil
         isGenerating = false
     }
 
@@ -317,6 +339,8 @@ final class AIService: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: urlRequest)
+            guard !Task.isCancelled else { return }
+
             // Ollama 返回格式: {"message": {"role": "...", "content": "..."}}
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let message = json["message"] as? [String: Any],
@@ -324,6 +348,7 @@ final class AIService: ObservableObject {
                 messages.append(AIMessage(role: .assistant, content: content))
             }
         } catch {
+            guard !Self.isCancellationError(error) else { return }
             messages.append(AIMessage(role: .assistant, content: "\(L10n.errorAIConnection): \(error.localizedDescription)\n\n\(L10n.aiServer) (\(serverURL))"))
         }
     }
@@ -355,12 +380,21 @@ final class AIService: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: urlRequest)
+            guard !Task.isCancelled else { return }
+
             let response = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
             if let content = response.choices.first?.message.content {
                 messages.append(AIMessage(role: .assistant, content: content))
             }
         } catch {
+            guard !Self.isCancellationError(error) else { return }
             messages.append(AIMessage(role: .assistant, content: "\(L10n.errorAIRequest): \(error.localizedDescription)"))
         }
+    }
+
+    private static func isCancellationError(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if let urlError = error as? URLError, urlError.code == .cancelled { return true }
+        return false
     }
 }

@@ -29,6 +29,13 @@ struct WallpaperCommunityView: View {
     enum Filter: String, CaseIterable {
         case all = "all"
         case mine = "mine"
+
+        var displayName: String {
+            switch self {
+            case .all: return L10n.wallpaperFilterAll
+            case .mine: return L10n.wallpaperFilterMine
+            }
+        }
     }
 
     private var uploadUsername: String {
@@ -108,7 +115,7 @@ struct WallpaperCommunityView: View {
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) { filter = f }
                         } label: {
-                            Text(f.rawValue)
+                            Text(f.displayName)
                                 .font(.system(size: 10, weight: filter == f ? .semibold : .medium))
                                 .foregroundColor(filter == f ? .white : .white.opacity(0.4))
                                 .padding(.horizontal, 12)
@@ -346,7 +353,7 @@ struct WallpaperCommunityView: View {
                     store.toggleWallpaperPrivacy(wallpaper)
                 } label: {
                     Label(
-                        store.isWallpaperPrivate(wallpaper) ? "取消私有" : L10n.wallpaperSetPrivate,
+                        store.isWallpaperPrivate(wallpaper) ? L10n.wallpaperRemovePrivate : L10n.wallpaperSetPrivate,
                         systemImage: store.isWallpaperPrivate(wallpaper) ? "eye" : "eye.slash"
                     )
                 }
@@ -589,7 +596,7 @@ struct WallpaperDetailSheet: View {
                         HStack(spacing: 6) {
                             if isDownloading { ProgressView().controlSize(.mini) }
                             else { Image(systemName: "arrow.down.circle.fill") }
-                            Text(isDownloading ? "下载中…" : L10n.wallpaperDownload)
+                            Text(isDownloading ? L10n.wallpaperDownloading : L10n.wallpaperDownload)
                         }
                         .font(.system(size: Theme.FontSize.body, weight: .medium))
                         .foregroundColor(.white)
@@ -609,7 +616,7 @@ struct WallpaperDetailSheet: View {
                             store.toggleWallpaperPrivacy(wallpaper)
                         } label: {
                             Label(
-                                store.isWallpaperPrivate(wallpaper) ? "取消私有" : L10n.wallpaperSetPrivate,
+                                store.isWallpaperPrivate(wallpaper) ? L10n.wallpaperRemovePrivate : L10n.wallpaperSetPrivate,
                                 systemImage: store.isWallpaperPrivate(wallpaper) ? "eye" : "eye.slash"
                             )
                             .font(.system(size: Theme.FontSize.caption, weight: .medium))

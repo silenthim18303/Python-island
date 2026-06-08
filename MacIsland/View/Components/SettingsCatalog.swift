@@ -219,6 +219,10 @@ struct SettingItemMeta: Identifiable {
                   keywords: ["lyrics", "netease", "网易", "qq", "酷狗", "lrclib"]),
 
             // 天气
+            .init("weatherAPIKey", .weather,
+                  title: L10n.weatherAPIKey, description: L10n.descWeatherAPIKey,
+                  hint: "X-QW-Api-Key",
+                  keywords: ["api", "key", "token", "和风", "天气"]),
             .init("weatherManualCity", .weather,
                   title: L10n.weatherCity, description: L10n.descWeatherCity,
                   hint: L10n.weatherAuto,

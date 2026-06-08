@@ -11,9 +11,18 @@ import Foundation
 
 /// 番茄钟阶段
 enum PomodoroPhase: String, CaseIterable, Hashable {
-    case work = "专注"
-    case shortBreak = "短休"
-    case longBreak = "长休"
+    case work = "work"
+    case shortBreak = "shortBreak"
+    case longBreak = "longBreak"
+
+    /// 本地化显示名称
+    var displayName: String {
+        switch self {
+        case .work: return L10n.timerWork
+        case .shortBreak: return L10n.timerBreak
+        case .longBreak: return L10n.timerLongBreak
+        }
+    }
 
     /// 硬编码默认值，仅作兜底
     var defaultDuration: Int {

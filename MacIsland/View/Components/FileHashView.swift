@@ -117,31 +117,56 @@ struct FileHashView: View {
         errorMessage = nil
 
         Task.detached(priority: .userInitiated) {
-            guard let data = try? Data(contentsOf: url) else {
+            do {
+                let results = try Self.computeStreamingHashes(for: url)
+                await MainActor.run {
+                    hashResults = results
+                    isComputing = false
+                }
+            } catch {
                 await MainActor.run {
                     isComputing = false
                     errorMessage = L10n.error
                 }
-                return
-            }
-
-            var results: [HashAlgorithm: String] = [:]
-            for algo in HashAlgorithm.allCases {
-                let hash: String
-                switch algo {
-                case .md5: hash = Insecure.MD5.hash(data: data).map { String(format: "%02x", $0) }.joined()
-                case .sha1: hash = Insecure.SHA1.hash(data: data).map { String(format: "%02x", $0) }.joined()
-                case .sha256: hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-                case .sha512: hash = SHA512.hash(data: data).map { String(format: "%02x", $0) }.joined()
-                }
-                results[algo] = hash
-            }
-
-            await MainActor.run {
-                hashResults = results
-                isComputing = false
             }
         }
+    }
+
+    nonisolated private static func computeStreamingHashes(for url: URL) throws -> [HashAlgorithm: String] {
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let file = try FileHandle(forReadingFrom: url)
+        defer { try? file.close() }
+
+        let chunkSize = 1024 * 1024
+        var md5 = Insecure.MD5()
+        var sha1 = Insecure.SHA1()
+        var sha256 = SHA256()
+        var sha512 = SHA512()
+
+        while true {
+            guard let chunk = try file.read(upToCount: chunkSize), !chunk.isEmpty else { break }
+            md5.update(data: chunk)
+            sha1.update(data: chunk)
+            sha256.update(data: chunk)
+            sha512.update(data: chunk)
+        }
+
+        return [
+            .md5: hexDigest(md5.finalize()),
+            .sha1: hexDigest(sha1.finalize()),
+            .sha256: hexDigest(sha256.finalize()),
+            .sha512: hexDigest(sha512.finalize())
+        ]
+    }
+
+    nonisolated private static func hexDigest<D: Sequence>(_ digest: D) -> String where D.Element == UInt8 {
+        digest.map { String(format: "%02x", $0) }.joined()
     }
 }
 

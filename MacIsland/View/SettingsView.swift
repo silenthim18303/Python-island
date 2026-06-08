@@ -180,7 +180,7 @@ private struct GeneralSettingsView: View {
                     Text(L10n.wallpaperPathDefault)
                         .font(.caption).foregroundColor(.secondary)
                 } else {
-                    Button(L10n.restore) { settings.customWallpaperPath = "" }
+                    Button(L10n.restore) { settings.clearCustomWallpaperDirectory() }
                         .font(.caption)
                 }
             }
@@ -259,6 +259,11 @@ private struct GeneralSettingsView: View {
     @ViewBuilder private var weatherSection: some View {
         Section(L10n.weatherTitle) {
             LabeledContent {
+                SecureField(settingHint("weatherAPIKey"), text: $settings.weatherAPIKey)
+                    .textFieldStyle(.roundedBorder).frame(width: 220)
+            } label: { SettingLabel(key: "weatherAPIKey") }
+
+            LabeledContent {
                 TextField(settingHint("weatherManualCity"), text: $settings.weatherManualCity)
                     .textFieldStyle(.roundedBorder).frame(width: 160)
             } label: { SettingLabel(key: "weatherManualCity") }
@@ -320,7 +325,7 @@ private struct GeneralSettingsView: View {
         panel.canCreateDirectories = true
         panel.message = L10n.wallpaperSelect
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        settings.customWallpaperPath = url.path
+        settings.setCustomWallpaperDirectory(url)
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

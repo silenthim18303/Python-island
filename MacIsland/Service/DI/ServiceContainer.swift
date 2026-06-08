@@ -32,16 +32,19 @@ final class ServiceContainer {
         mediaKeySender: MediaKeySenderProtocol? = nil,
         systemMonitor: SystemMonitorProtocol? = nil
     ) {
+        let settings = AppSettings.shared
+
         // 天气配置：优先手动城市 > 默认自动定位
         let weatherCfg: QWeatherConfig
-        if !AppSettings.shared.weatherManualCity.isEmpty && !AppSettings.shared.weatherManualLocationID.isEmpty {
+        if !settings.weatherManualCity.isEmpty && !settings.weatherManualLocationID.isEmpty {
             weatherCfg = .fixed(
-                locationID: AppSettings.shared.weatherManualLocationID,
-                cityName: AppSettings.shared.weatherManualCity,
+                apiKey: settings.weatherEffectiveAPIKey,
+                locationID: settings.weatherManualLocationID,
+                cityName: settings.weatherManualCity,
                 districtName: ""
             )
         } else {
-            weatherCfg = weatherConfig ?? .autoDetect(locationID: "101010100")
+            weatherCfg = weatherConfig ?? .autoDetect(apiKey: settings.weatherEffectiveAPIKey, locationID: "101010100")
         }
         self.weather = QWeatherService(config: weatherCfg)
         self.music = SystemMusicService(mediaKeySender: mediaKeySender ?? DefaultMediaKeySender())
@@ -58,7 +61,6 @@ final class ServiceContainer {
         self.hotkey.onPreviousTrack = { [weak self] in self?.music.previousTrack() }
 
         // 剪贴板配置 — 以 AppSettings 为单一数据源，初始化并订阅变化同步给服务
-        let settings = AppSettings.shared
         self.clipboard.isEnabled = settings.clipboardEnabled
         self.clipboard.urlDetectMode = settings.clipboardUrlDetectMode
         self.clipboard.blacklistedDomains = settings.blacklistedDomains
@@ -71,6 +73,15 @@ final class ServiceContainer {
         settings.$blacklistedDomains
             .sink { [weak self] in self?.clipboard.blacklistedDomains = $0 }
             .store(in: &cancellables)
+
+        if weatherConfig == nil {
+            settings.$weatherAPIKey
+                .sink { [weak self, weak settings] _ in
+                    guard let settings else { return }
+                    self?.weather.updateAPIKey(settings.weatherEffectiveAPIKey)
+                }
+                .store(in: &cancellables)
+        }
     }
 
     // MARK: - Lifecycle

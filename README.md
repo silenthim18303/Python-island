@@ -14,14 +14,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v1.7.1 |
+| 版本 | v1.8.2 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v1.7.1)](https://github.com/MacIsland/MacIsland/releases/download/v1.7.1/MacIsland_v1.7.1.dmg)
+[📥 下载最新版本 (v1.8.2)](https://github.com/MacIsland/MacIsland/releases/download/v1.8.2/MacIsland_v1.8.2.dmg)
 
 ## 项目结构
 
@@ -134,6 +134,7 @@ MacIsland/
 
 ### 系统监控
 - ✅ **CPU/内存/磁盘/电池/网络**：实时采集与展示，含核心数、温度、上下行速度。
+- ✅ **桌面小组件**：天气、系统监控、计时器小组件，支持小/中/大三种尺寸。
 
 ### 壁纸系统
 - ✅ **本地壁纸**：文件选择器 + 拖拽添加，详情弹窗预览+信息+操作。
@@ -152,7 +153,7 @@ MacIsland/
 
 1. 使用 Xcode 打开 `MacIsland.xcodeproj`。
 2. 依赖通过 Swift Package Manager 自动解析（QWeatherSDK）。
-3. 在 `QWeatherService` 中配置和风天气 API Key 后构建运行（macOS 15.0+）。
+3. 构建运行后，可在「设置 → 天气」中填写自己的和风天气 API Key；留空时使用内置默认 Key（macOS 15.0+）。
 4. 首次启动需在「系统设置 → 隐私与安全性」中授予**定位**与**辅助功能**权限。
 5. 社区壁纸功能需在设置中配置 GitHub 用户名并完成 Device Flow 授权。
 
@@ -180,7 +181,7 @@ MacIsland/
 ### 其他规划
 - 📱 **iPhone 配对**：通过 Local Network 与 iPhone 配对，同步通知/音乐控制
 - 📦 **开机自启优化**：更可靠的 Launch Agent 实现
-- 🔄 **自动更新**：集成 Sparkle 框架，支持应用内检查更新
+- ✅ **自动更新**：已实现，基于 GitHub API 的应用内检查更新
 
 ## 致谢
 

@@ -30,6 +30,7 @@ struct ClipboardTimelineProvider: TimelineProvider {
 
 struct ClipboardEntry: TimelineEntry {
     let date: Date
+    let updatedAt: Date?
     let recentItems: [ClipboardItem]
 
     struct ClipboardItem: Identifiable {
@@ -42,35 +43,38 @@ struct ClipboardEntry: TimelineEntry {
     static var placeholder: ClipboardEntry {
         ClipboardEntry(
             date: Date(),
+            updatedAt: Date(),
             recentItems: [
                 ClipboardItem(id: "1", text: "https://github.com/MacIsland", timestamp: Date()),
-                ClipboardItem(id: "2", text: "Hello, World!", timestamp: Date().addingTimeInterval(-60)),
+                ClipboardItem(id: "2", text: "今天要整理的任务清单", timestamp: Date().addingTimeInterval(-60)),
                 ClipboardItem(id: "3", text: "let x = 42", timestamp: Date().addingTimeInterval(-120)),
             ]
         )
     }
 
     static func fromUserDefaults() -> ClipboardEntry {
-        let d = WidgetConstants.sharedDefaults
+        let ts = WidgetConstants.double("widget_clipboard_updated_at")
         var items: [ClipboardItem] = []
 
-        if let data = d.data(forKey: "widget_clipboard_items"),
+        if let data = WidgetConstants.data("widget_clipboard_items"),
            let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
             for dict in json {
                 if let id = dict["id"] as? String,
                    let text = dict["text"] as? String,
                    let timestamp = dict["timestamp"] as? TimeInterval {
-                    items.append(ClipboardItem(
-                        id: id,
-                        text: text,
-                        timestamp: Date(timeIntervalSince1970: timestamp)
-                    ))
+                    items.append(ClipboardItem(id: id, text: text, timestamp: Date(timeIntervalSince1970: timestamp)))
                 }
             }
         }
 
-        return ClipboardEntry(date: Date(), recentItems: items)
+        return ClipboardEntry(
+            date: Date(),
+            updatedAt: ts > 0 ? Date(timeIntervalSince1970: ts) : nil,
+            recentItems: items
+        )
     }
+
+    var updateString: String { WidgetFormat.relativeTime(updatedAt) }
 }
 
 // MARK: - Clipboard Widget
@@ -81,7 +85,7 @@ struct ClipboardWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ClipboardTimelineProvider()) { entry in
             ClipboardWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .macIslandWidgetBackground()
         }
         .configurationDisplayName("剪贴板")
         .description("最近复制的内容")
@@ -104,23 +108,28 @@ struct ClipboardWidgetView: View {
     }
 
     private var smallView: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             if entry.recentItems.isEmpty {
-                WidgetEmptyState(icon: "doc.on.clipboard", message: "No items")
+                Spacer()
+                WidgetEmptyState(icon: "doc.on.clipboard", message: "暂无剪贴板记录")
+                Spacer()
             } else {
-                Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 18))
-                    .foregroundColor(.accentColor)
+                WidgetHeader(icon: "doc.on.clipboard", title: "剪贴板", trailing: entry.updateString, color: .blue)
 
                 Text(entry.recentItems.first?.text ?? "")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.primary)
                     .lineLimit(3)
-                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.8)
 
-                Text("\(entry.recentItems.count) items")
-                    .font(.system(size: 9))
-                    .foregroundColor(.secondary)
+                HStack {
+                    Label("\(entry.recentItems.count) 条", systemImage: "tray.full")
+                    Spacer()
+                    Label(entry.recentItems.first?.isURL == true ? "链接" : "文本",
+                          systemImage: entry.recentItems.first?.isURL == true ? "link" : "doc.text")
+                }
+                .font(.system(size: 9, weight: .medium))
+                .foregroundColor(.secondary)
             }
         }
         .padding()
@@ -128,24 +137,13 @@ struct ClipboardWidgetView: View {
 
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 14))
-                    .foregroundColor(.accentColor)
-                Text("Clipboard History")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.primary)
-                Spacer()
-                Text("\(entry.recentItems.count) items")
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-            }
+            WidgetHeader(icon: "doc.on.clipboard", title: "剪贴板历史", trailing: "\(entry.recentItems.count) 条 · \(entry.updateString)", color: .blue)
 
             if entry.recentItems.isEmpty {
                 Spacer()
                 HStack {
                     Spacer()
-                    Text("No items copied yet")
+                    Text("暂无复制内容")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -167,7 +165,7 @@ struct ClipboardWidgetView: View {
                         Spacer()
 
                         Text(timeAgo(item.timestamp))
-                            .font(.system(size: 9))
+                            .font(.system(size: 9, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                     .padding(.vertical, 2)
@@ -179,8 +177,8 @@ struct ClipboardWidgetView: View {
 
     private func timeAgo(_ date: Date) -> String {
         let interval = Date().timeIntervalSince(date)
-        if interval < 60 { return "now" }
-        if interval < 3600 { return "\(Int(interval / 60))m" }
-        return "\(Int(interval / 3600))h"
+        if interval < 60 { return "刚刚" }
+        if interval < 3600 { return "\(Int(interval / 60))分" }
+        return "\(Int(interval / 3600))时"
     }
 }

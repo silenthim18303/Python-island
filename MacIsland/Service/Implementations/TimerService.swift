@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import Combine
 import AppKit
 
 /// 计时器服务 — 番茄钟 + 倒计时（可同时运行，共享 tick Timer）
@@ -41,26 +40,35 @@ final class TimerService: TimerServiceProtocol, ObservableObject {
     }
 
     private func updateWidgetData(pomodoro: PomodoroData, countdown: CountdownData) {
-        if pomodoro.running {
+        if pomodoro.running || pomodoro.remaining < pomodoro.phaseDuration {
             WidgetDataManager.shared.updateTimer(
                 type: "pomodoro",
                 remainingSeconds: pomodoro.remaining,
-                isRunning: true,
-                completedPomodoros: pomodoro.completedCount
+                totalSeconds: pomodoro.phaseDuration,
+                isRunning: pomodoro.running,
+                completedPomodoros: pomodoro.completedCount,
+                currentPhase: pomodoro.phase.displayName,
+                state: pomodoro.running ? "running" : "paused"
             )
-        } else if countdown.state == .running {
+        } else if countdown.state != .idle {
             WidgetDataManager.shared.updateTimer(
                 type: "countdown",
                 remainingSeconds: countdown.remainingSeconds,
-                isRunning: true,
-                completedPomodoros: pomodoro.completedCount
+                totalSeconds: countdown.totalDuration > 0 ? countdown.totalDuration : countdown.totalInputSeconds,
+                isRunning: countdown.state == .running,
+                completedPomodoros: pomodoro.completedCount,
+                currentPhase: L10n.timerCountdown,
+                state: countdown.state.rawValue
             )
         } else {
             WidgetDataManager.shared.updateTimer(
                 type: "idle",
                 remainingSeconds: 0,
+                totalSeconds: 0,
                 isRunning: false,
-                completedPomodoros: pomodoro.completedCount
+                completedPomodoros: pomodoro.completedCount,
+                currentPhase: "",
+                state: "idle"
             )
         }
     }
