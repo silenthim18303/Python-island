@@ -99,44 +99,44 @@ final class ServiceContainer {
         switch command {
         case .play:
             music.togglePlay()
-            voice.speak("正在播放")
+            voice.speak(L10n.voiceResponsePlaying)
         case .pause:
             music.togglePlay()
-            voice.speak("已暂停")
+            voice.speak(L10n.voiceResponsePaused)
         case .next:
             music.nextTrack()
-            voice.speak("下一首")
+            voice.speak(L10n.voiceResponseNext)
         case .previous:
             music.previousTrack()
-            voice.speak("上一首")
+            voice.speak(L10n.voiceResponsePrevious)
         case .expand:
             IslandWindowManager.shared.show()
             NotificationCenter.default.post(name: .openIslandSettings, object: nil)
-            voice.speak("已展开")
+            voice.speak(L10n.voiceResponseExpanded)
         case .collapse:
             IslandWindowManager.shared.collapse()
-            voice.speak("已收起")
+            voice.speak(L10n.voiceResponseCollapsed)
         case .show:
             IslandWindowManager.shared.show()
-            voice.speak("已显示")
+            voice.speak(L10n.voiceResponseShown)
         case .hide:
             IslandWindowManager.shared.hide()
-            voice.speak("已隐藏")
+            voice.speak(L10n.voiceResponseHidden)
         case .weather:
-            voice.speak("正在获取天气信息")
+            voice.speak(L10n.voiceResponseFetchingWeather)
             Task { await weather.fetchWeather() }
         case .timer:
             let remaining = timer.pomodoro.remaining
             if timer.pomodoro.running && remaining > 0 {
                 let minutes = remaining / 60
-                voice.speak("番茄钟还剩\(minutes)分钟")
+                voice.speak(L10n.voiceResponseTimerRemaining(minutes: minutes))
             } else {
-                voice.speak("计时器空闲中")
+                voice.speak(L10n.voiceResponseTimerIdle)
             }
         case .todo:
-            voice.speak("待办功能开发中")
+            voice.speak(L10n.voiceResponseTodoDev)
         case .help:
-            voice.speak("您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令")
+            voice.speak(L10n.voiceResponseHelp)
         }
     }
 

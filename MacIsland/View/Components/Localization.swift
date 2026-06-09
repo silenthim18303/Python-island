@@ -294,6 +294,59 @@ enum L10n {
     static var voiceTestSpeech: String { t("voice_test_speech") }
     static var voiceTestText: String { t("voice_test_text") }
     static var voiceDone: String { t("voice_done") }
+
+    // MARK: - Voice Commands
+    static var voiceCmdPlay: String { t("voice_cmd_play") }
+    static var voiceCmdPause: String { t("voice_cmd_pause") }
+    static var voiceCmdNext: String { t("voice_cmd_next") }
+    static var voiceCmdPrevious: String { t("voice_cmd_previous") }
+    static var voiceCmdExpand: String { t("voice_cmd_expand") }
+    static var voiceCmdCollapse: String { t("voice_cmd_collapse") }
+    static var voiceCmdShow: String { t("voice_cmd_show") }
+    static var voiceCmdHide: String { t("voice_cmd_hide") }
+    static var voiceCmdWeather: String { t("voice_cmd_weather") }
+    static var voiceCmdTimer: String { t("voice_cmd_timer") }
+    static var voiceCmdTodo: String { t("voice_cmd_todo") }
+    static var voiceCmdHelp: String { t("voice_cmd_help") }
+    static var voiceCmdPlayDesc: String { t("voice_cmd_play_desc") }
+    static var voiceCmdPauseDesc: String { t("voice_cmd_pause_desc") }
+    static var voiceCmdNextDesc: String { t("voice_cmd_next_desc") }
+    static var voiceCmdPreviousDesc: String { t("voice_cmd_previous_desc") }
+    static var voiceCmdExpandDesc: String { t("voice_cmd_expand_desc") }
+    static var voiceCmdCollapseDesc: String { t("voice_cmd_collapse_desc") }
+    static var voiceCmdShowDesc: String { t("voice_cmd_show_desc") }
+    static var voiceCmdHideDesc: String { t("voice_cmd_hide_desc") }
+    static var voiceCmdWeatherDesc: String { t("voice_cmd_weather_desc") }
+    static var voiceCmdTimerDesc: String { t("voice_cmd_timer_desc") }
+    static var voiceCmdTodoDesc: String { t("voice_cmd_todo_desc") }
+    static var voiceCmdHelpDesc: String { t("voice_cmd_help_desc") }
+
+    // MARK: - Voice State
+    static var voiceStateIdle: String { t("voice_state_idle") }
+    static var voiceStateListening: String { t("voice_state_listening") }
+    static var voiceStateProcessing: String { t("voice_state_processing") }
+    static var voiceStateSpeaking: String { t("voice_state_speaking") }
+    static var voiceStateError: String { t("voice_state_error") }
+
+    // MARK: - Voice Responses
+    static var voiceResponseHere: String { t("voice_response_here") }
+    static var voiceResponseUnknown: String { t("voice_response_unknown") }
+    static var voiceResponsePlaying: String { t("voice_response_playing") }
+    static var voiceResponsePaused: String { t("voice_response_paused") }
+    static var voiceResponseNext: String { t("voice_response_next") }
+    static var voiceResponsePrevious: String { t("voice_response_previous") }
+    static var voiceResponseExpanded: String { t("voice_response_expanded") }
+    static var voiceResponseCollapsed: String { t("voice_response_collapsed") }
+    static var voiceResponseShown: String { t("voice_response_shown") }
+    static var voiceResponseHidden: String { t("voice_response_hidden") }
+    static var voiceResponseFetchingWeather: String { t("voice_response_fetching_weather") }
+    static var voiceResponseTimerIdle: String { t("voice_response_timer_idle") }
+    static var voiceResponseTodoDev: String { t("voice_response_todo_dev") }
+    static var voiceResponseHelp: String { t("voice_response_help") }
+    static func voiceResponseTimerRemaining(minutes: Int) -> String {
+        t("voice_response_timer_remaining").replacingOccurrences(of: "%d", with: "\(minutes)")
+    }
+
     static var settingsAbout: String { t("settings_about") }
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
@@ -683,6 +736,29 @@ private let zhStrings: [String: String] = [
     "voice_start_listening": "开始监听", "voice_stop_listening": "停止监听",
     "voice_recognition_result": "识别结果", "voice_test_speech": "测试语音播报",
     "voice_test_text": "你好，我是 MacIsland 灵动岛助手", "voice_done": "完成",
+    // Voice Commands
+    "voice_cmd_play": "播放", "voice_cmd_pause": "暂停", "voice_cmd_next": "下一首", "voice_cmd_previous": "上一首",
+    "voice_cmd_expand": "展开", "voice_cmd_collapse": "收起", "voice_cmd_show": "显示", "voice_cmd_hide": "隐藏",
+    "voice_cmd_weather": "天气", "voice_cmd_timer": "计时器", "voice_cmd_todo": "待办", "voice_cmd_help": "帮助",
+    "voice_cmd_play_desc": "播放音乐", "voice_cmd_pause_desc": "暂停音乐",
+    "voice_cmd_next_desc": "下一首歌曲", "voice_cmd_previous_desc": "上一首歌曲",
+    "voice_cmd_expand_desc": "展开灵动岛", "voice_cmd_collapse_desc": "收起灵动岛",
+    "voice_cmd_show_desc": "显示灵动岛", "voice_cmd_hide_desc": "隐藏灵动岛",
+    "voice_cmd_weather_desc": "播报天气", "voice_cmd_timer_desc": "播报计时器状态",
+    "voice_cmd_todo_desc": "播报待办事项", "voice_cmd_help_desc": "显示帮助",
+    // Voice State
+    "voice_state_idle": "空闲", "voice_state_listening": "监听中",
+    "voice_state_processing": "处理中", "voice_state_speaking": "播报中", "voice_state_error": "错误",
+    // Voice Responses
+    "voice_response_here": "我在", "voice_response_unknown": "抱歉，我没有理解您的指令",
+    "voice_response_playing": "正在播放", "voice_response_paused": "已暂停",
+    "voice_response_next": "下一首", "voice_response_previous": "上一首",
+    "voice_response_expanded": "已展开", "voice_response_collapsed": "已收起",
+    "voice_response_shown": "已显示", "voice_response_hidden": "已隐藏",
+    "voice_response_fetching_weather": "正在获取天气信息",
+    "voice_response_timer_remaining": "番茄钟还剩%d分钟", "voice_response_timer_idle": "计时器空闲中",
+    "voice_response_todo_dev": "待办功能开发中",
+    "voice_response_help": "您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令",
     "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
     "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
@@ -933,6 +1009,29 @@ private let enStrings: [String: String] = [
     "voice_start_listening": "Start Listening", "voice_stop_listening": "Stop Listening",
     "voice_recognition_result": "Recognition Result", "voice_test_speech": "Test Voice Speech",
     "voice_test_text": "Hello, I am MacIsland assistant", "voice_done": "Done",
+    // Voice Commands
+    "voice_cmd_play": "Play", "voice_cmd_pause": "Pause", "voice_cmd_next": "Next", "voice_cmd_previous": "Previous",
+    "voice_cmd_expand": "Expand", "voice_cmd_collapse": "Collapse", "voice_cmd_show": "Show", "voice_cmd_hide": "Hide",
+    "voice_cmd_weather": "Weather", "voice_cmd_timer": "Timer", "voice_cmd_todo": "Todo", "voice_cmd_help": "Help",
+    "voice_cmd_play_desc": "Play music", "voice_cmd_pause_desc": "Pause music",
+    "voice_cmd_next_desc": "Next track", "voice_cmd_previous_desc": "Previous track",
+    "voice_cmd_expand_desc": "Expand island", "voice_cmd_collapse_desc": "Collapse island",
+    "voice_cmd_show_desc": "Show island", "voice_cmd_hide_desc": "Hide island",
+    "voice_cmd_weather_desc": "Announce weather", "voice_cmd_timer_desc": "Announce timer status",
+    "voice_cmd_todo_desc": "Announce todos", "voice_cmd_help_desc": "Show help",
+    // Voice State
+    "voice_state_idle": "Idle", "voice_state_listening": "Listening",
+    "voice_state_processing": "Processing", "voice_state_speaking": "Speaking", "voice_state_error": "Error",
+    // Voice Responses
+    "voice_response_here": "I'm here", "voice_response_unknown": "Sorry, I didn't understand",
+    "voice_response_playing": "Playing", "voice_response_paused": "Paused",
+    "voice_response_next": "Next track", "voice_response_previous": "Previous track",
+    "voice_response_expanded": "Expanded", "voice_response_collapsed": "Collapsed",
+    "voice_response_shown": "Shown", "voice_response_hidden": "Hidden",
+    "voice_response_fetching_weather": "Fetching weather",
+    "voice_response_timer_remaining": "Pomodoro has %d minutes left", "voice_response_timer_idle": "Timer is idle",
+    "voice_response_todo_dev": "Todo feature in development",
+    "voice_response_help": "You can say: play, pause, next, expand, collapse, weather, timer, etc.",
     "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
     "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
@@ -1183,6 +1282,29 @@ private let jaStrings: [String: String] = [
     "voice_start_listening": "リスニング開始", "voice_stop_listening": "リスニング停止",
     "voice_recognition_result": "認識結果", "voice_test_speech": "音声読み上げテスト",
     "voice_test_text": "こんにちは、MacIslandアシスタントです", "voice_done": "完了",
+    // Voice Commands
+    "voice_cmd_play": "再生", "voice_cmd_pause": "一時停止", "voice_cmd_next": "次へ", "voice_cmd_previous": "前へ",
+    "voice_cmd_expand": "展開", "voice_cmd_collapse": "折りたたむ", "voice_cmd_show": "表示", "voice_cmd_hide": "隠す",
+    "voice_cmd_weather": "天気", "voice_cmd_timer": "タイマー", "voice_cmd_todo": "TODO", "voice_cmd_help": "ヘルプ",
+    "voice_cmd_play_desc": "音楽を再生", "voice_cmd_pause_desc": "音楽を一時停止",
+    "voice_cmd_next_desc": "次の曲", "voice_cmd_previous_desc": "前の曲",
+    "voice_cmd_expand_desc": "アイランドを展開", "voice_cmd_collapse_desc": "アイランドを折りたたむ",
+    "voice_cmd_show_desc": "アイランドを表示", "voice_cmd_hide_desc": "アイランドを隠す",
+    "voice_cmd_weather_desc": "天気を読み上げ", "voice_cmd_timer_desc": "タイマー状態を読み上げ",
+    "voice_cmd_todo_desc": "TODOを読み上げ", "voice_cmd_help_desc": "ヘルプを表示",
+    // Voice State
+    "voice_state_idle": "アイドル", "voice_state_listening": "リスニング中",
+    "voice_state_processing": "処理中", "voice_state_speaking": "読み上げ中", "voice_state_error": "エラー",
+    // Voice Responses
+    "voice_response_here": "はい", "voice_response_unknown": "申し訳ありません、理解できませんでした",
+    "voice_response_playing": "再生中", "voice_response_paused": "一時停止",
+    "voice_response_next": "次の曲", "voice_response_previous": "前の曲",
+    "voice_response_expanded": "展開しました", "voice_response_collapsed": "折りたたみました",
+    "voice_response_shown": "表示しました", "voice_response_hidden": "隠しました",
+    "voice_response_fetching_weather": "天気を取得中",
+    "voice_response_timer_remaining": "ポモドーロはあと%d分です", "voice_response_timer_idle": "タイマーはアイドルです",
+    "voice_response_todo_dev": "TODO機能は開発中です",
+    "voice_response_help": "「再生」「一時停止」「次へ」「展開」「折りたたむ」「天気」「タイマー」などと言ってください",
     "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
     "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",

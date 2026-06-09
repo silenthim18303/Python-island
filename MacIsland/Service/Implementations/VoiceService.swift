@@ -199,20 +199,18 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         // 检查唤醒词
         if lowercased.contains(wakeWord.lowercased()) {
             onWakeWord?()
-            speak("我在")
+            speak(L10n.voiceResponseHere)
             return
         }
 
         // 匹配语音命令
-        for command in VoiceCommand.allCases {
-            if lowercased.contains(command.rawValue.lowercased()) {
-                onCommand?(command, text)
-                return
-            }
+        if let command = VoiceCommand.match(from: text) {
+            onCommand?(command, text)
+            return
         }
 
         // 未识别的命令
-        speak("抱歉，我没有理解您的指令")
+        speak(L10n.voiceResponseUnknown)
     }
 
     // MARK: - Private Methods
@@ -221,16 +219,14 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         // 检查是否包含唤醒词
         if text.lowercased().contains(wakeWord.lowercased()) {
             onWakeWord?()
-            speak("我在")
+            speak(L10n.voiceResponseHere)
             return
         }
 
         // 检查是否是语音命令
-        for command in VoiceCommand.allCases {
-            if text.lowercased().contains(command.rawValue.lowercased()) {
-                onCommand?(command, text)
-                return
-            }
+        if let command = VoiceCommand.match(from: text) {
+            onCommand?(command, text)
+            return
         }
     }
 
