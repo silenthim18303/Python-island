@@ -41,15 +41,15 @@ struct VoiceSettingsView: View {
             HStack {
                 Image(systemName: "mic.fill")
                     .foregroundColor(.blue)
-                Text("语音控制")
+                Text(L10n.voiceControl)
                     .font(.headline)
             }
 
             Toggle(isOn: $voiceService.isEnabled) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("启用语音控制")
+                    Text(L10n.voiceEnableControl)
                         .font(.body)
-                    Text("使用语音指令控制灵动岛")
+                    Text(L10n.voiceEnableControlDesc)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -76,15 +76,15 @@ struct VoiceSettingsView: View {
             HStack {
                 Image(systemName: "speaker.wave.2.fill")
                     .foregroundColor(.orange)
-                Text("语音播报")
+                Text(L10n.voiceSpeech)
                     .font(.headline)
             }
 
             Toggle(isOn: $voiceService.isSpeechEnabled) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("启用语音播报")
+                    Text(L10n.voiceEnableSpeech)
                         .font(.body)
-                    Text("播报天气、计时器、通知等信息")
+                    Text(L10n.voiceEnableSpeechDesc)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -101,19 +101,19 @@ struct VoiceSettingsView: View {
             HStack {
                 Image(systemName: "wake")
                     .foregroundColor(.purple)
-                Text("唤醒词")
+                Text(L10n.voiceWakeWord)
                     .font(.headline)
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("当前唤醒词")
+                Text(L10n.voiceCurrentWakeWord)
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                TextField("唤醒词", text: $voiceService.wakeWord)
+                TextField(L10n.voiceWakeWord, text: $voiceService.wakeWord)
                     .textFieldStyle(.roundedBorder)
 
-                Text("说出唤醒词后，再说出指令。例如：「嘿，灵动岛，播放音乐」")
+                Text(L10n.voiceWakeWordHint)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -129,10 +129,10 @@ struct VoiceSettingsView: View {
             HStack {
                 Image(systemName: "list.bullet")
                     .foregroundColor(.green)
-                Text("语音指令")
+                Text(L10n.voiceCommands)
                     .font(.headline)
                 Spacer()
-                Button("查看全部") {
+                Button(L10n.voiceViewAll) {
                     showCommandList = true
                 }
                 .font(.caption)
@@ -161,7 +161,7 @@ struct VoiceSettingsView: View {
             HStack {
                 Image(systemName: "waveform")
                     .foregroundColor(.red)
-                Text("测试")
+                Text(L10n.voiceTest)
                     .font(.headline)
             }
 
@@ -176,7 +176,7 @@ struct VoiceSettingsView: View {
                 }) {
                     HStack {
                         Image(systemName: voiceService.isListening ? "stop.fill" : "mic.fill")
-                        Text(voiceService.isListening ? "停止监听" : "开始监听")
+                        Text(voiceService.isListening ? L10n.voiceStopListening : L10n.voiceStartListening)
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -188,7 +188,7 @@ struct VoiceSettingsView: View {
                 // 识别结果
                 if !voiceService.recognizedText.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("识别结果")
+                        Text(L10n.voiceRecognitionResult)
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text(voiceService.recognizedText)
@@ -202,11 +202,11 @@ struct VoiceSettingsView: View {
 
                 // 语音播报测试
                 Button(action: {
-                    voiceService.speak("你好，我是 MacIsland 灵动岛助手")
+                    voiceService.speak(L10n.voiceTestText)
                 }) {
                     HStack {
                         Image(systemName: "speaker.wave.2.fill")
-                        Text("测试语音播报")
+                        Text(L10n.voiceTestSpeech)
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -265,10 +265,10 @@ private struct CommandListView: View {
                 }
                 .padding(.vertical, 4)
             }
-            .navigationTitle("语音指令")
+            .navigationTitle(L10n.voiceCommands)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") {
+                    Button(L10n.voiceDone) {
                         dismiss()
                     }
                 }

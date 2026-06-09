@@ -279,6 +279,21 @@ enum L10n {
     static var voiceControl: String { t("voice_control") }
     static var voiceSpeech: String { t("voice_speech") }
     static var voiceCommands: String { t("voice_commands") }
+    static var voiceEnableControl: String { t("voice_enable_control") }
+    static var voiceEnableControlDesc: String { t("voice_enable_control_desc") }
+    static var voiceEnableSpeech: String { t("voice_enable_speech") }
+    static var voiceEnableSpeechDesc: String { t("voice_enable_speech_desc") }
+    static var voiceWakeWord: String { t("voice_wake_word") }
+    static var voiceCurrentWakeWord: String { t("voice_current_wake_word") }
+    static var voiceWakeWordHint: String { t("voice_wake_word_hint") }
+    static var voiceViewAll: String { t("voice_view_all") }
+    static var voiceTest: String { t("voice_test") }
+    static var voiceStartListening: String { t("voice_start_listening") }
+    static var voiceStopListening: String { t("voice_stop_listening") }
+    static var voiceRecognitionResult: String { t("voice_recognition_result") }
+    static var voiceTestSpeech: String { t("voice_test_speech") }
+    static var voiceTestText: String { t("voice_test_text") }
+    static var voiceDone: String { t("voice_done") }
     static var settingsAbout: String { t("settings_about") }
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
@@ -660,6 +675,14 @@ private let zhStrings: [String: String] = [
     // Settings
     "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音",
     "voice_control": "语音控制", "voice_speech": "语音播报", "voice_commands": "语音指令",
+    "voice_enable_control": "启用语音控制", "voice_enable_control_desc": "使用语音指令控制灵动岛",
+    "voice_enable_speech": "启用语音播报", "voice_enable_speech_desc": "播报天气、计时器、通知等信息",
+    "voice_wake_word": "唤醒词", "voice_current_wake_word": "当前唤醒词",
+    "voice_wake_word_hint": "说出唤醒词后，再说出指令。例如：「嘿，灵动岛，播放音乐」",
+    "voice_view_all": "查看全部", "voice_test": "测试",
+    "voice_start_listening": "开始监听", "voice_stop_listening": "停止监听",
+    "voice_recognition_result": "识别结果", "voice_test_speech": "测试语音播报",
+    "voice_test_text": "你好，我是 MacIsland 灵动岛助手", "voice_done": "完成",
     "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
     "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
@@ -902,6 +925,14 @@ private let enStrings: [String: String] = [
     // Settings
     "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice",
     "voice_control": "Voice Control", "voice_speech": "Voice Speech", "voice_commands": "Voice Commands",
+    "voice_enable_control": "Enable Voice Control", "voice_enable_control_desc": "Use voice commands to control the island",
+    "voice_enable_speech": "Enable Voice Speech", "voice_enable_speech_desc": "Announce weather, timer, notifications, etc.",
+    "voice_wake_word": "Wake Word", "voice_current_wake_word": "Current Wake Word",
+    "voice_wake_word_hint": "Say the wake word followed by a command. E.g., \"Hey Island, play music\"",
+    "voice_view_all": "View All", "voice_test": "Test",
+    "voice_start_listening": "Start Listening", "voice_stop_listening": "Stop Listening",
+    "voice_recognition_result": "Recognition Result", "voice_test_speech": "Test Voice Speech",
+    "voice_test_text": "Hello, I am MacIsland assistant", "voice_done": "Done",
     "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
     "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
@@ -1144,6 +1175,14 @@ private let jaStrings: [String: String] = [
     // Settings
     "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声",
     "voice_control": "音声制御", "voice_speech": "音声読み上げ", "voice_commands": "音声コマンド",
+    "voice_enable_control": "音声制御を有効にする", "voice_enable_control_desc": "音声コマンドでアイランドを制御",
+    "voice_enable_speech": "音声読み上げを有効にする", "voice_enable_speech_desc": "天気、タイマー、通知などを読み上げ",
+    "voice_wake_word": "ウェイクワード", "voice_current_wake_word": "現在のウェイクワード",
+    "voice_wake_word_hint": "ウェイクワードの後にコマンドを言ってください。例：「Hey Island、音楽再生」",
+    "voice_view_all": "すべて表示", "voice_test": "テスト",
+    "voice_start_listening": "リスニング開始", "voice_stop_listening": "リスニング停止",
+    "voice_recognition_result": "認識結果", "voice_test_speech": "音声読み上げテスト",
+    "voice_test_text": "こんにちは、MacIslandアシスタントです", "voice_done": "完了",
     "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
     "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",
