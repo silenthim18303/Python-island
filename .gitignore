@@ -24,3 +24,4 @@ node_modules/
 dist/
 .env
 *.tmpMacIsland 2026-06-08 11-32-56/
+old_release/
