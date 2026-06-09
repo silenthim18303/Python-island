@@ -24,25 +24,22 @@
 
 ---
 
-## 第二阶段：API 实现 (Day 3-5)
+## 第二阶段：API 实现 (Day 3-5) ✅
 
-### 新浪财经 API (A股/港股)
-- ⏳ 实现 `fetchSinaQuote()` - 获取实时行情
-- ⏳ 实现 `fetchSinaBatchQuotes()` - 批量获取行情
-- ⏳ 实现新浪行情数据解析
+### 新浪财经 API (A股/港股) ✅
+- ✅ 实现 `fetchSinaAStock()` - 获取 A 股实时行情
+- ✅ 实现 `fetchSinaBatchAStock()` - 批量获取 A 股行情
+- ✅ 实现 `fetchSinaHKStock()` - 获取港股实时行情
+- ✅ 实现 `fetchSinaBatchHKStock()` - 批量获取港股行情
+- ✅ 实现 `fetchSinaTimeLine()` - 获取分时数据
 
-### Yahoo Finance API (美股)
-- ⏳ 实现 `fetchYahooQuote()` - 获取实时行情
-- ⏳ 实现 Yahoo 数据解析
+### Yahoo Finance API (美股) ✅
+- ✅ 实现 `fetchYahooUSStock()` - 获取美股实时行情
+- ✅ 实现 `fetchYahooKLine()` - 获取美股 K 线数据
 
-### 东方财富 API (备选)
-- ⏳ 实现 `fetchEastmoneyQuote()` - 获取实时行情
-- ⏳ 实现 K 线数据获取
-- ⏳ 实现分时数据获取
-
-### 股票搜索
-- ⏳ 实现 `searchStocks()` - 搜索股票
-- ⏳ 实现搜索结果缓存
+### 东方财富 API (搜索/K线) ✅
+- ✅ 实现 `searchEastmoney()` - 搜索股票
+- ✅ 实现 `fetchEastmoneyKLine()` - 获取 K 线数据
 
 ---
 
