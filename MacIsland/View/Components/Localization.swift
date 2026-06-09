@@ -347,6 +347,22 @@ enum L10n {
         t("voice_response_timer_remaining").replacingOccurrences(of: "%d", with: "\(minutes)")
     }
 
+    // MARK: - AI Voice Chat
+    static var aiVoiceChatTitle: String { t("ai_voice_chat_title") }
+    static var aiVoiceChatEmpty: String { t("ai_voice_chat_empty") }
+    static var aiVoiceChatHint: String { t("ai_voice_chat_hint") }
+    static var aiVoiceChatSpeak: String { t("ai_voice_chat_speak") }
+    static var aiVoiceChatStop: String { t("ai_voice_chat_stop") }
+    static var aiVoiceChatType: String { t("ai_voice_chat_type") }
+    static var aiVoiceChatClear: String { t("ai_voice_chat_clear") }
+    static var aiVoiceChatPlaceholder: String { t("ai_voice_chat_placeholder") }
+    static var aiVoiceChatReady: String { t("ai_voice_chat_ready") }
+    static var aiVoiceChatListening: String { t("ai_voice_chat_listening") }
+    static var aiVoiceChatThinking: String { t("ai_voice_chat_thinking") }
+    static func aiVoiceChatError(_ error: String) -> String {
+        t("ai_voice_chat_error").replacingOccurrences(of: "%@", with: error)
+    }
+
     static var settingsAbout: String { t("settings_about") }
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
@@ -759,6 +775,19 @@ private let zhStrings: [String: String] = [
     "voice_response_timer_remaining": "番茄钟还剩%d分钟", "voice_response_timer_idle": "计时器空闲中",
     "voice_response_todo_dev": "待办功能开发中",
     "voice_response_help": "您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI 语音对话",
+    "ai_voice_chat_empty": "开始与 AI 对话",
+    "ai_voice_chat_hint": "点击麦克风按钮说话，或使用键盘输入",
+    "ai_voice_chat_speak": "按住说话",
+    "ai_voice_chat_stop": "松开结束",
+    "ai_voice_chat_type": "键盘输入",
+    "ai_voice_chat_clear": "清除对话",
+    "ai_voice_chat_placeholder": "输入消息...",
+    "ai_voice_chat_ready": "就绪",
+    "ai_voice_chat_listening": "正在听...",
+    "ai_voice_chat_thinking": "思考中...",
+    "ai_voice_chat_error": "错误：%@",
     "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
     "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
@@ -1032,6 +1061,19 @@ private let enStrings: [String: String] = [
     "voice_response_timer_remaining": "Pomodoro has %d minutes left", "voice_response_timer_idle": "Timer is idle",
     "voice_response_todo_dev": "Todo feature in development",
     "voice_response_help": "You can say: play, pause, next, expand, collapse, weather, timer, etc.",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI Voice Chat",
+    "ai_voice_chat_empty": "Start a conversation with AI",
+    "ai_voice_chat_hint": "Tap the microphone to speak, or use keyboard input",
+    "ai_voice_chat_speak": "Hold to speak",
+    "ai_voice_chat_stop": "Release to stop",
+    "ai_voice_chat_type": "Type",
+    "ai_voice_chat_clear": "Clear",
+    "ai_voice_chat_placeholder": "Type a message...",
+    "ai_voice_chat_ready": "Ready",
+    "ai_voice_chat_listening": "Listening...",
+    "ai_voice_chat_thinking": "Thinking...",
+    "ai_voice_chat_error": "Error: %@",
     "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
     "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
@@ -1305,6 +1347,19 @@ private let jaStrings: [String: String] = [
     "voice_response_timer_remaining": "ポモドーロはあと%d分です", "voice_response_timer_idle": "タイマーはアイドルです",
     "voice_response_todo_dev": "TODO機能は開発中です",
     "voice_response_help": "「再生」「一時停止」「次へ」「展開」「折りたたむ」「天気」「タイマー」などと言ってください",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI 音声チャット",
+    "ai_voice_chat_empty": "AIとの会話を開始",
+    "ai_voice_chat_hint": "マイクをタップして話すか、キーボードで入力",
+    "ai_voice_chat_speak": "話す",
+    "ai_voice_chat_stop": "停止",
+    "ai_voice_chat_type": "入力",
+    "ai_voice_chat_clear": "クリア",
+    "ai_voice_chat_placeholder": "メッセージを入力...",
+    "ai_voice_chat_ready": "準備完了",
+    "ai_voice_chat_listening": "リスニング中...",
+    "ai_voice_chat_thinking": "考え中...",
+    "ai_voice_chat_error": "エラー：%@",
     "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
     "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",
