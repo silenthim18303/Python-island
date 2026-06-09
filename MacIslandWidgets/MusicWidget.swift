@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 // MARK: - Music Timeline Provider
 
@@ -79,6 +80,7 @@ struct MusicWidget: Widget {
         .configurationDisplayName(WidgetL10n.musicDisplayName)
         .description(WidgetL10n.musicDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
 
@@ -160,6 +162,28 @@ struct MusicWidgetView: View {
                         HStack(spacing: 10) {
                             Label(entry.statusText, systemImage: entry.isPlaying ? "waveform" : "pause.circle")
                             Text("\(Int(entry.clampedProgress * 100))%")
+
+                            Spacer()
+
+                            // 播放/暂停按钮
+                            Button(intent: MusicPlayPauseIntent()) {
+                                Image(systemName: entry.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white)
+                                    .frame(width: 32, height: 32)
+                                    .background(Circle().fill(Color.purple))
+                            }
+                            .buttonStyle(.plain)
+
+                            // 下一首按钮
+                            Button(intent: MusicNextTrackIntent()) {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.purple)
+                                    .frame(width: 28, height: 28)
+                                    .background(Circle().fill(Color.purple.opacity(0.15)))
+                            }
+                            .buttonStyle(.plain)
                         }
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)

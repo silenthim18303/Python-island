@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 // MARK: - Clipboard Timeline Provider
 
@@ -90,6 +91,7 @@ struct ClipboardWidget: Widget {
         .configurationDisplayName(WidgetL10n.clipboardDisplayName)
         .description(WidgetL10n.clipboardDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
 
@@ -167,6 +169,14 @@ struct ClipboardWidgetView: View {
                         Text(timeAgo(item.timestamp))
                             .font(.system(size: 9, weight: .medium))
                             .foregroundColor(.secondary)
+
+                        // 复制按钮
+                        Button(intent: ClipboardCopyIntent(text: item.text)) {
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 10))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.vertical, 2)
                 }

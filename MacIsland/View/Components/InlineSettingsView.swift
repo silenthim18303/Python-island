@@ -148,6 +148,7 @@ struct InlineSettingsView: View {
             case .notifications: notificationsSection
             case .community:     communitySection
             case .shortcuts:     shortcutsSection
+            case .voice:         voiceSection
             case .about:         aboutSection
             }
         }
@@ -590,6 +591,57 @@ struct InlineSettingsView: View {
         } else {
             settings.hotkeyBindings[action] = combo
             recordingAction = nil
+        }
+    }
+
+    // MARK: - Voice Section
+
+    @EnvironmentObject var voiceService: VoiceService
+
+    private var voiceSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // 语音控制开关
+            describedRow("voiceControl") {
+                Toggle("", isOn: $voiceService.isEnabled)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .labelsHidden()
+            }
+
+            // 语音播报开关
+            describedRow("voiceSpeech") {
+                Toggle("", isOn: $voiceService.isSpeechEnabled)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .labelsHidden()
+            }
+
+            // 语音命令列表
+            VStack(alignment: .leading, spacing: 8) {
+                Text(L10n.voiceCommands)
+                    .font(.system(size: Theme.FontSize.caption, weight: .semibold))
+                    .foregroundColor(.textSecondary)
+
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                ], spacing: 6) {
+                    ForEach(VoiceCommand.allCases.prefix(8), id: \.self) { command in
+                        HStack(spacing: 4) {
+                            Text(command.displayName)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.textPrimary)
+                            Spacer()
+                            Text("「\(command.rawValue)」")
+                                .font(.system(size: 9))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                    }
+                }
+            }
         }
     }
 

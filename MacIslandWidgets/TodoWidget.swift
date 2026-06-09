@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 // MARK: - Todo Timeline Provider
 
@@ -108,6 +109,7 @@ struct TodoWidget: Widget {
         .configurationDisplayName(WidgetL10n.todoDisplayName)
         .description(WidgetL10n.todoDescription)
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
 
@@ -201,10 +203,13 @@ struct TodoWidgetView: View {
                     } else {
                         ForEach(entry.pendingItems.prefix(4)) { item in
                             HStack(spacing: 6) {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 7))
-                                    .foregroundColor(.green.opacity(0.8))
-                                    .frame(width: 10)
+                                Button(intent: TodoToggleIntent(todoId: item.id)) {
+                                    Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(item.isCompleted ? .green : .green.opacity(0.8))
+                                }
+                                .buttonStyle(.plain)
+
                                 Text(item.title)
                                     .font(.system(size: 11))
                                     .foregroundColor(.primary)

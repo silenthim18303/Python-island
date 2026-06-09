@@ -275,6 +275,109 @@ enum L10n {
     // MARK: - Settings
     static var settingsGeneral: String { t("settings_general") }
     static var settingsShortcuts: String { t("settings_shortcuts") }
+    static var voiceTitle: String { t("voice_title") }
+    static var voiceControl: String { t("voice_control") }
+    static var voiceSpeech: String { t("voice_speech") }
+    static var voiceCommands: String { t("voice_commands") }
+    static var voiceEnableControl: String { t("voice_enable_control") }
+    static var voiceEnableControlDesc: String { t("voice_enable_control_desc") }
+    static var voiceEnableSpeech: String { t("voice_enable_speech") }
+    static var voiceEnableSpeechDesc: String { t("voice_enable_speech_desc") }
+    static var voiceWakeWord: String { t("voice_wake_word") }
+    static var voiceCurrentWakeWord: String { t("voice_current_wake_word") }
+    static var voiceWakeWordHint: String { t("voice_wake_word_hint") }
+    static var voiceViewAll: String { t("voice_view_all") }
+    static var voiceTest: String { t("voice_test") }
+    static var voiceStartListening: String { t("voice_start_listening") }
+    static var voiceStopListening: String { t("voice_stop_listening") }
+    static var voiceRecognitionResult: String { t("voice_recognition_result") }
+    static var voiceTestSpeech: String { t("voice_test_speech") }
+    static var voiceTestText: String { t("voice_test_text") }
+    static var voiceDone: String { t("voice_done") }
+    static var voiceAdvancedConfig: String { t("voice_advanced_config") }
+
+    // MARK: - TTS Config
+    static var voiceTTSConfig: String { t("voice_tts_config") }
+    static var voiceTTSVoice: String { t("voice_tts_voice") }
+    static var voiceTTSSpeed: String { t("voice_tts_speed") }
+    static var voiceTTSPitch: String { t("voice_tts_pitch") }
+    static var voiceTTSVolume: String { t("voice_tts_volume") }
+    static var voiceCurrentConfig: String { t("voice_current_config") }
+
+    // MARK: - STT Config
+    static var voiceSTTConfig: String { t("voice_stt_config") }
+    static var voiceSTTLanguage: String { t("voice_stt_language") }
+    static var voiceSTTContinuous: String { t("voice_stt_continuous") }
+    static var voiceSTTContinuousDesc: String { t("voice_stt_continuous_desc") }
+
+    // MARK: - Voice Commands
+    static var voiceCmdPlay: String { t("voice_cmd_play") }
+    static var voiceCmdPause: String { t("voice_cmd_pause") }
+    static var voiceCmdNext: String { t("voice_cmd_next") }
+    static var voiceCmdPrevious: String { t("voice_cmd_previous") }
+    static var voiceCmdExpand: String { t("voice_cmd_expand") }
+    static var voiceCmdCollapse: String { t("voice_cmd_collapse") }
+    static var voiceCmdShow: String { t("voice_cmd_show") }
+    static var voiceCmdHide: String { t("voice_cmd_hide") }
+    static var voiceCmdWeather: String { t("voice_cmd_weather") }
+    static var voiceCmdTimer: String { t("voice_cmd_timer") }
+    static var voiceCmdTodo: String { t("voice_cmd_todo") }
+    static var voiceCmdHelp: String { t("voice_cmd_help") }
+    static var voiceCmdPlayDesc: String { t("voice_cmd_play_desc") }
+    static var voiceCmdPauseDesc: String { t("voice_cmd_pause_desc") }
+    static var voiceCmdNextDesc: String { t("voice_cmd_next_desc") }
+    static var voiceCmdPreviousDesc: String { t("voice_cmd_previous_desc") }
+    static var voiceCmdExpandDesc: String { t("voice_cmd_expand_desc") }
+    static var voiceCmdCollapseDesc: String { t("voice_cmd_collapse_desc") }
+    static var voiceCmdShowDesc: String { t("voice_cmd_show_desc") }
+    static var voiceCmdHideDesc: String { t("voice_cmd_hide_desc") }
+    static var voiceCmdWeatherDesc: String { t("voice_cmd_weather_desc") }
+    static var voiceCmdTimerDesc: String { t("voice_cmd_timer_desc") }
+    static var voiceCmdTodoDesc: String { t("voice_cmd_todo_desc") }
+    static var voiceCmdHelpDesc: String { t("voice_cmd_help_desc") }
+
+    // MARK: - Voice State
+    static var voiceStateIdle: String { t("voice_state_idle") }
+    static var voiceStateListening: String { t("voice_state_listening") }
+    static var voiceStateProcessing: String { t("voice_state_processing") }
+    static var voiceStateSpeaking: String { t("voice_state_speaking") }
+    static var voiceStateError: String { t("voice_state_error") }
+
+    // MARK: - Voice Responses
+    static var voiceResponseHere: String { t("voice_response_here") }
+    static var voiceResponseUnknown: String { t("voice_response_unknown") }
+    static var voiceResponsePlaying: String { t("voice_response_playing") }
+    static var voiceResponsePaused: String { t("voice_response_paused") }
+    static var voiceResponseNext: String { t("voice_response_next") }
+    static var voiceResponsePrevious: String { t("voice_response_previous") }
+    static var voiceResponseExpanded: String { t("voice_response_expanded") }
+    static var voiceResponseCollapsed: String { t("voice_response_collapsed") }
+    static var voiceResponseShown: String { t("voice_response_shown") }
+    static var voiceResponseHidden: String { t("voice_response_hidden") }
+    static var voiceResponseFetchingWeather: String { t("voice_response_fetching_weather") }
+    static var voiceResponseTimerIdle: String { t("voice_response_timer_idle") }
+    static var voiceResponseTodoDev: String { t("voice_response_todo_dev") }
+    static var voiceResponseHelp: String { t("voice_response_help") }
+    static func voiceResponseTimerRemaining(minutes: Int) -> String {
+        t("voice_response_timer_remaining").replacingOccurrences(of: "%d", with: "\(minutes)")
+    }
+
+    // MARK: - AI Voice Chat
+    static var aiVoiceChatTitle: String { t("ai_voice_chat_title") }
+    static var aiVoiceChatEmpty: String { t("ai_voice_chat_empty") }
+    static var aiVoiceChatHint: String { t("ai_voice_chat_hint") }
+    static var aiVoiceChatSpeak: String { t("ai_voice_chat_speak") }
+    static var aiVoiceChatStop: String { t("ai_voice_chat_stop") }
+    static var aiVoiceChatType: String { t("ai_voice_chat_type") }
+    static var aiVoiceChatClear: String { t("ai_voice_chat_clear") }
+    static var aiVoiceChatPlaceholder: String { t("ai_voice_chat_placeholder") }
+    static var aiVoiceChatReady: String { t("ai_voice_chat_ready") }
+    static var aiVoiceChatListening: String { t("ai_voice_chat_listening") }
+    static var aiVoiceChatThinking: String { t("ai_voice_chat_thinking") }
+    static func aiVoiceChatError(_ error: String) -> String {
+        t("ai_voice_chat_error").replacingOccurrences(of: "%@", with: error)
+    }
+
     static var settingsAbout: String { t("settings_about") }
     static var settingsAutostart: String { t("settings_autostart") }
     static var settingsOpacity: String { t("settings_opacity") }
@@ -654,7 +757,66 @@ private let zhStrings: [String: String] = [
     "ai_server": "服务地址", "ai_models": "个可用模型", "ai_local": "本地: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "发送", "ai_placeholder": "输入消息...",
     // Settings
-    "settings_general": "通用", "settings_shortcuts": "快捷键", "settings_about": "关于",
+    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音",
+    "voice_control": "语音控制", "voice_speech": "语音播报", "voice_commands": "语音指令",
+    "voice_enable_control": "启用语音控制", "voice_enable_control_desc": "使用语音指令控制灵动岛",
+    "voice_enable_speech": "启用语音播报", "voice_enable_speech_desc": "播报天气、计时器、通知等信息",
+    "voice_wake_word": "唤醒词", "voice_current_wake_word": "当前唤醒词",
+    "voice_wake_word_hint": "说出唤醒词后，再说出指令。例如：「嘿，灵动岛，播放音乐」",
+    "voice_view_all": "查看全部", "voice_test": "测试",
+    "voice_start_listening": "开始监听", "voice_stop_listening": "停止监听",
+    "voice_recognition_result": "识别结果", "voice_test_speech": "测试语音播报",
+    "voice_test_text": "你好，我是 MacIsland 灵动岛助手", "voice_done": "完成",
+    "voice_advanced_config": "高级语音配置",
+    // TTS Config
+    "voice_tts_config": "语音合成配置",
+    "voice_tts_voice": "语音",
+    "voice_tts_speed": "语速",
+    "voice_tts_pitch": "音调",
+    "voice_tts_volume": "音量",
+    "voice_current_config": "当前配置",
+    // STT Config
+    "voice_stt_config": "语音识别配置",
+    "voice_stt_language": "识别语言",
+    "voice_stt_continuous": "连续识别",
+    "voice_stt_continuous_desc": "持续监听语音输入",
+    // Voice Commands
+    "voice_cmd_play": "播放", "voice_cmd_pause": "暂停", "voice_cmd_next": "下一首", "voice_cmd_previous": "上一首",
+    "voice_cmd_expand": "展开", "voice_cmd_collapse": "收起", "voice_cmd_show": "显示", "voice_cmd_hide": "隐藏",
+    "voice_cmd_weather": "天气", "voice_cmd_timer": "计时器", "voice_cmd_todo": "待办", "voice_cmd_help": "帮助",
+    "voice_cmd_play_desc": "播放音乐", "voice_cmd_pause_desc": "暂停音乐",
+    "voice_cmd_next_desc": "下一首歌曲", "voice_cmd_previous_desc": "上一首歌曲",
+    "voice_cmd_expand_desc": "展开灵动岛", "voice_cmd_collapse_desc": "收起灵动岛",
+    "voice_cmd_show_desc": "显示灵动岛", "voice_cmd_hide_desc": "隐藏灵动岛",
+    "voice_cmd_weather_desc": "播报天气", "voice_cmd_timer_desc": "播报计时器状态",
+    "voice_cmd_todo_desc": "播报待办事项", "voice_cmd_help_desc": "显示帮助",
+    // Voice State
+    "voice_state_idle": "空闲", "voice_state_listening": "监听中",
+    "voice_state_processing": "处理中", "voice_state_speaking": "播报中", "voice_state_error": "错误",
+    // Voice Responses
+    "voice_response_here": "我在", "voice_response_unknown": "抱歉，我没有理解您的指令",
+    "voice_response_playing": "正在播放", "voice_response_paused": "已暂停",
+    "voice_response_next": "下一首", "voice_response_previous": "上一首",
+    "voice_response_expanded": "已展开", "voice_response_collapsed": "已收起",
+    "voice_response_shown": "已显示", "voice_response_hidden": "已隐藏",
+    "voice_response_fetching_weather": "正在获取天气信息",
+    "voice_response_timer_remaining": "番茄钟还剩%d分钟", "voice_response_timer_idle": "计时器空闲中",
+    "voice_response_todo_dev": "待办功能开发中",
+    "voice_response_help": "您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI 语音对话",
+    "ai_voice_chat_empty": "开始与 AI 对话",
+    "ai_voice_chat_hint": "点击麦克风按钮说话，或使用键盘输入",
+    "ai_voice_chat_speak": "按住说话",
+    "ai_voice_chat_stop": "松开结束",
+    "ai_voice_chat_type": "键盘输入",
+    "ai_voice_chat_clear": "清除对话",
+    "ai_voice_chat_placeholder": "输入消息...",
+    "ai_voice_chat_ready": "就绪",
+    "ai_voice_chat_listening": "正在听...",
+    "ai_voice_chat_thinking": "思考中...",
+    "ai_voice_chat_error": "错误：%@",
+    "settings_about": "关于",
     "settings_autostart": "开机自启动", "settings_opacity": "灵动岛透明度",
     "settings_wallpaper_opacity": "壁纸透明度", "settings_widget_appearance": "小组件外观",
     "settings_animation": "动画",
@@ -894,7 +1056,66 @@ private let enStrings: [String: String] = [
     "ai_server": "Server", "ai_models": "models available", "ai_local": "Local: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "Send", "ai_placeholder": "Type a message...",
     // Settings
-    "settings_general": "General", "settings_shortcuts": "Shortcuts", "settings_about": "About",
+    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice",
+    "voice_control": "Voice Control", "voice_speech": "Voice Speech", "voice_commands": "Voice Commands",
+    "voice_enable_control": "Enable Voice Control", "voice_enable_control_desc": "Use voice commands to control the island",
+    "voice_enable_speech": "Enable Voice Speech", "voice_enable_speech_desc": "Announce weather, timer, notifications, etc.",
+    "voice_wake_word": "Wake Word", "voice_current_wake_word": "Current Wake Word",
+    "voice_wake_word_hint": "Say the wake word followed by a command. E.g., \"Hey Island, play music\"",
+    "voice_view_all": "View All", "voice_test": "Test",
+    "voice_start_listening": "Start Listening", "voice_stop_listening": "Stop Listening",
+    "voice_recognition_result": "Recognition Result", "voice_test_speech": "Test Voice Speech",
+    "voice_test_text": "Hello, I am MacIsland assistant", "voice_done": "Done",
+    "voice_advanced_config": "Advanced Voice Config",
+    // TTS Config
+    "voice_tts_config": "Text-to-Speech Config",
+    "voice_tts_voice": "Voice",
+    "voice_tts_speed": "Speed",
+    "voice_tts_pitch": "Pitch",
+    "voice_tts_volume": "Volume",
+    "voice_current_config": "Current Config",
+    // STT Config
+    "voice_stt_config": "Speech-to-Text Config",
+    "voice_stt_language": "Recognition Language",
+    "voice_stt_continuous": "Continuous Recognition",
+    "voice_stt_continuous_desc": "Continuously listen for voice input",
+    // Voice Commands
+    "voice_cmd_play": "Play", "voice_cmd_pause": "Pause", "voice_cmd_next": "Next", "voice_cmd_previous": "Previous",
+    "voice_cmd_expand": "Expand", "voice_cmd_collapse": "Collapse", "voice_cmd_show": "Show", "voice_cmd_hide": "Hide",
+    "voice_cmd_weather": "Weather", "voice_cmd_timer": "Timer", "voice_cmd_todo": "Todo", "voice_cmd_help": "Help",
+    "voice_cmd_play_desc": "Play music", "voice_cmd_pause_desc": "Pause music",
+    "voice_cmd_next_desc": "Next track", "voice_cmd_previous_desc": "Previous track",
+    "voice_cmd_expand_desc": "Expand island", "voice_cmd_collapse_desc": "Collapse island",
+    "voice_cmd_show_desc": "Show island", "voice_cmd_hide_desc": "Hide island",
+    "voice_cmd_weather_desc": "Announce weather", "voice_cmd_timer_desc": "Announce timer status",
+    "voice_cmd_todo_desc": "Announce todos", "voice_cmd_help_desc": "Show help",
+    // Voice State
+    "voice_state_idle": "Idle", "voice_state_listening": "Listening",
+    "voice_state_processing": "Processing", "voice_state_speaking": "Speaking", "voice_state_error": "Error",
+    // Voice Responses
+    "voice_response_here": "I'm here", "voice_response_unknown": "Sorry, I didn't understand",
+    "voice_response_playing": "Playing", "voice_response_paused": "Paused",
+    "voice_response_next": "Next track", "voice_response_previous": "Previous track",
+    "voice_response_expanded": "Expanded", "voice_response_collapsed": "Collapsed",
+    "voice_response_shown": "Shown", "voice_response_hidden": "Hidden",
+    "voice_response_fetching_weather": "Fetching weather",
+    "voice_response_timer_remaining": "Pomodoro has %d minutes left", "voice_response_timer_idle": "Timer is idle",
+    "voice_response_todo_dev": "Todo feature in development",
+    "voice_response_help": "You can say: play, pause, next, expand, collapse, weather, timer, etc.",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI Voice Chat",
+    "ai_voice_chat_empty": "Start a conversation with AI",
+    "ai_voice_chat_hint": "Tap the microphone to speak, or use keyboard input",
+    "ai_voice_chat_speak": "Hold to speak",
+    "ai_voice_chat_stop": "Release to stop",
+    "ai_voice_chat_type": "Type",
+    "ai_voice_chat_clear": "Clear",
+    "ai_voice_chat_placeholder": "Type a message...",
+    "ai_voice_chat_ready": "Ready",
+    "ai_voice_chat_listening": "Listening...",
+    "ai_voice_chat_thinking": "Thinking...",
+    "ai_voice_chat_error": "Error: %@",
+    "settings_about": "About",
     "settings_autostart": "Launch at Login", "settings_opacity": "Island Opacity",
     "settings_wallpaper_opacity": "Wallpaper Opacity", "settings_widget_appearance": "Widget Appearance",
     "settings_animation": "Animation",
@@ -1134,7 +1355,66 @@ private let jaStrings: [String: String] = [
     "ai_server": "サーバー", "ai_models": "個のモデル", "ai_local": "ローカル：Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "送信", "ai_placeholder": "メッセージを入力...",
     // Settings
-    "settings_general": "一般", "settings_shortcuts": "ショートカット", "settings_about": "について",
+    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声",
+    "voice_control": "音声制御", "voice_speech": "音声読み上げ", "voice_commands": "音声コマンド",
+    "voice_enable_control": "音声制御を有効にする", "voice_enable_control_desc": "音声コマンドでアイランドを制御",
+    "voice_enable_speech": "音声読み上げを有効にする", "voice_enable_speech_desc": "天気、タイマー、通知などを読み上げ",
+    "voice_wake_word": "ウェイクワード", "voice_current_wake_word": "現在のウェイクワード",
+    "voice_wake_word_hint": "ウェイクワードの後にコマンドを言ってください。例：「Hey Island、音楽再生」",
+    "voice_view_all": "すべて表示", "voice_test": "テスト",
+    "voice_start_listening": "リスニング開始", "voice_stop_listening": "リスニング停止",
+    "voice_recognition_result": "認識結果", "voice_test_speech": "音声読み上げテスト",
+    "voice_test_text": "こんにちは、MacIslandアシスタントです", "voice_done": "完了",
+    "voice_advanced_config": "詳細音声設定",
+    // TTS Config
+    "voice_tts_config": "音声合成設定",
+    "voice_tts_voice": "音声",
+    "voice_tts_speed": "速度",
+    "voice_tts_pitch": "ピッチ",
+    "voice_tts_volume": "音量",
+    "voice_current_config": "現在の設定",
+    // STT Config
+    "voice_stt_config": "音声認識設定",
+    "voice_stt_language": "認識言語",
+    "voice_stt_continuous": "連続認識",
+    "voice_stt_continuous_desc": "音声入力を継続的にリスニング",
+    // Voice Commands
+    "voice_cmd_play": "再生", "voice_cmd_pause": "一時停止", "voice_cmd_next": "次へ", "voice_cmd_previous": "前へ",
+    "voice_cmd_expand": "展開", "voice_cmd_collapse": "折りたたむ", "voice_cmd_show": "表示", "voice_cmd_hide": "隠す",
+    "voice_cmd_weather": "天気", "voice_cmd_timer": "タイマー", "voice_cmd_todo": "TODO", "voice_cmd_help": "ヘルプ",
+    "voice_cmd_play_desc": "音楽を再生", "voice_cmd_pause_desc": "音楽を一時停止",
+    "voice_cmd_next_desc": "次の曲", "voice_cmd_previous_desc": "前の曲",
+    "voice_cmd_expand_desc": "アイランドを展開", "voice_cmd_collapse_desc": "アイランドを折りたたむ",
+    "voice_cmd_show_desc": "アイランドを表示", "voice_cmd_hide_desc": "アイランドを隠す",
+    "voice_cmd_weather_desc": "天気を読み上げ", "voice_cmd_timer_desc": "タイマー状態を読み上げ",
+    "voice_cmd_todo_desc": "TODOを読み上げ", "voice_cmd_help_desc": "ヘルプを表示",
+    // Voice State
+    "voice_state_idle": "アイドル", "voice_state_listening": "リスニング中",
+    "voice_state_processing": "処理中", "voice_state_speaking": "読み上げ中", "voice_state_error": "エラー",
+    // Voice Responses
+    "voice_response_here": "はい", "voice_response_unknown": "申し訳ありません、理解できませんでした",
+    "voice_response_playing": "再生中", "voice_response_paused": "一時停止",
+    "voice_response_next": "次の曲", "voice_response_previous": "前の曲",
+    "voice_response_expanded": "展開しました", "voice_response_collapsed": "折りたたみました",
+    "voice_response_shown": "表示しました", "voice_response_hidden": "隠しました",
+    "voice_response_fetching_weather": "天気を取得中",
+    "voice_response_timer_remaining": "ポモドーロはあと%d分です", "voice_response_timer_idle": "タイマーはアイドルです",
+    "voice_response_todo_dev": "TODO機能は開発中です",
+    "voice_response_help": "「再生」「一時停止」「次へ」「展開」「折りたたむ」「天気」「タイマー」などと言ってください",
+    // AI Voice Chat
+    "ai_voice_chat_title": "AI 音声チャット",
+    "ai_voice_chat_empty": "AIとの会話を開始",
+    "ai_voice_chat_hint": "マイクをタップして話すか、キーボードで入力",
+    "ai_voice_chat_speak": "話す",
+    "ai_voice_chat_stop": "停止",
+    "ai_voice_chat_type": "入力",
+    "ai_voice_chat_clear": "クリア",
+    "ai_voice_chat_placeholder": "メッセージを入力...",
+    "ai_voice_chat_ready": "準備完了",
+    "ai_voice_chat_listening": "リスニング中...",
+    "ai_voice_chat_thinking": "考え中...",
+    "ai_voice_chat_error": "エラー：%@",
+    "settings_about": "について",
     "settings_autostart": "ログイン時に起動", "settings_opacity": "アイランド透明度",
     "settings_wallpaper_opacity": "壁紙透明度", "settings_widget_appearance": "ウィジェット外観",
     "settings_animation": "アニメーション",

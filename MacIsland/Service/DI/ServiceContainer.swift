@@ -22,6 +22,7 @@ final class ServiceContainer {
     let timer: TimerService
     let clipboard: ClipboardService
     let hotkey: HotkeyService
+    let voice: VoiceService
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -53,6 +54,14 @@ final class ServiceContainer {
         self.timer = TimerService()
         self.clipboard = ClipboardService()
         self.hotkey = HotkeyService()
+        self.voice = VoiceService()
+
+        // Wire voice command callbacks
+        self.voice.onCommand = { [weak self] command, text in
+            Task { @MainActor in
+                self?.handleVoiceCommand(command, text: text)
+            }
+        }
 
         // Wire hotkey callbacks
         self.hotkey.onToggleIsland = { IslandWindowManager.shared.toggle() }
@@ -84,6 +93,53 @@ final class ServiceContainer {
         }
     }
 
+    // MARK: - Voice Command Handler
+
+    private func handleVoiceCommand(_ command: VoiceCommand, text: String) {
+        switch command {
+        case .play:
+            music.togglePlay()
+            voice.speak(L10n.voiceResponsePlaying)
+        case .pause:
+            music.togglePlay()
+            voice.speak(L10n.voiceResponsePaused)
+        case .next:
+            music.nextTrack()
+            voice.speak(L10n.voiceResponseNext)
+        case .previous:
+            music.previousTrack()
+            voice.speak(L10n.voiceResponsePrevious)
+        case .expand:
+            IslandWindowManager.shared.show()
+            NotificationCenter.default.post(name: .openIslandSettings, object: nil)
+            voice.speak(L10n.voiceResponseExpanded)
+        case .collapse:
+            IslandWindowManager.shared.collapse()
+            voice.speak(L10n.voiceResponseCollapsed)
+        case .show:
+            IslandWindowManager.shared.show()
+            voice.speak(L10n.voiceResponseShown)
+        case .hide:
+            IslandWindowManager.shared.hide()
+            voice.speak(L10n.voiceResponseHidden)
+        case .weather:
+            voice.speak(L10n.voiceResponseFetchingWeather)
+            Task { await weather.fetchWeather() }
+        case .timer:
+            let remaining = timer.pomodoro.remaining
+            if timer.pomodoro.running && remaining > 0 {
+                let minutes = remaining / 60
+                voice.speak(L10n.voiceResponseTimerRemaining(minutes: minutes))
+            } else {
+                voice.speak(L10n.voiceResponseTimerIdle)
+            }
+        case .todo:
+            voice.speak(L10n.voiceResponseTodoDev)
+        case .help:
+            voice.speak(L10n.voiceResponseHelp)
+        }
+    }
+
     // MARK: - Lifecycle
 
     func startAll() {
@@ -99,5 +155,7 @@ final class ServiceContainer {
         monitor.stopMonitoring()
         clipboard.stopMonitoring()
         hotkey.stopMonitoring()
+        voice.stopListening()
+        voice.stopSpeaking()
     }
 }

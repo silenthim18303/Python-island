@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 // MARK: - Timer Timeline Provider
 
@@ -144,6 +145,7 @@ struct TimerWidget: Widget {
         .configurationDisplayName(WidgetL10n.timerDisplayName)
         .description(WidgetL10n.timerDescription)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }
 
@@ -239,6 +241,27 @@ struct TimerWidgetView: View {
                             WidgetInfoRow(icon: "checkmark.circle.fill", title: "完成", value: "\(entry.completedPomodoros) 个番茄", color: .green)
                         } else {
                             WidgetInfoRow(icon: "hourglass", title: "剩余", value: entry.formattedTime, color: .orange)
+                        }
+
+                        // 控制按钮
+                        HStack(spacing: 8) {
+                            Button(intent: TimerToggleIntent()) {
+                                Image(systemName: entry.isRunning ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white)
+                                    .frame(width: 36, height: 28)
+                                    .background(Capsule().fill(entry.isRunning ? Color.orange : Color.green))
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(intent: TimerResetIntent()) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 28, height: 28)
+                                    .background(Capsule().stroke(Color.secondary.opacity(0.3), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
