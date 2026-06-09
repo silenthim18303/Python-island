@@ -21,6 +21,9 @@ struct VoiceSettingsView: View {
                 // 语音播报开关
                 voiceSpeechSection
 
+                // 语音配置
+                voiceConfigSection
+
                 // 唤醒词设置
                 wakeWordSection
 
@@ -32,6 +35,26 @@ struct VoiceSettingsView: View {
             }
             .padding()
         }
+    }
+
+    // MARK: - Voice Config Section
+
+    private var voiceConfigSection: some View {
+        NavigationLink(destination: VoiceConfigView()) {
+            HStack {
+                Image(systemName: "gear")
+                    .foregroundColor(.gray)
+                Text(L10n.voiceAdvancedConfig)
+                    .font(.body)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Voice Control Section

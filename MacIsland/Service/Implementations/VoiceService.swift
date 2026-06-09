@@ -21,9 +21,19 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     @Published var isSpeechEnabled = true
     @Published var wakeWord = "嘿，灵动岛"
 
+    // TTS 配置
+    @Published var selectedVoiceIdentifier = ""
+    @Published var speechRate: Float = 0.5
+    @Published var speechPitch: Float = 1.0
+    @Published var speechVolume: Float = 1.0
+
+    // STT 配置
+    @Published var recognitionLanguage = "zh-CN"
+    @Published var continuousRecognition = false
+
     // MARK: - Dependencies
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "zh-CN"))
+    private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
@@ -38,6 +48,7 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
 
     override init() {
         super.init()
+        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: recognitionLanguage))
         setupAudioSession()
         requestPermissions()
         synthesizer.delegate = self
@@ -80,6 +91,9 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         // 取消之前的任务
         recognitionTask?.cancel()
         recognitionTask = nil
+
+        // 更新识别器语言
+        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: recognitionLanguage))
 
         // 配置音频会话
         #if os(iOS)
@@ -171,10 +185,17 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         stopSpeaking()
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
-        utterance.rate = 0.5
-        utterance.pitchMultiplier = 1.0
-        utterance.volume = 1.0
+
+        // 使用配置的语音
+        if !selectedVoiceIdentifier.isEmpty, let voice = AVSpeechSynthesisVoice(identifier: selectedVoiceIdentifier) {
+            utterance.voice = voice
+        } else {
+            utterance.voice = AVSpeechSynthesisVoice(language: recognitionLanguage)
+        }
+
+        utterance.rate = speechRate
+        utterance.pitchMultiplier = speechPitch
+        utterance.volume = speechVolume
 
         state = .speaking
         isSpeaking = true

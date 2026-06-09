@@ -294,6 +294,21 @@ enum L10n {
     static var voiceTestSpeech: String { t("voice_test_speech") }
     static var voiceTestText: String { t("voice_test_text") }
     static var voiceDone: String { t("voice_done") }
+    static var voiceAdvancedConfig: String { t("voice_advanced_config") }
+
+    // MARK: - TTS Config
+    static var voiceTTSConfig: String { t("voice_tts_config") }
+    static var voiceTTSVoice: String { t("voice_tts_voice") }
+    static var voiceTTSSpeed: String { t("voice_tts_speed") }
+    static var voiceTTSPitch: String { t("voice_tts_pitch") }
+    static var voiceTTSVolume: String { t("voice_tts_volume") }
+    static var voiceCurrentConfig: String { t("voice_current_config") }
+
+    // MARK: - STT Config
+    static var voiceSTTConfig: String { t("voice_stt_config") }
+    static var voiceSTTLanguage: String { t("voice_stt_language") }
+    static var voiceSTTContinuous: String { t("voice_stt_continuous") }
+    static var voiceSTTContinuousDesc: String { t("voice_stt_continuous_desc") }
 
     // MARK: - Voice Commands
     static var voiceCmdPlay: String { t("voice_cmd_play") }
@@ -752,6 +767,19 @@ private let zhStrings: [String: String] = [
     "voice_start_listening": "开始监听", "voice_stop_listening": "停止监听",
     "voice_recognition_result": "识别结果", "voice_test_speech": "测试语音播报",
     "voice_test_text": "你好，我是 MacIsland 灵动岛助手", "voice_done": "完成",
+    "voice_advanced_config": "高级语音配置",
+    // TTS Config
+    "voice_tts_config": "语音合成配置",
+    "voice_tts_voice": "语音",
+    "voice_tts_speed": "语速",
+    "voice_tts_pitch": "音调",
+    "voice_tts_volume": "音量",
+    "voice_current_config": "当前配置",
+    // STT Config
+    "voice_stt_config": "语音识别配置",
+    "voice_stt_language": "识别语言",
+    "voice_stt_continuous": "连续识别",
+    "voice_stt_continuous_desc": "持续监听语音输入",
     // Voice Commands
     "voice_cmd_play": "播放", "voice_cmd_pause": "暂停", "voice_cmd_next": "下一首", "voice_cmd_previous": "上一首",
     "voice_cmd_expand": "展开", "voice_cmd_collapse": "收起", "voice_cmd_show": "显示", "voice_cmd_hide": "隐藏",
@@ -1038,6 +1066,19 @@ private let enStrings: [String: String] = [
     "voice_start_listening": "Start Listening", "voice_stop_listening": "Stop Listening",
     "voice_recognition_result": "Recognition Result", "voice_test_speech": "Test Voice Speech",
     "voice_test_text": "Hello, I am MacIsland assistant", "voice_done": "Done",
+    "voice_advanced_config": "Advanced Voice Config",
+    // TTS Config
+    "voice_tts_config": "Text-to-Speech Config",
+    "voice_tts_voice": "Voice",
+    "voice_tts_speed": "Speed",
+    "voice_tts_pitch": "Pitch",
+    "voice_tts_volume": "Volume",
+    "voice_current_config": "Current Config",
+    // STT Config
+    "voice_stt_config": "Speech-to-Text Config",
+    "voice_stt_language": "Recognition Language",
+    "voice_stt_continuous": "Continuous Recognition",
+    "voice_stt_continuous_desc": "Continuously listen for voice input",
     // Voice Commands
     "voice_cmd_play": "Play", "voice_cmd_pause": "Pause", "voice_cmd_next": "Next", "voice_cmd_previous": "Previous",
     "voice_cmd_expand": "Expand", "voice_cmd_collapse": "Collapse", "voice_cmd_show": "Show", "voice_cmd_hide": "Hide",
@@ -1324,6 +1365,19 @@ private let jaStrings: [String: String] = [
     "voice_start_listening": "リスニング開始", "voice_stop_listening": "リスニング停止",
     "voice_recognition_result": "認識結果", "voice_test_speech": "音声読み上げテスト",
     "voice_test_text": "こんにちは、MacIslandアシスタントです", "voice_done": "完了",
+    "voice_advanced_config": "詳細音声設定",
+    // TTS Config
+    "voice_tts_config": "音声合成設定",
+    "voice_tts_voice": "音声",
+    "voice_tts_speed": "速度",
+    "voice_tts_pitch": "ピッチ",
+    "voice_tts_volume": "音量",
+    "voice_current_config": "現在の設定",
+    // STT Config
+    "voice_stt_config": "音声認識設定",
+    "voice_stt_language": "認識言語",
+    "voice_stt_continuous": "連続認識",
+    "voice_stt_continuous_desc": "音声入力を継続的にリスニング",
     // Voice Commands
     "voice_cmd_play": "再生", "voice_cmd_pause": "一時停止", "voice_cmd_next": "次へ", "voice_cmd_previous": "前へ",
     "voice_cmd_expand": "展開", "voice_cmd_collapse": "折りたたむ", "voice_cmd_show": "表示", "voice_cmd_hide": "隠す",

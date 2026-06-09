@@ -10,12 +10,11 @@ import SwiftUI
 /// AI 语音对话视图
 struct AIVoiceChatView: View {
     @EnvironmentObject var voiceService: VoiceService
-    @EnvironmentObject var aiService: AIService
+    @StateObject private var localAI = LocalAIService.shared
     @State private var chatMessages: [ChatMessage] = []
     @State private var isProcessing = false
     @State private var inputText = ""
     @State private var showTextInput = false
-    @State private var lastMessageCount = 0
 
     struct ChatMessage: Identifiable {
         let id = UUID()
@@ -209,7 +208,6 @@ struct AIVoiceChatView: View {
                 // 清除对话
                 Button(action: {
                     chatMessages.removeAll()
-                    aiService.clearMessages()
                 }) {
                     VStack(spacing: 4) {
                         Image(systemName: "trash")
@@ -294,24 +292,21 @@ struct AIVoiceChatView: View {
         let userMessage = ChatMessage(content: trimmed, isUser: true, timestamp: Date())
         chatMessages.append(userMessage)
 
-        // 发送到 AI
+        // 发送到本地 AI
         isProcessing = true
 
         Task {
-            await aiService.send(content: trimmed)
+            let response = await localAI.process(trimmed)
 
             await MainActor.run {
                 isProcessing = false
 
-                // 从 AIService 获取最新的 AI 回复
-                if let lastAI = aiService.messages.last, lastAI.role == .assistant {
-                    let aiMessage = ChatMessage(content: lastAI.content, isUser: false, timestamp: Date())
-                    chatMessages.append(aiMessage)
+                let aiMessage = ChatMessage(content: response, isUser: false, timestamp: Date())
+                chatMessages.append(aiMessage)
 
-                    // 语音播报回复
-                    if voiceService.isSpeechEnabled {
-                        voiceService.speak(lastAI.content)
-                    }
+                // 语音播报回复
+                if voiceService.isSpeechEnabled {
+                    voiceService.speak(response)
                 }
             }
         }
