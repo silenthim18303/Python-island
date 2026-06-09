@@ -3,7 +3,7 @@
 #include <string>
 #include <mutex>
 
-// 配置结构体定义 - 完全匹配README中的config.json规格
+// 配置结构体定义 - ref : config.json
 struct IslandConfig {
     std::string position = "top-center";
     int offset_x = 0;
@@ -49,39 +49,39 @@ struct BehaviorConfig {
 
 // 全局配置管理器
 class Config {
-public:
-    static Config& Instance();
-    
-    // 加载/保存配置
-    bool Load();
-    bool Save();
-    
-    // 获取配置引用
-    IslandConfig& GetIsland() { return island; }
-    AppearanceConfig& GetAppearance() { return appearance; }
-    SystemConfig& GetSystem() { return system; }
-    BehaviorConfig& GetBehavior() { return behavior; }
-    
-    // 线程安全访问
-    std::mutex& GetMutex() { return mtx; }
-    
-    // 获取配置文件路径
-    std::string GetConfigPath() const;
-    
-    // 重置为默认值
-    void ResetToDefaults();
-    
-private:
-    Config() = default;
-    ~Config() = default;
-    Config(const Config&) = delete;
-    Config& operator=(const Config&) = delete;
-    
-    IslandConfig island;
-    AppearanceConfig appearance;
-    SystemConfig system;
-    BehaviorConfig behavior;
-    std::mutex mtx;
+    public:
+        static Config& Instance();
+
+        // 加载/保存配置
+        bool Load();
+        bool Save();
+
+        // 获取配置引用
+        IslandConfig& GetIsland() { return island; }
+        AppearanceConfig& GetAppearance() { return appearance; }
+        SystemConfig& GetSystem() { return system; }
+        BehaviorConfig& GetBehavior() { return behavior; }
+
+        // 线程安全访问
+        std::mutex& GetMutex() { return mtx; }
+
+        // 获取配置文件路径
+        std::string GetConfigPath() const;
+
+        // 重置为默认值
+        void ResetToDefaults();
+
+    private:
+        Config() = default;
+        ~Config() = default;
+        Config(const Config&) = delete;
+        Config& operator=(const Config&) = delete;
+
+        IslandConfig island;
+        AppearanceConfig appearance;
+        SystemConfig system;
+        BehaviorConfig behavior;
+        std::mutex mtx;
 };
 
 // 全局访问宏
