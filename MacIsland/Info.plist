@@ -20,6 +20,10 @@
 	<string>MacIsland 需要获取您的位置以显示当地天气信息</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>MacIsland 需要控制音乐播放器以实现播放/暂停、切歌和实时进度显示</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>MacIsland 需要使用语音识别来支持语音控制功能，您可以通过语音指令控制灵动岛</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MacIsland 需要使用麦克风来支持语音输入和语音控制功能</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
