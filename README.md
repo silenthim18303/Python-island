@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.4.0 |
+| 版本 | v2.4.1 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.4.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.0/MacIsland_v2.4.0.dmg)
+[📥 下载最新版本 (v2.4.1)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.1/MacIsland_v2.4.1.dmg)
 
 ---
 
@@ -303,6 +303,13 @@ MacIsland/
 ---
 
 ## 更新日志
+
+### v2.4.1 (2026-06-11) — 网络优化 + 清理
+- ✅ 和风天气 API Host 可配置（支持自定义 CDN 节点）
+- ✅ 系统监控 IP 显示优化（只获取 IPv4，确保标准点分十进制格式）
+- ✅ 灵动岛内嵌设置面板新增 API Host 配置
+- ✅ 移除东方财富搜索 API 硬编码 token
+- ✅ 移除模板文件防止 Xcode 编译错误
 
 ### v2.4.0 (2026-06-11) — 安全审计修复
 - ✅ **High** 剪贴板监控默认关闭（隐私保护，需手动开启）
