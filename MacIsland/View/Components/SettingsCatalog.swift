@@ -55,7 +55,8 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case notifications // 通知中心
     case community     // 社区
     case shortcuts     // 快捷键
-    case voice         // 语音
+    case voice         // 语音操作
+    case ai            // AI 助手
     case stock          // 股票
     case about         // 关于
 
@@ -73,6 +74,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .community:     return L10n.settingsCommunity
         case .shortcuts:     return L10n.settingsShortcuts
         case .voice:         return L10n.voiceTitle
+        case .ai:            return L10n.aiTitle
         case .stock:         return L10n.stockTitle
         case .about:         return L10n.settingsAbout
         }
@@ -90,6 +92,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .community:     return "person.2"
         case .shortcuts:     return "command"
         case .voice:         return "mic.fill"
+        case .ai:            return "brain.head.profile"
         case .stock:         return "chart.line.uptrend.xyaxis"
         case .about:         return "info.circle"
         }
@@ -107,7 +110,8 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .notifications: return ["通知", "免打扰", "历史", "notification", "dnd", "mute"]
         case .community:     return ["社区", "上传", "用户名", "community", "upload"]
         case .shortcuts:  return ["快捷键", "热键", "shortcut", "hotkey", "key"]
-        case .voice:      return ["语音", "声音", "麦克风", "voice", "speech", "microphone", "唤醒"]
+        case .voice:      return ["语音", "声音", "麦克风", "voice", "speech", "microphone", "唤醒", "tts", "stt", "语音操作"]
+        case .ai:         return ["AI", "人工智能", "Ollama", "OpenAI", "模型", "assistant", "artificial", "intelligence", "TTS", "STT", "语音合成", "语音识别"]
         case .stock:      return ["股票","股价","行情","stock","price","market"]
         case .about:      return ["关于", "版本", "about", "version"]
         }
@@ -253,6 +257,44 @@ struct SettingItemMeta: Identifiable {
         .init("hotkeyBindings", .shortcuts,
               title: L10n.shortcutTitle, description: L10n.descHotkeyBindings,
               keywords: ["hotkey", "shortcut", "热键"]),
+
+            // 语音操作
+            .init("voiceControl", .voice,
+                  title: L10n.voiceEnableControl, description: L10n.voiceEnableControlDesc,
+                  keywords: ["语音控制", "voice", "control", "指令"]),
+            .init("voiceSpeech", .voice,
+                  title: L10n.voiceEnableSpeech, description: L10n.voiceEnableSpeechDesc,
+                  keywords: ["语音播报", "speech", "播报", "tts"]),
+            .init("voiceWakeWord", .voice,
+                  title: L10n.voiceWakeWord, description: L10n.voiceWakeWordHint,
+                  keywords: ["唤醒词", "wake", "word"]),
+            .init("voiceTTS", .voice,
+                  title: L10n.voiceTTSConfig, description: L10n.voiceTTSSpeed,
+                  keywords: ["tts", "语音合成", "语速", "音调", "音量"]),
+            .init("voiceSTT", .voice,
+                  title: L10n.voiceSTTConfig, description: L10n.voiceSTTLanguage,
+                  keywords: ["stt", "语音识别", "识别语言"]),
+
+            // AI 助手
+            .init("aiProvider", .ai,
+                  title: "服务商", description: "选择 AI 服务商或自定义地址",
+                  keywords: ["provider", "服务商", "preset", "预设", "openai", "deepseek", "mimo"]),
+            .init("aiServer", .ai,
+                  title: L10n.aiServer, description: L10n.aiLocal,
+                  hint: "http://localhost:11434",
+                  keywords: ["server", "url", "服务", "地址", "ollama"]),
+            .init("aiApiKey", .ai,
+                  title: L10n.aiApiKey, description: L10n.aiProtocol,
+                  keywords: ["api", "key", "token", "密钥"]),
+            .init("aiModelName", .ai,
+                  title: L10n.aiModelName, description: L10n.aiModels,
+                  keywords: ["model", "模型", "llama", "gpt"]),
+            .init("aiTTS", .ai,
+                  title: L10n.voiceTTSConfig, description: L10n.voiceTTSSpeed,
+                  keywords: ["tts", "语音合成", "语速", "音调", "音量"]),
+            .init("aiSTT", .ai,
+                  title: L10n.voiceSTTConfig, description: L10n.voiceSTTLanguage,
+                  keywords: ["stt", "语音识别", "识别语言"]),
         ]
     }
 }

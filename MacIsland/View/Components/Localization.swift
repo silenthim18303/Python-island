@@ -271,6 +271,12 @@ enum L10n {
     static var aiLocal: String { t("ai_local") }
     static var aiSend: String { t("ai_send") }
     static var aiPlaceholder: String { t("ai_placeholder") }
+    static var aiSettings: String { t("ai_settings") }
+    static var aiSettingsDesc: String { t("ai_settings_desc") }
+    static var aiTTS: String { t("ai_tts") }
+    static var aiTTSDesc: String { t("ai_tts_desc") }
+    static var aiSTT: String { t("ai_stt") }
+    static var aiSTTDesc: String { t("ai_stt_desc") }
 
     // MARK: - Settings
     static var settingsGeneral: String { t("settings_general") }
@@ -783,8 +789,11 @@ private let zhStrings: [String: String] = [
     "ai_title": "AI 助手", "ai_config": "AI 服务配置", "ai_api_key": "API Key（本地服务可留空）",
     "ai_server": "服务地址", "ai_models": "个可用模型", "ai_local": "本地: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "发送", "ai_placeholder": "输入消息...",
+    "ai_settings": "AI 服务设置", "ai_settings_desc": "配置 AI 服务地址和模型",
+    "ai_tts": "语音合成", "ai_tts_desc": "配置 TTS 语音、语速、音调",
+    "ai_stt": "语音识别", "ai_stt_desc": "配置 STT 识别语言和连续模式",
     // Settings
-    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音",
+    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音操作",
     "voice_control": "语音控制", "voice_speech": "语音播报", "voice_commands": "语音指令",
     "voice_enable_control": "启用语音控制", "voice_enable_control_desc": "使用语音指令控制灵动岛",
     "voice_enable_speech": "启用语音播报", "voice_enable_speech_desc": "播报天气、计时器、通知等信息",
@@ -1104,8 +1113,11 @@ private let enStrings: [String: String] = [
     "ai_title": "AI Assistant", "ai_config": "AI Service Config", "ai_api_key": "API Key (optional for local)",
     "ai_server": "Server", "ai_models": "models available", "ai_local": "Local: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "Send", "ai_placeholder": "Type a message...",
+    "ai_settings": "AI Service Settings", "ai_settings_desc": "Configure AI server and model",
+    "ai_tts": "Text-to-Speech", "ai_tts_desc": "Configure TTS voice, speed, pitch",
+    "ai_stt": "Speech-to-Text", "ai_stt_desc": "Configure STT language and continuous mode",
     // Settings
-    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice",
+    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice Control",
     "voice_control": "Voice Control", "voice_speech": "Voice Speech", "voice_commands": "Voice Commands",
     "voice_enable_control": "Enable Voice Control", "voice_enable_control_desc": "Use voice commands to control the island",
     "voice_enable_speech": "Enable Voice Speech", "voice_enable_speech_desc": "Announce weather, timer, notifications, etc.",
@@ -1425,8 +1437,11 @@ private let jaStrings: [String: String] = [
     "ai_title": "AI アシスタント", "ai_config": "AI サービス設定", "ai_api_key": "API Key（ローカルは任意）",
     "ai_server": "サーバー", "ai_models": "個のモデル", "ai_local": "ローカル：Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "送信", "ai_placeholder": "メッセージを入力...",
+    "ai_settings": "AI サービス設定", "ai_settings_desc": "AI サーバーとモデルを設定",
+    "ai_tts": "音声合成", "ai_tts_desc": "TTS 音声・速度・ピッチを設定",
+    "ai_stt": "音声認識", "ai_stt_desc": "STT 言語と連続モードを設定",
     // Settings
-    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声",
+    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声操作",
     "voice_control": "音声制御", "voice_speech": "音声読み上げ", "voice_commands": "音声コマンド",
     "voice_enable_control": "音声制御を有効にする", "voice_enable_control_desc": "音声コマンドでアイランドを制御",
     "voice_enable_speech": "音声読み上げを有効にする", "voice_enable_speech_desc": "天気、タイマー、通知などを読み上げ",

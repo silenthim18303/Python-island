@@ -20,6 +20,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
     private var currentLocation: CLLocation?
     private var locationDelegate: LocationDelegate?
     private var cachedLocationInfo: (id: String, city: String, district: String)?
+    private var retryTimer: Timer?
 
     init(config: QWeatherConfig, networkClient: NetworkClientProtocol = URLSession.shared) {
         self.config = config
@@ -37,6 +38,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
         guard !config.apiKey.isEmpty else {
             setError(L10n.errorWeatherAPIKey)
+            scheduleRetry()
             return
         }
 
@@ -45,6 +47,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
         guard let locInfo = locationInfo else {
             setError(L10n.errorWeatherLocation)
+            scheduleRetry()
             return
         }
 
@@ -56,8 +59,12 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
         guard let nowData = now else {
             setError(L10n.errorWeatherFetch)
+            scheduleRetry()
             return
         }
+
+        // 查询成功，取消重试
+        cancelRetry()
 
         await MainActor.run {
             weather = WeatherData(
@@ -87,6 +94,22 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
                 districtName: locInfo.district
             )
         }
+    }
+
+    // MARK: - Retry
+
+    /// 查询失败后每 3 秒重试
+    private func scheduleRetry() {
+        cancelRetry()
+        retryTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { [weak self] _ in
+            Task { await self?.fetchWeather() }
+        }
+    }
+
+    /// 取消重试定时器
+    private func cancelRetry() {
+        retryTimer?.invalidate()
+        retryTimer = nil
     }
 
     // MARK: - Location Setup
