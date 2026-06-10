@@ -23,6 +23,7 @@ final class ServiceContainer {
     let clipboard: ClipboardService
     let hotkey: HotkeyService
     let voice: VoiceService
+    let stocks: StockServiceImpl
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -55,6 +56,7 @@ final class ServiceContainer {
         self.clipboard = ClipboardService()
         self.hotkey = HotkeyService()
         self.voice = VoiceService()
+        self.stocks = StockServiceImpl()
 
         // Wire voice command callbacks
         self.voice.onCommand = { [weak self] command, text in
@@ -137,6 +139,8 @@ final class ServiceContainer {
             voice.speak(L10n.voiceResponseTodoDev)
         case .help:
             voice.speak(L10n.voiceResponseHelp)
+        case .stock:
+            voice.speak("股票功能开发中")
         }
     }
 
@@ -148,6 +152,17 @@ final class ServiceContainer {
         clipboard.startMonitoring()
         hotkey.startMonitoring()
         Task { await weather.fetchWeather() }
+
+        // 恢复股票自动刷新 & 初始行情获取
+        let settings = AppSettings.shared
+        let store = StockStore.shared
+
+        if !store.watchlist.isEmpty {
+            Task { await store.refreshAllQuotes() }
+        }
+        if settings.stockAutoRefresh {
+            store.startAutoRefresh(interval: TimeInterval(settings.stockRefreshInterval))
+        }
     }
 
     func stopAll() {

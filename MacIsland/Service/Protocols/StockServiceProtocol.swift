@@ -89,7 +89,7 @@ enum StockAPIError: Error, LocalizedError {
         case .invalidURL: return "无效的请求地址"
         case .networkError(let error): return "网络错误: \(error.localizedDescription)"
         case .invalidResponse: return "无效的响应数据"
-        case .decodingError: return "数据解析失败"
+        case .decodingError(let error): return "数据解析失败: \(error.localizedDescription)"
         case .rateLimited: return "请求过于频繁，请稍后再试"
         case .symbolNotFound: return "未找到该股票"
         case .serverError(let code): return "服务器错误 (\(code))"

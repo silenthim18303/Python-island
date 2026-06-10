@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - 股票市场
 
@@ -17,9 +18,9 @@ enum StockMarket: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .aShare: return "A股"
-        case .usStock: return "美股"
-        case .hkStock: return "港股"
+        case .aShare: return L10n.marketAShare
+        case .usStock: return L10n.marketUS
+        case .hkStock: return L10n.marketHK
         }
     }
 
@@ -31,13 +32,13 @@ enum StockMarket: String, Codable, CaseIterable {
         }
     }
 
-    /// 股票代码前缀
-    var codePrefix: String {
-        switch self {
-        case .aShare: return ""
-        case .usStock: return ""
-        case .hkStock: return ""
-        }
+    /// A股代码前缀 (sh/sz)
+    func aSharePrefix(for symbol: String) -> String {
+        // 6开头=上海(主板+科创), 0/3开头=深圳, 8/4开头=北京
+        if symbol.hasPrefix("6") { return "sh" }
+        if symbol.hasPrefix("0") || symbol.hasPrefix("3") { return "sz" }
+        if symbol.hasPrefix("8") || symbol.hasPrefix("4") { return "bj" }
+        return "sz"
     }
 }
 
@@ -50,7 +51,6 @@ struct StockItem: Codable, Identifiable, Hashable {
     let market: StockMarket     // 所属市场
     let industry: String?       // 行业分类
 
-    // TODO: - 实现 Codable 和 Hashable 协议
 
     /// 格式化显示名称
     var displayName: String {
@@ -96,7 +96,7 @@ struct StockQuote: Codable, Identifiable {
     /// 涨跌状态
     var isUp: Bool { changeAmount > 0 }
     var isDown: Bool { changeAmount < 0 }
-    var isFlat: Bool { changeAmount == 0 }
+    var isFlat: Bool { abs(changeAmount) < 0.001 }
 
     /// 格式化涨跌幅
     var changePercentString: String {
@@ -120,6 +120,11 @@ struct StockQuote: Codable, Identifiable {
         if isUp { return .up }
         if isDown { return .down }
         return .flat
+    }
+
+    /// 涨跌 SwiftUI 颜色（根据市场惯例：A股/港股红涨绿跌，美股绿涨红跌）
+    var trendSwiftUIColor: Color {
+        trendColor.color(for: market).swiftUIColor
     }
 }
 
@@ -145,7 +150,16 @@ enum StockTrendColor {
 
 enum StockColor {
     case red, green, secondary
+
+    var swiftUIColor: Color {
+        switch self {
+        case .red: return .red
+        case .green: return .green
+        case .secondary: return .secondary
+        }
+    }
 }
+
 
 // MARK: - 分时数据
 

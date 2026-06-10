@@ -22,6 +22,7 @@ enum VoiceCommand: String, CaseIterable {
     case timer
     case todo
     case help
+    case stock
 
     /// 语音触发词（多语言）
     var triggerWords: [String] {
@@ -38,6 +39,7 @@ enum VoiceCommand: String, CaseIterable {
         case .timer: return ["计时器", "timer", "タイマー"]
         case .todo: return ["待办", "todo", "TODO"]
         case .help: return ["帮助", "help", "ヘルプ"]
+        case .stock: return ["股票", "股价", "stock", "price"]
         }
     }
 
@@ -56,6 +58,7 @@ enum VoiceCommand: String, CaseIterable {
         case .timer: return L10n.voiceCmdTimer
         case .todo: return L10n.voiceCmdTodo
         case .help: return L10n.voiceCmdHelp
+        case .stock: return L10n.voiceCmdStock
         }
     }
 
@@ -74,6 +77,7 @@ enum VoiceCommand: String, CaseIterable {
         case .timer: return L10n.voiceCmdTimerDesc
         case .todo: return L10n.voiceCmdTodoDesc
         case .help: return L10n.voiceCmdHelpDesc
+        case .stock: return L10n.voiceCmdStockDesc
         }
     }
 

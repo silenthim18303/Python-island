@@ -57,6 +57,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(serviceContainer.clipboard)
                 .environmentObject(serviceContainer.hotkey)
                 .environmentObject(serviceContainer.voice)
+                .environmentObject(serviceContainer.stocks)
+                .environmentObject(StockStore.shared)
         )
 
         // 启动所有数据服务

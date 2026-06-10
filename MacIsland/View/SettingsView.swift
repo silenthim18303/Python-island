@@ -91,6 +91,8 @@ struct SettingsView: View {
             ShortcutsSettingsView()
         case .voice:
             VoiceSettingsView()
+        case .stock:
+            StockSettingsView()
         case .about:
             AboutSettingsView()
         }

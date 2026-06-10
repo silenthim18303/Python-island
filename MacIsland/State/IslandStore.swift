@@ -108,7 +108,7 @@ final class IslandStore: ObservableObject {
         }
     }
 
-    /// 监听外部通知，打开设置标签
+    /// 监听外部通知，打开最大展开态（默认待办 tab）
     func listenForNotifications() {
         NotificationCenter.default.addObserver(
             forName: .openIslandSettings,
@@ -116,7 +116,6 @@ final class IslandStore: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             self?.setMaxExpand()
-            self?.maxExpandInitialTab = L10n.navSettings
         }
     }
 

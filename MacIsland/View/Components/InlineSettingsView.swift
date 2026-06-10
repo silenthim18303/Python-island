@@ -149,6 +149,7 @@ struct InlineSettingsView: View {
             case .community:     communitySection
             case .shortcuts:     shortcutsSection
             case .voice:         voiceSection
+            case .stock:         stockSection
             case .about:         aboutSection
             }
         }
@@ -643,6 +644,14 @@ struct InlineSettingsView: View {
                 }
             }
         }
+    }
+    
+    // MARK: -Stock Section
+    
+    @EnvironmentObject var stockService: StockServiceImpl
+    
+    private var stockSection: some View{
+        StockListView()
     }
 
     // MARK: - About Section

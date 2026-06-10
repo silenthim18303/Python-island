@@ -8,10 +8,12 @@
 import Foundation
 import Combine
 
-/// 股票服务实现
+/// 股票服务实现 — 提供数据获取接口，行情存储统一由 StockStore 管理
 @MainActor
 final class StockServiceImpl: ObservableObject, StockServiceProtocol {
-    @Published var quotes: [String: StockQuote] = [:]
+    /// 行情数据（代理读取自 StockStore）
+    var quotes: [String: StockQuote] { StockStore.shared.quotes }
+
     @Published var isLoading = false
     @Published var error: String?
     @Published var isAutoRefreshEnabled = false
@@ -19,8 +21,6 @@ final class StockServiceImpl: ObservableObject, StockServiceProtocol {
     // MARK: - Private
 
     private let dataProvider = StockDataProvider()
-    private var refreshTimer: Timer?
-    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - 股票服务实现
 
@@ -30,7 +30,7 @@ final class StockServiceImpl: ObservableObject, StockServiceProtocol {
 
         do {
             let quote = try await dataProvider.fetchQuote(symbol: symbol, market: market)
-            quotes[symbol] = quote
+            StockStore.shared.updateQuote(quote)
             return quote
         } catch {
             self.error = error.localizedDescription
@@ -44,9 +44,7 @@ final class StockServiceImpl: ObservableObject, StockServiceProtocol {
 
         do {
             let newQuotes = try await dataProvider.fetchBatchQuotes(symbols: symbols)
-            for quote in newQuotes {
-                quotes[quote.symbol] = quote
-            }
+            StockStore.shared.updateQuotes(newQuotes)
             return newQuotes
         } catch {
             self.error = error.localizedDescription
@@ -66,55 +64,19 @@ final class StockServiceImpl: ObservableObject, StockServiceProtocol {
         return try await dataProvider.fetchTimeLineData(symbol: symbol, market: market)
     }
 
-    // MARK: - 自动刷新
+    // MARK: - 自动刷新（委托给 StockStore）
 
     func startAutoRefresh(interval: TimeInterval = 60) {
-        stopAutoRefresh()
+        StockStore.shared.startAutoRefresh(interval: interval)
         isAutoRefreshEnabled = true
-
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self = self else { return }
-                let watchlist = StockStore.shared.watchlist
-                await self.refreshWatchlist(watchlist)
-            }
-        }
     }
 
     func stopAutoRefresh() {
-        refreshTimer?.invalidate()
-        refreshTimer = nil
+        StockStore.shared.stopAutoRefresh()
         isAutoRefreshEnabled = false
     }
 
     func refreshWatchlist(_ watchlist: [WatchlistItem]) async {
-        guard !watchlist.isEmpty else { return }
-
-        let symbols = watchlist.map { ($0.id, $0.market) }
-        do {
-            _ = try await fetchQuotes(symbols: symbols)
-            // 更新小组件数据
-            updateWidgetData()
-        } catch {
-            print("[StockService] Refresh failed: \(error)")
-        }
-    }
-
-    // MARK: - 小组件数据更新
-
-    private func updateWidgetData() {
-        let stockItems: [[String: Any]] = StockStore.shared.watchlist.prefix(5).compactMap { item in
-            guard let quote = quotes[item.id] else { return nil }
-            return [
-                "symbol": quote.symbol,
-                "name": quote.name,
-                "price": quote.currentPrice,
-                "change_percent": quote.changePercent,
-                "change_amount": quote.changeAmount,
-                "is_up": quote.isUp,
-            ]
-        }
-
-        WidgetDataManager.shared.updateStocks(items: stockItems)
+        await StockStore.shared.refreshAllQuotes()
     }
 }

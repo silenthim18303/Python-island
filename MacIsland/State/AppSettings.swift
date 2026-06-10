@@ -293,6 +293,17 @@ final class AppSettings: ObservableObject {
         )
     }
 
+    // MARK: - 股票
+
+    /// 股票自动刷新
+    @Published var stockAutoRefresh: Bool {
+        didSet { defaults.set(stockAutoRefresh, forKey: Keys.stockAutoRefresh) }
+    }
+    /// 股票刷新频率（秒）
+    @Published var stockRefreshInterval: Int {
+        didSet { defaults.set(stockRefreshInterval, forKey: Keys.stockRefreshInterval) }
+    }
+
     // MARK: - 壁纸存储
 
     /// 自定义壁纸存储路径（空=使用默认 Application Support 路径）
@@ -366,6 +377,8 @@ final class AppSettings: ObservableObject {
         static let weatherBundledAPIKey = "weatherBundledAPIKey"
         static let customWallpaperPath = "customWallpaperPath"
         static let customWallpaperBookmark = "customWallpaperBookmark"
+        static let stockAutoRefresh = "stockAutoRefresh"
+        static let stockRefreshInterval = "stockRefreshInterval"
     }
 
     private init() {
@@ -411,6 +424,10 @@ final class AppSettings: ObservableObject {
 
         // 歌词
         preferredLyricsSource = defaults.string(forKey: Keys.preferredLyricsSource) ?? "auto"
+
+        // 股票
+        stockAutoRefresh = defaults.object(forKey: Keys.stockAutoRefresh) as? Bool ?? false
+        stockRefreshInterval = defaults.object(forKey: Keys.stockRefreshInterval) as? Int ?? 60
 
         // 天气
         weatherManualCity = defaults.string(forKey: Keys.weatherManualCity) ?? ""
