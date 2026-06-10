@@ -212,13 +212,27 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
                 getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
                             &hostname, socklen_t(hostname.count), nil, 0, NI_NUMERICHOST)
                 let ip = String(cString: hostname)
-                if !ip.isEmpty && ip != "0.0.0.0" { return ip }
+                if !ip.isEmpty && ip != "0.0.0.0" {
+                    // 确保标准 IPv4 点分十进制格式
+                    if let formatted = formatIPv4(ip) { return formatted }
+                    return ip
+                }
             }
 
             guard let next = interface.ifa_next else { break }
             ptr = next
         }
         return ""
+    }
+
+    /// 格式化为标准 IPv4 点分十进制（xxx.xxx.xxx.xxx）
+    private func formatIPv4(_ ip: String) -> String? {
+        // 如果已经是标准 IPv4 格式，直接返回
+        let parts = ip.split(separator: ".")
+        guard parts.count == 4 else { return nil }
+        guard parts.allSatisfy({ $0.allSatisfy(\.isNumber) }) else { return nil }
+        guard parts.allSatisfy({ (Int($0) ?? -1) >= 0 && (Int($0) ?? -1) <= 255 }) else { return nil }
+        return ip
     }
 
     // MARK: - Private Methods
