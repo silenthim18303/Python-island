@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.1.0 |
+| 版本 | v2.4.1 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.1.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.1.0/MacIsland_v2.1.0.dmg)
+[📥 下载最新版本 (v2.4.1)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.1/MacIsland_v2.4.1.dmg)
 
 ---
 
@@ -304,6 +304,41 @@ MacIsland/
 
 ## 更新日志
 
+### v2.4.1 (2026-06-11) — 网络优化 + 清理
+- ✅ 和风天气 API Host 可配置（支持自定义 CDN 节点）
+- ✅ 系统监控 IP 显示优化（只获取 IPv4，确保标准点分十进制格式）
+- ✅ 灵动岛内嵌设置面板新增 API Host 配置
+- ✅ 移除东方财富搜索 API 硬编码 token
+- ✅ 移除模板文件防止 Xcode 编译错误
+
+### v2.4.0 (2026-06-11) — 安全审计修复
+- ✅ **High** 剪贴板监控默认关闭（隐私保护，需手动开启）
+- ✅ **High** GitHub OAuth 日志泄漏修复（Release 构建不再输出 Device Code）
+- ✅ 新增「为爱发电」赞赏码
+
+### v2.3.0 (2026-06-10) — 安全加固
+- ✅ **High** 移除 AI 自动端口扫描（防止本地服务劫持）
+- ✅ **High** GitHub Token scope 缩小为 `public_repo`
+- ✅ **High** 统一 Keychain 存储为 `SecureStorage`（一致安全级别）
+- ✅ 更新机制新增 SHA256 哈希验证（防篡改）
+- ✅ 新增发布脚本（自动计算 SHA256）
+
+### v2.2.1 (2026-06-10) — 安全修复
+- ✅ **Critical** 修复 GitHub TLS 证书验证完全禁用漏洞（三级安全验证）
+- ✅ **High** GitHub OAuth Client ID 移出源码（Config/Secrets.swift，gitignore）
+- ✅ **High** 移除和风天气 API Key 硬编码（要求用户自行配置）
+
+### v2.2.0 (2026-06-09)
+- ✅ AI Agent 系统（12 个系统工具：天气/系统状态/音乐/待办/计时器/股票/便签/时间）
+- ✅ AI 服务优化（Anthropic 协议适配 + 多端点尝试 + HTTP 错误解析）
+- ✅ AI 服务商预设（15 个常用 AI 服务商一键配置）
+- ✅ AI TTS/STT 设置集成到 AI 设置面板
+- ✅ 语音控制修复（启用自动监听 + 唤醒词/命令冷却防重复）
+- ✅ 语音控制防误触发（部分识别 + 持续监听）
+- ✅ 天气查询失败 3 秒自动重试
+- ✅ AI 聊天界面优化（输入框固定底部，仅消息区滚动）
+- ✅ 设置面板新增 AI 分类 + 语音操作重命名
+
 ### v2.1.0 (2026-06-09)
 - ✅ 股票实时行情监控（A股/美股/港股，新浪财经 API）
 - ✅ 股票搜索（东方财富 API，支持市场筛选）
@@ -375,3 +410,15 @@ MacIsland/
 - 设计与功能参考自 Windows 版 **eIsland**
 - 天气数据由 [和风天气](https://www.qweather.com/) 提供
 - 壁纸社区由 [GitHub](https://github.com) 托管，CDN 加速由 [jsDelivr](https://www.jsdelivr.com/) 提供
+
+---
+
+## 为爱发电 ❤️
+
+如果 MacIsland 对你有帮助，欢迎请作者喝杯咖啡 ☕
+
+> 加急需求和加急 bug 修复请备注说明
+
+<div align="center">
+  <img src="wx.jpg" alt="微信赞赏码" width="300" />
+</div>

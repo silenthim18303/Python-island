@@ -641,7 +641,7 @@ final class StockDataProvider {
 
     /// 搜索股票
     private func searchEastmoney(keyword: String) async throws -> [StockItem] {
-        let urlString = "https://searchapi.eastmoney.com/api/suggest/get?input=\(keyword)&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=10"
+        let urlString = "https://searchapi.eastmoney.com/api/suggest/get?input=\(keyword)&type=14&count=10"
 
         guard let url = URL(string: urlString) else {
             throw StockAPIError.invalidURL

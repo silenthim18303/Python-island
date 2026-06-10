@@ -244,6 +244,7 @@ enum L10n {
     static var weatherAuto: String { t("weather_auto") }
     static var weatherCity: String { t("weather_city") }
     static var weatherAPIKey: String { t("weather_api_key") }
+    static var weatherAPIHost: String { t("weather_api_host") }
     static var weatherLocationID: String { t("weather_location_id") }
     static var weatherClear: String { t("weather_clear") }
 
@@ -271,6 +272,12 @@ enum L10n {
     static var aiLocal: String { t("ai_local") }
     static var aiSend: String { t("ai_send") }
     static var aiPlaceholder: String { t("ai_placeholder") }
+    static var aiSettings: String { t("ai_settings") }
+    static var aiSettingsDesc: String { t("ai_settings_desc") }
+    static var aiTTS: String { t("ai_tts") }
+    static var aiTTSDesc: String { t("ai_tts_desc") }
+    static var aiSTT: String { t("ai_stt") }
+    static var aiSTTDesc: String { t("ai_stt_desc") }
 
     // MARK: - Settings
     static var settingsGeneral: String { t("settings_general") }
@@ -632,6 +639,7 @@ enum L10n {
     static var descDndTime: String { t("desc_dnd_time") }
     static var descLyricsSource: String { t("desc_lyrics_source") }
     static var descWeatherAPIKey: String { t("desc_weather_api_key") }
+    static var descWeatherAPIHost: String { t("desc_weather_api_host") }
     static var descWeatherCity: String { t("desc_weather_city") }
     static var descWeatherLocationID: String { t("desc_weather_location_id") }
     static var descUsername: String { t("desc_username") }
@@ -769,7 +777,7 @@ private let zhStrings: [String: String] = [
     "music_netease": "网易云", "music_qq": "QQ 音乐", "music_kugou": "酷狗", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天气", "weather_wind": "风速", "weather_humidity": "湿度",
-    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_location_id": "Location ID",
+    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
     "weather_clear": "清除手动设置",
     // Wallpaper
     "wallpaper_title": "壁纸", "wallpaper_local": "本地壁纸", "wallpaper_current": "当前壁纸",
@@ -783,8 +791,11 @@ private let zhStrings: [String: String] = [
     "ai_title": "AI 助手", "ai_config": "AI 服务配置", "ai_api_key": "API Key（本地服务可留空）",
     "ai_server": "服务地址", "ai_models": "个可用模型", "ai_local": "本地: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "发送", "ai_placeholder": "输入消息...",
+    "ai_settings": "AI 服务设置", "ai_settings_desc": "配置 AI 服务地址和模型",
+    "ai_tts": "语音合成", "ai_tts_desc": "配置 TTS 语音、语速、音调",
+    "ai_stt": "语音识别", "ai_stt_desc": "配置 STT 识别语言和连续模式",
     // Settings
-    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音",
+    "settings_general": "通用", "settings_shortcuts": "快捷键", "voice_title": "语音操作",
     "voice_control": "语音控制", "voice_speech": "语音播报", "voice_commands": "语音指令",
     "voice_enable_control": "启用语音控制", "voice_enable_control_desc": "使用语音指令控制灵动岛",
     "voice_enable_speech": "启用语音播报", "voice_enable_speech_desc": "播报天气、计时器、通知等信息",
@@ -1005,7 +1016,8 @@ private let zhStrings: [String: String] = [
     "desc_dnd": "在指定时段内静默所有灵动岛通知。",
     "desc_dnd_time": "设置免打扰的开始和结束时间。",
     "desc_lyrics_source": "优先使用的歌词数据来源。",
-    "desc_weather_api_key": "可填写自己的和风天气 API Key；留空时使用内置默认 Key。Key 保存在系统钥匙串，不写入 UserDefaults。",
+    "desc_weather_api_key": "和风天气 API Key（免费注册 qweather.com 获取）。保存在系统钥匙串，不写入 UserDefaults。",
+    "desc_weather_api_host": "和风天气 API 地址，默认为 devapi.qweather.com。支持自定义 CDN 节点。",
     "desc_weather_city": "指定城市名，留空则自动定位。",
     "desc_weather_location_id": "和风天气城市 ID，配合手动城市使用。",
     "desc_username": "上传社区壁纸时显示的作者名。",
@@ -1090,7 +1102,7 @@ private let enStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "Weather", "weather_wind": "Wind", "weather_humidity": "Humidity",
-    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
+    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
     "weather_clear": "Clear Manual Settings",
     // Wallpaper
     "wallpaper_title": "Wallpaper", "wallpaper_local": "Local Wallpaper", "wallpaper_current": "Current",
@@ -1104,8 +1116,11 @@ private let enStrings: [String: String] = [
     "ai_title": "AI Assistant", "ai_config": "AI Service Config", "ai_api_key": "API Key (optional for local)",
     "ai_server": "Server", "ai_models": "models available", "ai_local": "Local: Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "Send", "ai_placeholder": "Type a message...",
+    "ai_settings": "AI Service Settings", "ai_settings_desc": "Configure AI server and model",
+    "ai_tts": "Text-to-Speech", "ai_tts_desc": "Configure TTS voice, speed, pitch",
+    "ai_stt": "Speech-to-Text", "ai_stt_desc": "Configure STT language and continuous mode",
     // Settings
-    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice",
+    "settings_general": "General", "settings_shortcuts": "Shortcuts", "voice_title": "Voice Control",
     "voice_control": "Voice Control", "voice_speech": "Voice Speech", "voice_commands": "Voice Commands",
     "voice_enable_control": "Enable Voice Control", "voice_enable_control_desc": "Use voice commands to control the island",
     "voice_enable_speech": "Enable Voice Speech", "voice_enable_speech_desc": "Announce weather, timer, notifications, etc.",
@@ -1326,7 +1341,8 @@ private let enStrings: [String: String] = [
     "desc_dnd": "Silence all island notifications during specified hours.",
     "desc_dnd_time": "Set do-not-disturb start and end time.",
     "desc_lyrics_source": "Preferred lyrics data source.",
-    "desc_weather_api_key": "Optional QWeather API Key. Leave empty to use the bundled default. Keys are stored in Keychain, not UserDefaults.",
+    "desc_weather_api_key": "QWeather API Key (free registration at qweather.com). Stored in Keychain, not UserDefaults.",
+    "desc_weather_api_host": "QWeather API host. Defaults to devapi.qweather.com. Supports custom CDN nodes.",
     "desc_weather_city": "Specify city name. Leave empty for auto location.",
     "desc_weather_location_id": "QWeather city ID, used with manual city.",
     "desc_username": "Author name shown when uploading community wallpapers.",
@@ -1411,7 +1427,7 @@ private let jaStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天気", "weather_wind": "風速", "weather_humidity": "湿度",
-    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
+    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_api_host": "APIホスト", "weather_location_id": "Location ID",
     "weather_clear": "手動設定をクリア",
     // Wallpaper
     "wallpaper_title": "壁紙", "wallpaper_local": "ローカル壁紙", "wallpaper_current": "現在の壁紙",
@@ -1425,8 +1441,11 @@ private let jaStrings: [String: String] = [
     "ai_title": "AI アシスタント", "ai_config": "AI サービス設定", "ai_api_key": "API Key（ローカルは任意）",
     "ai_server": "サーバー", "ai_models": "個のモデル", "ai_local": "ローカル：Ollama / llama.cpp / LM Studio / vLLM",
     "ai_send": "送信", "ai_placeholder": "メッセージを入力...",
+    "ai_settings": "AI サービス設定", "ai_settings_desc": "AI サーバーとモデルを設定",
+    "ai_tts": "音声合成", "ai_tts_desc": "TTS 音声・速度・ピッチを設定",
+    "ai_stt": "音声認識", "ai_stt_desc": "STT 言語と連続モードを設定",
     // Settings
-    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声",
+    "settings_general": "一般", "settings_shortcuts": "ショートカット", "voice_title": "音声操作",
     "voice_control": "音声制御", "voice_speech": "音声読み上げ", "voice_commands": "音声コマンド",
     "voice_enable_control": "音声制御を有効にする", "voice_enable_control_desc": "音声コマンドでアイランドを制御",
     "voice_enable_speech": "音声読み上げを有効にする", "voice_enable_speech_desc": "天気、タイマー、通知などを読み上げ",
@@ -1649,6 +1668,7 @@ private let jaStrings: [String: String] = [
     "desc_dnd_time": "通知オフの開始・終了時間を設定。",
     "desc_lyrics_source": "優先する歌詞データソース。",
     "desc_weather_api_key": "任意の QWeather API Key。空欄の場合は内蔵デフォルトを使用します。Key は UserDefaults ではなく Keychain に保存します。",
+    "desc_weather_api_host": "QWeather APIホスト。デフォルトは devapi.qweather.com。カスタムCDNノードに対応。",
     "desc_weather_city": "都市名を指定。空欄で自動位置。",
     "desc_weather_location_id": "和風天気の都市 ID。手動都市と併用。",
     "desc_username": "コミュニティ壁紙アップロード時の著者名。",

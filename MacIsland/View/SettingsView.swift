@@ -91,6 +91,8 @@ struct SettingsView: View {
             ShortcutsSettingsView()
         case .voice:
             VoiceSettingsView()
+        case .ai:
+            AISettingsView()
         case .stock:
             StockSettingsView()
         case .about:
@@ -299,6 +301,11 @@ private struct GeneralSettingsView: View {
 
     @ViewBuilder private var weatherSection: some View {
         Section(L10n.weatherTitle) {
+            LabeledContent {
+                TextField(settingHint("weatherAPIHost"), text: $settings.weatherAPIHost)
+                    .textFieldStyle(.roundedBorder).frame(width: 220)
+            } label: { SettingLabel(key: "weatherAPIHost") }
+
             LabeledContent {
                 SecureField(settingHint("weatherAPIKey"), text: $settings.weatherAPIKey)
                     .textFieldStyle(.roundedBorder).frame(width: 220)

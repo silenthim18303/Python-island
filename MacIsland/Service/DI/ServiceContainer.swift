@@ -41,12 +41,13 @@ final class ServiceContainer {
         if !settings.weatherManualCity.isEmpty && !settings.weatherManualLocationID.isEmpty {
             weatherCfg = .fixed(
                 apiKey: settings.weatherEffectiveAPIKey,
+                apiHost: settings.weatherEffectiveAPIHost,
                 locationID: settings.weatherManualLocationID,
                 cityName: settings.weatherManualCity,
                 districtName: ""
             )
         } else {
-            weatherCfg = weatherConfig ?? .autoDetect(apiKey: settings.weatherEffectiveAPIKey, locationID: "101010100")
+            weatherCfg = weatherConfig ?? .autoDetect(apiKey: settings.weatherEffectiveAPIKey, apiHost: settings.weatherEffectiveAPIHost, locationID: "101010100")
         }
         self.weather = QWeatherService(config: weatherCfg)
         self.music = SystemMusicService(mediaKeySender: mediaKeySender ?? DefaultMediaKeySender())
@@ -90,6 +91,12 @@ final class ServiceContainer {
                 .sink { [weak self, weak settings] _ in
                     guard let settings else { return }
                     self?.weather.updateAPIKey(settings.weatherEffectiveAPIKey)
+                }
+                .store(in: &cancellables)
+            settings.$weatherAPIHost
+                .sink { [weak self, weak settings] _ in
+                    guard let settings else { return }
+                    self?.weather.updateAPIHost(settings.weatherEffectiveAPIHost)
                 }
                 .store(in: &cancellables)
         }

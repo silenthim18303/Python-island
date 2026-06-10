@@ -20,6 +20,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
     private var currentLocation: CLLocation?
     private var locationDelegate: LocationDelegate?
     private var cachedLocationInfo: (id: String, city: String, district: String)?
+    private var retryTimer: Timer?
 
     init(config: QWeatherConfig, networkClient: NetworkClientProtocol = URLSession.shared) {
         self.config = config
@@ -31,12 +32,17 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         config.apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    func updateAPIHost(_ host: String) {
+        config.baseURL = host
+    }
+
     func fetchWeather() async {
         await MainActor.run { isLoading = true }
         defer { Task { @MainActor in isLoading = false } }
 
         guard !config.apiKey.isEmpty else {
             setError(L10n.errorWeatherAPIKey)
+            scheduleRetry()
             return
         }
 
@@ -45,6 +51,7 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
         guard let locInfo = locationInfo else {
             setError(L10n.errorWeatherLocation)
+            scheduleRetry()
             return
         }
 
@@ -56,8 +63,12 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 
         guard let nowData = now else {
             setError(L10n.errorWeatherFetch)
+            scheduleRetry()
             return
         }
+
+        // 查询成功，取消重试
+        cancelRetry()
 
         await MainActor.run {
             weather = WeatherData(
@@ -87,6 +98,22 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
                 districtName: locInfo.district
             )
         }
+    }
+
+    // MARK: - Retry
+
+    /// 查询失败后每 3 秒重试
+    private func scheduleRetry() {
+        cancelRetry()
+        retryTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { [weak self] _ in
+            Task { await self?.fetchWeather() }
+        }
+    }
+
+    /// 取消重试定时器
+    private func cancelRetry() {
+        retryTimer?.invalidate()
+        retryTimer = nil
     }
 
     // MARK: - Location Setup
@@ -307,25 +334,25 @@ private class LocationDelegate: NSObject, CLLocationManagerDelegate {
 
 struct QWeatherConfig {
     var apiKey: String
-    let baseURL: String
+    var baseURL: String
     let locationID: String
     let cityName: String
     let districtName: String
 
-    static func fixed(apiKey: String, locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
+    static func fixed(apiKey: String, apiHost: String, locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
         return QWeatherConfig(
             apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
-            baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
+            baseURL: apiHost,
             locationID: locationID,
             cityName: cityName,
             districtName: districtName
         )
     }
 
-    static func autoDetect(apiKey: String, locationID: String) -> QWeatherConfig {
+    static func autoDetect(apiKey: String, apiHost: String, locationID: String) -> QWeatherConfig {
         return QWeatherConfig(
             apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
-            baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
+            baseURL: apiHost,
             locationID: locationID,
             cityName: "",
             districtName: ""
@@ -334,6 +361,7 @@ struct QWeatherConfig {
 
     static let `default` = QWeatherConfig.fixed(
         apiKey: "",
+        apiHost: "https://devapi.qweather.com",
         locationID: "101010100",
         cityName: "北京",
         districtName: "朝阳区"

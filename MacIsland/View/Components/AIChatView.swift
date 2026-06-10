@@ -13,7 +13,6 @@ struct AIChatView: View {
     @ObservedObject private var ai = AIService.shared
     @ObservedObject private var settings = AppSettings.shared
     @State private var inputText = ""
-    @State private var showConfig = false
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
@@ -21,19 +20,12 @@ struct AIChatView: View {
             statusBar
             Divider().background(Color.white.opacity(0.1))
 
-            if ai.messages.isEmpty {
-                emptyState
-            } else {
-                messageList
-            }
+            // 聊天区域 — 唯一可滚动的部分
+            chatArea
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Divider().background(Color.white.opacity(0.1))
             inputBar
-        }
-        .sheet(isPresented: $showConfig) {
-            configSheet
-                .onAppear { NotificationCenter.default.post(name: .sheetPresented, object: nil) }
-                .onDisappear { NotificationCenter.default.post(name: .sheetDismissed, object: nil) }
         }
     }
 
@@ -80,13 +72,6 @@ struct AIChatView: View {
             .buttonStyle(.plain)
             .help(L10n.aiServer)
 
-            Button { showConfig = true } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 10))
-                    .foregroundColor(.textTertiary)
-            }
-            .buttonStyle(.plain)
-
             Button { ai.clearMessages() } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 10))
@@ -98,94 +83,15 @@ struct AIChatView: View {
         .padding(.vertical, 6)
     }
 
-    // MARK: - Config Sheet
+    // MARK: - Chat Area
 
-    private var configSheet: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text(L10n.aiConfig)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.textPrimary)
-                Spacer()
-                Button { showConfig = false } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(.textSecondary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.aiServer)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.textSecondary)
-                TextField("http://localhost:11434 / https://api.deepseek.com", text: $ai.serverURL)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .foregroundColor(.textPrimary)
-                    .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.aiApiKey)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.textSecondary)
-                SecureField(L10n.aiApiKey, text: $ai.apiKey)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .foregroundColor(.textPrimary)
-                    .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.aiModelName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.textSecondary)
-                TextField("llama3 / gpt-4o-mini / deepseek-chat", text: $ai.selectedModel)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .foregroundColor(.textPrimary)
-                    .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.fillSubtle))
-            }
-
-            Button(L10n.ok) {
-                Task {
-                    await ai.checkConnection()
-                    if ai.isConnected { showConfig = false }
-                }
-            }
-            .font(.system(size: 12, weight: .medium))
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color.appAccent))
-            .buttonStyle(.plain)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(L10n.aiProtocol)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.textTertiary)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(L10n.aiLocalModels)
-                        .font(.system(size: 10))
-                        .foregroundColor(.textQuaternary)
-                    Text(L10n.aiCloud)
-                        .font(.system(size: 10))
-                        .foregroundColor(.textQuaternary)
-                }
-            }
-
-            Text(L10n.aiProtocol)
-                .font(.system(size: 10))
-                .foregroundColor(.textQuaternary)
-                .multilineTextAlignment(.center)
+    @ViewBuilder
+    private var chatArea: some View {
+        if ai.messages.isEmpty {
+            emptyState
+        } else {
+            messageList
         }
-        .padding(20)
-        .frame(width: 380)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     // MARK: - Empty State
@@ -295,7 +201,7 @@ struct AIChatView: View {
         }
     }
 
-    // MARK: - Input Bar
+    // MARK: - Input Bar (固定底部)
 
     private var inputBar: some View {
         HStack(spacing: 8) {

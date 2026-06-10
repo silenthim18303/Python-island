@@ -149,6 +149,7 @@ struct InlineSettingsView: View {
             case .community:     communitySection
             case .shortcuts:     shortcutsSection
             case .voice:         voiceSection
+            case .ai:            aiSection
             case .stock:         stockSection
             case .about:         aboutSection
             }
@@ -424,6 +425,18 @@ struct InlineSettingsView: View {
     private var weatherSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             settingsGroup(L10n.weatherTitle) {
+                describedRow("weatherAPIHost") {
+                    TextField(SettingItemMeta.meta("weatherAPIHost")?.hint ?? "",
+                              text: $settings.weatherAPIHost)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textPrimary)
+                        .frame(width: 140)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                }
+
                 describedRow("weatherAPIKey") {
                     SecureField(SettingItemMeta.meta("weatherAPIKey")?.hint ?? "",
                                 text: $settings.weatherAPIKey)
@@ -645,7 +658,112 @@ struct InlineSettingsView: View {
             }
         }
     }
-    
+
+    // MARK: - AI Section
+
+    @ObservedObject private var ai = AIService.shared
+    @State private var selectedProvider: AIProvider = AIProviders.all[0]
+
+    private var aiSection: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // 服务商选择
+            describedRow("aiProvider") {
+                Picker("", selection: $selectedProvider) {
+                    ForEach(AIProviders.all) { provider in
+                        Text(provider.name).tag(provider)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 180)
+                .onChange(of: selectedProvider) { _, provider in
+                    if !provider.isCustom {
+                        ai.serverURL = provider.url
+                    }
+                }
+            }
+
+            // 服务地址（自定义时可编辑）
+            describedRow("aiServer") {
+                if selectedProvider.isCustom {
+                    TextField("http://localhost:11434", text: $ai.serverURL)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 180)
+                        .font(.system(size: Theme.FontSize.caption))
+                } else {
+                    Text(ai.serverURL)
+                        .font(.system(size: Theme.FontSize.caption, design: .monospaced))
+                        .foregroundColor(.textTertiary)
+                        .frame(width: 180, alignment: .trailing)
+                        .lineLimit(1)
+                }
+            }
+
+            // API Key
+            describedRow("aiApiKey") {
+                SecureField("API Key", text: $ai.apiKey)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 180)
+                    .font(.system(size: Theme.FontSize.caption))
+            }
+
+            // 模型选择
+            describedRow("aiModelName") {
+                Picker("", selection: $ai.selectedModel) {
+                    Text(L10n.aiModels).tag("")
+                    ForEach(ai.availableModels, id: \.self) { model in
+                        Text(model).tag(model)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 180)
+            }
+
+            // 连接状态
+            HStack {
+                Circle()
+                    .fill(ai.isConnected ? Color.green : Color.red)
+                    .frame(width: 6, height: 6)
+                Text(ai.isConnected ? "已连接" : "未连接")
+                    .font(.system(size: 10))
+                    .foregroundColor(.textTertiary)
+                Spacer()
+                Button("测试") { Task { await ai.checkConnection() } }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 10))
+                    .foregroundColor(.appAccent)
+            }
+
+            // TTS/STT 设置
+            Divider()
+
+            describedRow("aiTTS") {
+                NavigationLink(destination: VoiceConfigView()) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            describedRow("aiSTT") {
+                NavigationLink(destination: VoiceConfigView()) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .onAppear {
+            // 根据当前 URL 匹配 provider
+            if let matched = AIProviders.match(url: ai.serverURL) {
+                selectedProvider = matched
+            } else {
+                selectedProvider = AIProviders.all[0] // 自定义
+            }
+        }
+    }
+
     // MARK: -Stock Section
     
     @EnvironmentObject var stockService: StockServiceImpl

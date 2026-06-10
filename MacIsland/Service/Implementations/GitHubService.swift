@@ -10,10 +10,12 @@ import Combine
 import Security
 import AppKit
 
-// MARK: - URL Session Delegate (绕过代理 TLS 验证)
+// MARK: - URL Session Delegate (安全 TLS 验证)
 
-/// 代理（Clash 等）会拦截 HTTPS 并注入自签名证书，导致 TLS 握手失败。
-/// 此 delegate 仅对 GitHub API 域名跳过证书验证。
+/// 安全的 TLS 验证策略：
+/// 1. 先用系统默认验证（标准 CA 证书链）
+/// 2. 失败时检查证书是否被用户手动信任（如 Clash/Charles 的 CA 证书）
+/// 3. 都不满足则拒绝连接
 private class GitHubSessionDelegate: NSObject, URLSessionDelegate {
     func urlSession(
         _ session: URLSession,
@@ -21,12 +23,89 @@ private class GitHubSessionDelegate: NSObject, URLSessionDelegate {
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         let host = challenge.protectionSpace.host
-        // 仅对 GitHub 相关域名跳过验证，其他域名走默认流程
-        if host.hasSuffix("github.com") || host.hasSuffix("githubusercontent.com") || host.hasSuffix("github.io") {
-            completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
-        } else {
+        let isGitHubDomain = host.hasSuffix("github.com")
+            || host.hasSuffix("githubusercontent.com")
+            || host.hasSuffix("github.io")
+
+        // 非 GitHub 域名走系统默认验证
+        guard isGitHubDomain else {
             completionHandler(.performDefaultHandling, nil)
+            return
         }
+
+        guard let trust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        // 第一步：系统默认验证（标准 CA 证书链）
+        var error: CFError?
+        if SecTrustEvaluateWithError(trust, &error) {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+            return
+        }
+
+        // 第二步：系统验证失败 → 检查是否有用户手动信任的根证书
+        // （兼容 Clash/Charles 等代理工具的 MITM 证书）
+        if isCertificateTrustedByUser(trust) {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+            return
+        }
+
+        // 第三步：都不满足 → 拒绝连接（防止 MITM 攻击）
+        completionHandler(.cancelAuthenticationChallenge, nil)
+    }
+
+    /// 检查证书链是否包含用户手动信任的根证书
+    /// 用户在钥匙串中手动安装并信任的 CA 证书会被系统标记为 kSecTrustSettingsResultTrustRoot
+    private func isCertificateTrustedByUser(_ trust: SecTrust) -> Bool {
+        // 获取证书链
+        let certCount = SecTrustGetCertificateCount(trust)
+        guard certCount > 0 else { return false }
+
+        // kSecTrustSettingsResult 对应的值:
+        // kSecTrustSettingsResultTrustRoot = 3 (完全信任的根证书)
+        // kSecTrustSettingsResultProceed = 1 (显式允许)
+        let kSecTrustResultTrustRoot: UInt32 = 3
+        let kSecTrustResultProceed: UInt32 = 1
+
+        // 检查每一级证书是否被用户显式信任
+        for i in 0..<certCount {
+            guard let cert = SecTrustGetCertificateAtIndex(trust, i) else { continue }
+
+            // 检查 user 级别的信任设置
+            if isCertTrusted(cert, domain: .user, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+            // 检查 admin 级别
+            if isCertTrusted(cert, domain: .admin, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+            // 检查 system 级别
+            if isCertTrusted(cert, domain: .system, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// 检查指定证书在指定信任域是否被信任
+    private func isCertTrusted(_ cert: SecCertificate, domain: SecTrustSettingsDomain,
+                               trustRoot: UInt32, proceed: UInt32) -> Bool {
+        var trustSettings: CFArray?
+        let status = SecTrustSettingsCopyTrustSettings(cert, domain, &trustSettings)
+        guard status == errSecSuccess, let settings = trustSettings as? [[String: Any]] else {
+            return false
+        }
+        for setting in settings {
+            if let result = setting[kSecTrustSettingsResult as String] as? UInt32 {
+                if result == trustRoot || result == proceed {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }
 
@@ -52,7 +131,7 @@ final class GitHubService: ObservableObject {
 
     // GitHub OAuth App (Device Flow)
     /// 内置 Client ID，用户无需配置
-    private let builtinClientID = "Ov23li5Gsly8EYOKJEaJ"
+    private let builtinClientID = Secrets.githubClientID
     private var clientID: String {
         let stored = UserDefaults.standard.string(forKey: "githubClientID") ?? ""
         return stored.isEmpty ? builtinClientID : stored
@@ -69,7 +148,7 @@ final class GitHubService: ObservableObject {
     }()
 
     private var token: String? {
-        KeychainHelper.load(key: "github_token")
+        SecureStorage.load(key: "github_token")
     }
 
     var authHeaders: [String: String] {
@@ -94,7 +173,9 @@ final class GitHubService: ObservableObject {
         isAuthorizing = true
 
         guard !clientID.isEmpty else {
+            #if DEBUG
             print("[GitHub] Client ID 未配置")
+            #endif
             isAuthorizing = false
             return
         }
@@ -111,7 +192,7 @@ final class GitHubService: ObservableObject {
 
         let body: [String: Any] = [
             "client_id": clientID,
-            "scope": "repo",
+            "scope": "public_repo",
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
@@ -121,7 +202,9 @@ final class GitHubService: ObservableObject {
                   let deviceCode = json["device_code"] as? String,
                   let userCode = json["user_code"] as? String,
                   let verificationURI = json["verification_uri"] as? String else {
+                #if DEBUG
                 print("[GitHub] Device Flow 响应解析失败")
+                #endif
                 isAuthorizing = false
                 return
             }
@@ -130,9 +213,11 @@ final class GitHubService: ObservableObject {
             self.userCode = userCode
             self.verificationURI = verificationURI
 
+            #if DEBUG
             print("[GitHub] Device Code: \(deviceCode)")
             print("[GitHub] User Code: \(userCode)")
             print("[GitHub] 请在浏览器中完成授权: \(verificationURI)")
+            #endif
 
             // 打开浏览器让用户授权
             if let url = URL(string: verificationURI) {
@@ -143,7 +228,9 @@ final class GitHubService: ObservableObject {
             let interval = json["interval"] as? Int ?? 5
             await pollForToken(deviceCodeValue: deviceCode, interval: interval)
         } catch {
+            #if DEBUG
             print("[GitHub] Device Flow 启动失败: \(error)")
+            #endif
             isAuthorizing = false
         }
     }
@@ -152,7 +239,9 @@ final class GitHubService: ObservableObject {
     @MainActor
     private func pollForToken(deviceCodeValue: String, interval: Int) async {
         var currentInterval = interval
+        #if DEBUG
         print("[GitHub] 开始轮询授权状态，间隔 \(currentInterval)s")
+        #endif
         while isAuthorizing {
             try? await Task.sleep(for: .seconds(currentInterval))
 
@@ -173,13 +262,17 @@ final class GitHubService: ObservableObject {
             do {
                 let (data, _) = try await session.data(for: request)
                 guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    #if DEBUG
                     print("[GitHub] 轮询响应解析失败")
+                    #endif
                     break
                 }
 
                 if let accessToken = json["access_token"] as? String {
                     // 授权成功
+                    #if DEBUG
                     print("[GitHub] 授权成功！")
+                    #endif
                     saveToken(accessToken)
                     isAuthorizing = false
                     deviceCode = nil
@@ -217,12 +310,12 @@ final class GitHubService: ObservableObject {
     // MARK: - Token Management
 
     func saveToken(_ token: String) {
-        KeychainHelper.save(key: "github_token", value: token)
+        SecureStorage.save(key: "github_token", value: token)
         isAuthenticated = true
     }
 
     func removeToken() {
-        KeychainHelper.delete(key: "github_token")
+        SecureStorage.delete(key: "github_token")
         isAuthenticated = false
     }
 
@@ -256,7 +349,9 @@ final class GitHubService: ObservableObject {
         do {
             let (repoData, repoResponse) = try await session.data(for: repoRequest)
             if let http = repoResponse as? HTTPURLResponse {
+                #if DEBUG
                 print("[GitHub] 仓库检查: HTTP \(http.statusCode)")
+                #endif
                 if http.statusCode == 404 {
                     throw GitHubError.uploadFailed(L10n.errorGitHubRepo)
                 }
@@ -339,11 +434,15 @@ final class GitHubService: ObservableObject {
 
         let (_, response) = try await session.data(for: request)
         if let httpResponse = response as? HTTPURLResponse {
+            #if DEBUG
             print("[GitHub] 分支 \(branch) 检查: HTTP \(httpResponse.statusCode)")
+            #endif
             if httpResponse.statusCode == 200 { return }
         }
 
+        #if DEBUG
         print("[GitHub] 分支 \(branch) 不存在，从 \(baseBranch) 创建")
+        #endif
         let baseSHA = try await getBranchSHA(branch: baseBranch)
 
         let createURL = URL(string: "\(apiBase)/repos/\(repoOwner)/\(repoName)/git/refs")!
@@ -369,7 +468,9 @@ final class GitHubService: ObservableObject {
 
         let (data, response) = try await session.data(for: request)
         if let http = response as? HTTPURLResponse {
+            #if DEBUG
             print("[GitHub] 获取 \(branch) SHA: HTTP \(http.statusCode)")
+            #endif
             if http.statusCode == 404 {
                 throw GitHubError.uploadFailed("\(branch) \(L10n.errorGitHubBranchNotFound)")
             }
@@ -377,10 +478,14 @@ final class GitHubService: ObservableObject {
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let commit = json["commit"] as? [String: Any],
               let sha = commit["sha"] as? String else {
+            #if DEBUG
             print("[GitHub] SHA 解析失败: \(String(data: data, encoding: .utf8) ?? "")")
+            #endif
             throw GitHubError.uploadFailed(L10n.errorGitHubBranchInfo)
         }
+        #if DEBUG
         print("[GitHub] \(branch) SHA: \(sha)")
+        #endif
         return sha
     }
 
@@ -515,46 +620,6 @@ enum GitHubError: LocalizedError {
     }
 }
 
-// MARK: - Keychain Helper
+// MARK: - Keychain Helper (已迁移至 SecureStorage)
 
-private enum KeychainHelper {
-    private static let service = "com.geminimortal.MacIsland"
-
-    static func save(key: String, value: String) {
-        guard let data = value.data(using: .utf8) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-        SecItemDelete(query as CFDictionary)
-
-        var addQuery = query
-        addQuery[kSecValueData as String] = data
-        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        SecItemAdd(addQuery as CFDictionary, nil)
-    }
-
-    static func load(key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
-    static func delete(key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-}
+// KeychainHelper 已废弃，统一使用 SecureStorage

@@ -17,7 +17,15 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     @Published private(set) var isListening = false
     @Published private(set) var isSpeaking = false
     @Published private(set) var recognizedText = ""
-    @Published var isEnabled = false
+    @Published var isEnabled = false {
+        didSet {
+            if isEnabled {
+                startContinuousListening()
+            } else {
+                stopListening()
+            }
+        }
+    }
     @Published var isSpeechEnabled = true
     @Published var wakeWord = "嘿，灵动岛"
 
@@ -39,6 +47,14 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     private let audioEngine = AVAudioEngine()
     private let synthesizer = AVSpeechSynthesizer()
 
+    // MARK: - 防重复触发
+
+    private var lastWakeWordTrigger: Date = .distantPast
+    private var lastCommandTrigger: Date = .distantPast
+    private let wakeWordCooldown: TimeInterval = 3.0
+    private let commandCooldown: TimeInterval = 1.5
+    private var lastProcessedText = ""
+
     // MARK: - Callbacks
 
     var onCommand: ((VoiceCommand, String) -> Void)?
@@ -49,24 +65,11 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     override init() {
         super.init()
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: recognitionLanguage))
-        setupAudioSession()
         requestPermissions()
         synthesizer.delegate = self
     }
 
     // MARK: - Setup
-
-    private func setupAudioSession() {
-        #if os(iOS)
-        let session = AVAudioSession.sharedInstance()
-        do {
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-            try session.setActive(true)
-        } catch {
-            print("[VoiceService] Audio session setup failed: \(error)")
-        }
-        #endif
-    }
 
     private func requestPermissions() {
         SFSpeechRecognizer.requestAuthorization { status in
@@ -83,6 +86,14 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         }
     }
 
+    // MARK: - Continuous Listening
+
+    /// 启用后自动开始持续监听
+    private func startContinuousListening() {
+        guard !isListening else { return }
+        startListening()
+    }
+
     // MARK: - Speech Recognition
 
     func startListening() {
@@ -95,18 +106,11 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         // 更新识别器语言
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: recognitionLanguage))
 
-        // 配置音频会话
-        #if os(iOS)
-        let audioSession = AVAudioSession.sharedInstance()
-        do {
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-        } catch {
+        guard let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable else {
+            print("[VoiceService] Speech recognizer not available")
             state = .error
-            print("[VoiceService] Audio session error: \(error)")
             return
         }
-        #endif
 
         // 创建识别请求
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
@@ -116,9 +120,10 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         }
 
         recognitionRequest.shouldReportPartialResults = true
+        recognitionRequest.requiresOnDeviceRecognition = false
 
         // 开始识别
-        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { [weak self] result, error in
+        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
 
             var isFinal = false
@@ -127,20 +132,20 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
                 let text = result.bestTranscription.formattedString
                 DispatchQueue.main.async {
                     self.recognizedText = text
-                    self.processRecognizedText(text)
+                    self.processRecognizedText(text, isFinal: result.isFinal)
                 }
                 isFinal = result.isFinal
             }
 
             if error != nil || isFinal {
-                self.audioEngine.stop()
-                self.audioEngine.inputNode.removeTap(onBus: 0)
-                self.recognitionRequest = nil
-                self.recognitionTask = nil
-
                 DispatchQueue.main.async {
-                    self.isListening = false
-                    self.state = .idle
+                    self.cleanupRecognition()
+                    // 如果启用了持续识别，自动重新开始
+                    if self.isEnabled {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.startListening()
+                        }
+                    }
                 }
             }
         }
@@ -148,8 +153,8 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
         // 配置音频输入
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
-            self.recognitionRequest?.append(buffer)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
+            self?.recognitionRequest?.append(buffer)
         }
 
         audioEngine.prepare()
@@ -165,16 +170,21 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     }
 
     func stopListening() {
+        cleanupRecognition()
+        print("[VoiceService] Stopped listening")
+    }
+
+    private func cleanupRecognition() {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
         recognitionRequest = nil
         recognitionTask?.cancel()
         recognitionTask = nil
-
         isListening = false
-        state = .idle
-        print("[VoiceService] Stopped listening")
+        if state == .listening {
+            state = .idle
+        }
     }
 
     // MARK: - Text-to-Speech
@@ -215,18 +225,19 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
     // MARK: - Command Processing
 
     func processCommand(_ text: String) {
+        guard isEnabled else { return }
+
         let lowercased = text.lowercased()
 
         // 检查唤醒词
         if lowercased.contains(wakeWord.lowercased()) {
-            onWakeWord?()
-            speak(L10n.voiceResponseHere)
+            triggerWakeWord()
             return
         }
 
         // 匹配语音命令
         if let command = VoiceCommand.match(from: text) {
-            onCommand?(command, text)
+            triggerCommand(command, text: text)
             return
         }
 
@@ -236,21 +247,46 @@ final class VoiceService: NSObject, ObservableObject, VoiceServiceProtocol {
 
     // MARK: - Private Methods
 
-    private func processRecognizedText(_ text: String) {
+    private func processRecognizedText(_ text: String, isFinal: Bool) {
+        guard isEnabled else { return }
+        guard !text.isEmpty else { return }
+
+        // 避免重复处理相同文本
+        guard text != lastProcessedText else { return }
+        lastProcessedText = text
+
         // 检查是否包含唤醒词
         if text.lowercased().contains(wakeWord.lowercased()) {
-            onWakeWord?()
-            speak(L10n.voiceResponseHere)
+            triggerWakeWord()
             return
         }
 
+        // 只在最终结果或较长文本时处理命令
+        guard isFinal || text.count >= 3 else { return }
+
         // 检查是否是语音命令
         if let command = VoiceCommand.match(from: text) {
-            onCommand?(command, text)
+            triggerCommand(command, text: text)
             return
         }
     }
 
+    /// 触发唤醒词（带冷却）
+    private func triggerWakeWord() {
+        let now = Date()
+        guard now.timeIntervalSince(lastWakeWordTrigger) >= wakeWordCooldown else { return }
+        lastWakeWordTrigger = now
+        onWakeWord?()
+        speak(L10n.voiceResponseHere)
+    }
+
+    /// 触发命令（带冷却）
+    private func triggerCommand(_ command: VoiceCommand, text: String) {
+        let now = Date()
+        guard now.timeIntervalSince(lastCommandTrigger) >= commandCooldown else { return }
+        lastCommandTrigger = now
+        onCommand?(command, text)
+    }
 }
 
 // MARK: - AVSpeechSynthesizerDelegate
