@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.1.0 |
+| 版本 | v2.2.0 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.1.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.1.0/MacIsland_v2.1.0.dmg)
+[📥 下载最新版本 (v2.2.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.2.0/MacIsland_v2.2.0.dmg)
 
 ---
 
@@ -303,6 +303,17 @@ MacIsland/
 ---
 
 ## 更新日志
+
+### v2.2.0 (2026-06-09)
+- ✅ AI Agent 系统（12 个系统工具：天气/系统状态/音乐/待办/计时器/股票/便签/时间）
+- ✅ AI 服务优化（Anthropic 协议适配 + 多端点尝试 + HTTP 错误解析）
+- ✅ AI 服务商预设（15 个常用 AI 服务商一键配置）
+- ✅ AI TTS/STT 设置集成到 AI 设置面板
+- ✅ 语音控制修复（启用自动监听 + 唤醒词/命令冷却防重复）
+- ✅ 语音控制防误触发（部分识别 + 持续监听）
+- ✅ 天气查询失败 3 秒自动重试
+- ✅ AI 聊天界面优化（输入框固定底部，仅消息区滚动）
+- ✅ 设置面板新增 AI 分类 + 语音操作重命名
 
 ### v2.1.0 (2026-06-09)
 - ✅ 股票实时行情监控（A股/美股/港股，新浪财经 API）
