@@ -13,16 +13,17 @@ import SwiftUI
 struct NotificationView: View {
     let title: String
     let notificationBody: String
+    let url: String?
     @ObservedObject var store: IslandStore
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             // 通知图标
-            Image(systemName: "bell.fill")
+            Image(systemName: url != nil ? "link.circle.fill" : "bell.fill")
                 .font(.system(size: 16))
                 .foregroundColor(.textPrimary)
                 .frame(width: 32, height: 32)
-                .background(Circle().fill(.blue.opacity(0.6)))
+                .background(Circle().fill(url != nil ? .green.opacity(0.6) : .blue.opacity(0.6)))
 
             // 通知内容
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
@@ -39,6 +40,21 @@ struct NotificationView: View {
             }
 
             Spacer(minLength: Theme.Spacing.sm)
+
+            // 打开链接按钮
+            if let url, let linkURL = URL(string: url) {
+                Button {
+                    NSWorkspace.shared.open(linkURL)
+                    store.setIdle()
+                } label: {
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 22, height: 22)
+                        .background(Circle().fill(.green))
+                }
+                .buttonStyle(.plain)
+            }
 
             // 关闭按钮
             Button { store.setIdle() } label: {

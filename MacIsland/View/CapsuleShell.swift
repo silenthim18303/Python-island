@@ -126,7 +126,10 @@ struct CapsuleShell: View {
         switch store.state {
         case .idle, .lyrics, .countdown, .hover:
             store.setExpanded()
-        case .notification:
+        case .notification(_, _, let url):
+            if let url, let linkURL = URL(string: url) {
+                NSWorkspace.shared.open(linkURL)
+            }
             store.setIdle()
         default:
             break
@@ -203,8 +206,8 @@ struct CapsuleShell: View {
         case .maxExpand:
             MaxExpandView(store: store)
 
-        case .notification(let title, let body):
-            NotificationView(title: title, notificationBody: body, store: store)
+        case .notification(let title, let body, let url):
+            NotificationView(title: title, notificationBody: body, url: url, store: store)
 
         case .lyrics:
             LyricsView(store: store)

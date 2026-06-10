@@ -18,7 +18,7 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
 
     private var pollTimer: Timer?
     private var lastClipboardText: String = ""
-    private var onNotification: ((String, String) -> Void)?
+    private var onNotification: ((String, String, String?) -> Void)?
     private let session: URLSession
 
     // MARK: - Init
@@ -27,7 +27,7 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
         self.session = session
     }
 
-    func setNotificationHandler(_ handler: @escaping (String, String) -> Void) {
+    func setNotificationHandler(_ handler: @escaping (String, String, String?) -> Void) {
         self.onNotification = handler
     }
 
@@ -72,7 +72,7 @@ final class ClipboardService: ClipboardServiceProtocol, ObservableObject {
                 self.detectedURLs = detected
                 let displayTitle = detected.first?.title ?? urls[0]
                 let truncated = String(displayTitle.prefix(48))
-                self.onNotification?(L10n.errorClipboardLink, truncated)
+                self.onNotification?(L10n.errorClipboardLink, truncated, urls[0])
             }
         }
     }
