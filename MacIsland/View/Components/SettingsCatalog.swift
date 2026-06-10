@@ -56,6 +56,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case community     // 社区
     case shortcuts     // 快捷键
     case voice         // 语音
+    case stock          // 股票
     case about         // 关于
 
     var id: String { rawValue }
@@ -72,6 +73,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .community:     return L10n.settingsCommunity
         case .shortcuts:     return L10n.settingsShortcuts
         case .voice:         return L10n.voiceTitle
+        case .stock:         return L10n.stockTitle
         case .about:         return L10n.settingsAbout
         }
     }
@@ -88,6 +90,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .community:     return "person.2"
         case .shortcuts:     return "command"
         case .voice:         return "mic.fill"
+        case .stock:         return "chart.line.uptrend.xyaxis"
         case .about:         return "info.circle"
         }
     }
@@ -105,6 +108,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .community:     return ["社区", "上传", "用户名", "community", "upload"]
         case .shortcuts:  return ["快捷键", "热键", "shortcut", "hotkey", "key"]
         case .voice:      return ["语音", "声音", "麦克风", "voice", "speech", "microphone", "唤醒"]
+        case .stock:      return ["股票","股价","行情","stock","price","market"]
         case .about:      return ["关于", "版本", "about", "version"]
         }
     }

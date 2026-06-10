@@ -18,5 +18,6 @@ struct MacIslandWidgets: WidgetBundle {
         TodoWidget()
         ClipboardWidget()
         EventWidget()
+        StockWidget()
     }
 }

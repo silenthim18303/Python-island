@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.0.0 |
+| 版本 | v2.1.0 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.0.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.0.0/MacIsland_v2.0.0.dmg)
+[📥 下载最新版本 (v2.1.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.1.0/MacIsland_v2.1.0.dmg)
 
 ---
 
@@ -45,6 +45,8 @@ MacIsland/
 | `MemoItem.swift` | 便签数据模型（内容、颜色、置顶） |
 | `TodoItem.swift` | 待办事项数据模型（标题、优先级、子任务、完成状态） |
 | `WallpaperItem.swift` | 壁纸数据模型（本地 + 社区，路径、类型、作者） |
+| `StockItem.swift` | 股票数据模型（代码、名称、市场、行情、K线） |
+| `StockAlert.swift` | 股票提醒 + 自选股列表项模型 |
 
 ### 🎯 状态层 (State/)
 
@@ -61,6 +63,7 @@ MacIsland/
 | `TodoStore.swift` | 待办事项 CRUD + UserDefaults 持久化 |
 | `WallpaperStore.swift` | 壁纸管理（本地/社区下载/上传/删除/私有） |
 | `NotificationCenterStore.swift` | 通知中心存储（通知历史、来源过滤、免打扰） |
+| `StockStore.swift` | 股票数据存储（自选股管理、行情缓存、自动刷新、UserDefaults 持久化） |
 
 ### 🪟 窗口管理 (Window/)
 
@@ -85,8 +88,8 @@ MacIsland/
 |------|------|
 | `IdleView.swift` | 空闲态（时间 + 番茄钟 + 歌词滚动 + 倒计时 + 日期） |
 | `HoverView.swift` | 悬停态（音乐+天气速览） |
-| `ExpandedView.swift` | 展开态（概览/音乐/工具/监控 4 Tab） |
-| `MaxExpandView.swift` | 最大展开态（待办/便签/倒数日/闹钟/书签/壁纸/AI/设置/工具） |
+| `ExpandedView.swift` | 展开态（概览/音乐/工具/监控/股票 5 Tab） |
+| `MaxExpandView.swift` | 最大展开态（待办/便签/倒数日/闹钟/书签/壁纸/AI/通知/工具/股票/设置，支持左右循环切换） |
 | `NotificationView.swift` | 通知态（Toast 通知显示） |
 | `LyricsView.swift` | 歌词态（横向绕刘海胶囊单行） |
 | `SyncedLyricsView.swift` | 逐行同步歌词渲染 |
@@ -119,6 +122,11 @@ MacIsland/
 | `BreakReminderView.swift` | 休息提醒 |
 | `MokugyoView.swift` | 木鱼计数器 |
 | `NotificationCenterView.swift` | 通知中心 |
+| `StockListView.swift` | 自选股列表（内联搜索 + 市场筛选 + 行情展示） |
+| `StockMiniCard.swift` | 概览页股票迷你卡片 |
+| `StockSearchView.swift` | 股票搜索视图 |
+| `StockSettingsView.swift` | 股票设置（自动刷新/刷新频率） |
+| `MusicPlaybackControls.swift` | 音乐播放控制组件（播放按钮/进度条/音量） |
 | `VoiceSettingsView.swift` | 语音设置页面 |
 | `VoiceConfigView.swift` | TTS/STT 配置页面 |
 | `MarqueeText.swift` | 跑马灯滚动文本 |
@@ -151,6 +159,7 @@ MacIsland/
 | `SystemMonitorServiceProtocol.swift` | 系统监控协议（CPU/内存/磁盘/电池/网络） |
 | `HotkeyServiceProtocol.swift` | 快捷键服务协议（全局快捷键） |
 | `VoiceServiceProtocol.swift` | 语音服务协议 + VoiceCommand/VoiceState 枚举 |
+| `StockServiceProtocol.swift` | 股票服务协议（行情/搜索/K线/自动刷新） |
 
 #### 实现 (Implementations/)
 
@@ -170,6 +179,8 @@ MacIsland/
 | `WidgetDataManager.swift` | 小组件数据同步（JSON 文件共享） |
 | `UpdateManager.swift` | 自动更新（GitHub API 检查新版本） |
 | `LaunchAtLoginManager.swift` | 开机自启管理（SMAppService API） |
+| `StockServiceImpl.swift` | 股票服务实现（自动刷新、小组件数据同步） |
+| `StockDataProvider.swift` | 股票数据源（新浪财经 A股/美股/港股 + 东方财富搜索/K线） |
 
 ### 🧩 小组件扩展 (MacIslandWidgets/)
 
@@ -252,6 +263,16 @@ MacIsland/
 - ✅ **工具箱**：剪贴板历史、编码转换、文件哈希校验、本地文件搜索、翻译
 - ✅ **待办/便签/倒数日/闹钟/书签**：完整 CRUD + UserDefaults 持久化
 
+### 股票监控
+- ✅ **实时行情**：新浪财经 API（A股/美股/港股），GB2312 编码自动解码
+- ✅ **股票搜索**：东方财富搜索 API，支持市场筛选
+- ✅ **自选股管理**：添加/删除/排序，UserDefaults 持久化
+- ✅ **自动刷新**：可配置刷新间隔（1/5/15 分钟），启动时自动恢复
+- ✅ **行情缓存**：行情数据持久化，重启后立即展示上次数据
+- ✅ **市场筛选**：全部/A股/美股/港股 标签过滤
+- ✅ **涨跌配色**：根据市场惯例自动适配（A股/港股红涨绿跌，美股绿涨红跌）
+- ✅ **小组件数据同步**：行情更新自动同步到桌面小组件
+
 ### 多语言支持
 - ✅ **中文**：简体中文完整支持
 - ✅ **英文**：English complete support
@@ -282,6 +303,20 @@ MacIsland/
 ---
 
 ## 更新日志
+
+### v2.1.0 (2026-06-09)
+- ✅ 股票实时行情监控（A股/美股/港股，新浪财经 API）
+- ✅ 股票搜索（东方财富 API，支持市场筛选）
+- ✅ 自选股管理（添加/删除/排序，持久化存储）
+- ✅ 自动刷新（可配置间隔，启动恢复）
+- ✅ 涨跌配色（根据市场惯例自动适配）
+- ✅ 展开态/最大展开态股票 Tab
+- ✅ 概览页股票迷你卡片
+- ✅ 最大展开态左右循环切换 Tab
+- ✅ 音乐播放控制界面恢复
+- ✅ 番茄钟+倒计时工具恢复
+- ✅ 三卡片天气布局恢复
+- ✅ 秒级时钟显示恢复
 
 ### v2.0.0 (2026-06-09)
 - ✅ 自包含 AI 服务（LocalAIService）

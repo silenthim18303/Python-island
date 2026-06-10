@@ -9,13 +9,15 @@ import SwiftUI
 
 // MARK: - Expanded View
 
-/// 展开态视图 — 概览/音乐/工具/监控
+/// 展开态视图 — 概览/音乐/工具(番茄钟+倒计时)/监控/股票
 struct ExpandedView: View {
     @ObservedObject var store: IslandStore
     @ObservedObject private var settings = AppSettings.shared
     @EnvironmentObject var weatherService: QWeatherService
     @EnvironmentObject var musicService: SystemMusicService
     @EnvironmentObject var monitorService: SystemMonitorServiceImpl
+    @EnvironmentObject var stockStore: StockStore
+    @EnvironmentObject var stockService: StockServiceImpl
 
     @State private var selectedTab: Tab = .overview
     @ObservedObject private var loc = LocalizationManager.shared
@@ -27,6 +29,7 @@ struct ExpandedView: View {
         case music = "music"
         case tools = "tools"
         case monitor = "monitor"
+        case stock = "stock"
 
         var displayName: String {
             switch self {
@@ -34,6 +37,25 @@ struct ExpandedView: View {
             case .music: return L10n.tabmusic
             case .tools: return L10n.tabToolbox
             case .monitor: return L10n.monitorTitle
+            case .stock: return L10n.stockTitle
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .overview: return "square.grid.2x2"
+            case .music: return "music.note"
+            case .tools: return "clock"
+            case .monitor: return "desktopcomputer"
+            case .stock: return "chart.line.uptrend.xyaxis"
+            }
+        }
+
+        /// 是否需要 ScrollView（内容可能超出窗口）
+        var needsScroll: Bool {
+            switch self {
+            case .overview, .stock: return true
+            case .music, .tools, .monitor: return false
             }
         }
     }
@@ -42,13 +64,18 @@ struct ExpandedView: View {
         VStack(spacing: 0) {
             headerBar
             tabBar
-            ScrollView {
+
+            if selectedTab.needsScroll {
+                ScrollView {
+                    tabContent
+                        .frame(maxWidth: .infinity)
+                }
+            } else {
                 tabContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {
-            // 读取来源形态指定的初始 Tab（如从倒计时态展开时自动切到工具）
             if let tabName = store.expandedInitialTab,
                let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
                 selectedTab = tab
@@ -61,7 +88,6 @@ struct ExpandedView: View {
 
     private var headerBar: some View {
         HStack {
-            // 展开到 MaxExpand
             Button { store.setMaxExpand() } label: {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                     .font(.system(size: 10, weight: .bold))
@@ -80,7 +106,6 @@ struct ExpandedView: View {
 
             Spacer()
 
-            // Collapse
             Button { store.setIdle() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
@@ -98,26 +123,32 @@ struct ExpandedView: View {
     // MARK: - Tab Bar
 
     private var tabBar: some View {
-        HStack(spacing: 0) {
-            ForEach(Tab.allCases, id: \.self) { tab in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
-                } label: {
-                    Text(tab.displayName)
-                        .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: tab.icon)
+                                .font(.system(size: 10))
+                            Text(tab.displayName)
+                                .font(.system(size: 12, weight: selectedTab == tab ? .semibold : .medium))
+                        }
                         .foregroundColor(selectedTab == tab ? .white : .white.opacity(0.5))
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(
                             selectedTab == tab
                                 ? Capsule().fill(.white.opacity(0.15))
                                 : nil
                         )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 16)
         }
-        .padding(.horizontal, 12)
         .padding(.bottom, 8)
     }
 
@@ -130,6 +161,7 @@ struct ExpandedView: View {
         case .music: musicTab
         case .tools: toolsTab
         case .monitor: monitorTab
+        case .stock: stockTab
         }
     }
 
@@ -142,6 +174,12 @@ struct ExpandedView: View {
 
             if musicService.hasMedia {
                 nowPlayingCard
+            }
+
+            if !stockStore.watchlist.isEmpty {
+                StockMiniCard()
+                    .environmentObject(stockStore)
+                    .environmentObject(stockService)
             }
         }
         .padding(.horizontal, 16)
@@ -156,7 +194,7 @@ struct ExpandedView: View {
                     .foregroundColor(.white)
 
                 Text(formatDate("HH:mm:ss"))
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundColor(.white.opacity(0.6))
             }
             Spacer()
@@ -164,37 +202,59 @@ struct ExpandedView: View {
     }
 
     private var weatherCards: some View {
-        HStack(spacing: 12) {
-            WeatherCard(
+        HStack(spacing: 8) {
+            weatherCard(
                 icon: weatherService.weather.iconSystemName,
-                temp: "\(Int(weatherService.weather.temperature))°C",
-                desc: weatherService.weather.description
+                value: "\(Int(weatherService.weather.temperature))°C",
+                label: weatherService.weather.description,
+                color: .yellow
             )
-            WeatherCard(
+            weatherCard(
                 icon: "wind",
-                temp: String(format: "%.0f km/h", weatherService.weather.windSpeed),
-                desc: L10n.weatherWind
+                value: String(format: "%.0f km/h", weatherService.weather.windSpeed),
+                label: L10n.weatherWind,
+                color: .cyan
             )
-            WeatherCard(
+            weatherCard(
                 icon: "humidity.fill",
-                temp: "\(weatherService.weather.humidity)%",
-                desc: L10n.weatherHumidity
+                value: "\(weatherService.weather.humidity)%",
+                label: L10n.weatherHumidity,
+                color: .blue
             )
         }
     }
 
+    private func weatherCard(icon: String, value: String, label: String, color: Color) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(color)
+
+            Text(value)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+
+            Text(label)
+                .font(.system(size: 9))
+                .foregroundColor(.white.opacity(0.5))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.08)))
+    }
+
     private var nowPlayingCard: some View {
-        HStack(spacing: Theme.Spacing.sm) {
+        HStack(spacing: 10) {
             if let artwork = musicService.info.artwork {
                 Image(nsImage: artwork)
                     .resizable()
                     .frame(width: 36, height: 36)
-                    .cornerRadius(Theme.Radius.sm)
+                    .cornerRadius(6)
             } else {
-                Image(systemName: "music.note")
-                    .font(.system(size: 18))
-                    .foregroundColor(.textQuaternary)
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(.purple.opacity(0.3))
                     .frame(width: 36, height: 36)
+                    .overlay(Image(systemName: "music.note").foregroundColor(.purple))
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -202,7 +262,6 @@ struct ExpandedView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-
                 Text(musicService.info.artist)
                     .font(.system(size: 10))
                     .foregroundColor(.white.opacity(0.6))
@@ -218,15 +277,14 @@ struct ExpandedView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(Theme.Spacing.sm)
-        .background(RoundedRectangle(cornerRadius: Theme.Radius.md).fill(Color.fillSubtle))
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.08)))
     }
 
     // MARK: - Music Tab
 
     private var musicTab: some View {
         VStack(spacing: 0) {
-            // 专辑封面 + 歌曲信息（始终显示，无播放时为空占位）
             HStack(spacing: 12) {
                 albumArtSmall
                 songInfoCompact
@@ -237,7 +295,6 @@ struct ExpandedView: View {
 
             Spacer().frame(height: 10)
 
-            // 可拖拽进度条（无播放时显示 0%）
             DraggableProgressView(
                 progress: musicService.info.progress,
                 elapsed: musicService.info.formattedElapsed,
@@ -251,27 +308,22 @@ struct ExpandedView: View {
 
             Spacer().frame(height: 10)
 
-            // 播放控制（始终可用）
             musicPlaybackControls
 
             Spacer().frame(height: 8)
 
-            // 音量 + Shuffle / Repeat（始终显示）
             HStack(spacing: 12) {
                 shuffleRepeatCompact
-
                 Spacer()
-
                 VolumeControlView(volume: musicService.info.volume) { newVolume in
                     musicService.setVolume(newVolume)
                 }
             }
             .padding(.horizontal, 20)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
 
-    // MARK: - Album Art (Small)
+            Spacer()
+        }
+    }
 
     private var albumArtSmall: some View {
         Group {
@@ -280,47 +332,42 @@ struct ExpandedView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 44, height: 44)
-                    .cornerRadius(Theme.Radius.sm)
+                    .cornerRadius(6)
                     .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
             } else {
-                RoundedRectangle(cornerRadius: Theme.Radius.sm)
-                    .fill(Color.fillSubtle)
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(.white.opacity(0.08))
                     .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: "music.note")
-                            .foregroundColor(.textQuaternary)
+                            .foregroundColor(.white.opacity(0.3))
                     )
             }
         }
     }
 
-    // MARK: - Song Info Compact
-
     private var songInfoCompact: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(musicService.info.title)
+            Text(musicService.info.title.isEmpty ? L10n.musicLyrics : musicService.info.title)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
 
-            Text(musicService.info.artist)
+            Text(musicService.info.artist.isEmpty ? "—" : musicService.info.artist)
                 .font(.system(size: 11))
                 .foregroundColor(.white.opacity(0.55))
                 .lineLimit(1)
         }
     }
 
-    // MARK: - Shuffle/Repeat Compact
-
     private var shuffleRepeatCompact: some View {
         HStack(spacing: 12) {
-            ToggleButton(
+            MusicToggleButton(
                 systemName: "shuffle",
                 isActive: musicService.info.isShuffle,
                 action: { musicService.toggleShuffle() }
             )
-
-            ToggleButton(
+            MusicToggleButton(
                 systemName: repeatIconName,
                 isActive: musicService.info.repeatMode != 0,
                 action: { musicService.cycleRepeat() }
@@ -328,94 +375,18 @@ struct ExpandedView: View {
         }
     }
 
-
-    // MARK: - Album Art
-
-    private var albumArtSection: some View {
-        Group {
-            if let artwork = musicService.info.artwork {
-                Image(nsImage: artwork)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 120, height: 120)
-                    .cornerRadius(Theme.Radius.lg)
-                    .shadow(color: .black.opacity(0.4), radius: 12, x: 0, y: 6)
-            } else {
-                RoundedRectangle(cornerRadius: Theme.Radius.lg)
-                    .fill(Color.fillSubtle)
-                    .frame(width: 120, height: 120)
-                    .overlay(
-                        Image(systemName: "music.note")
-                            .font(.system(size: 36))
-                            .foregroundColor(.white.opacity(0.2))
-                    )
-            }
-        }
-        .padding(.top, 16)
-    }
-
-    // MARK: - Song Info
-
-    private var songInfoSection: some View {
-        VStack(spacing: 4) {
-            Text(musicService.info.title)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.white)
-                .lineLimit(1)
-
-            Text(musicService.info.artist)
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.55))
-                .lineLimit(1)
-
-            if !musicService.info.album.isEmpty {
-                Text(musicService.info.album)
-                    .font(.system(size: 10))
-                    .foregroundColor(.white.opacity(0.35))
-                    .lineLimit(1)
-            }
-        }
-        .padding(.horizontal, 20)
-    }
-
-    // MARK: - Playback Controls
-
     private var musicPlaybackControls: some View {
         HStack(spacing: 24) {
-            // Previous
             PlaybackButton(systemName: "backward.fill", size: 18) {
                 musicService.previousTrack()
             }
-
-            // Play/Pause (larger, prominent)
             PlaybackButton(systemName: musicService.info.isPlaying ? "pause.fill" : "play.fill", size: 32, isPrimary: true) {
                 musicService.togglePlay()
             }
-
-            // Next
             PlaybackButton(systemName: "forward.fill", size: 18) {
                 musicService.nextTrack()
             }
         }
-    }
-
-    // MARK: - Shuffle / Repeat Bar
-
-    private var shuffleRepeatBar: some View {
-        HStack(spacing: 40) {
-            Button { musicService.toggleShuffle() } label: {
-                Image(systemName: "shuffle")
-                    .font(.system(size: 14))
-                    .foregroundColor(musicService.info.isShuffle ? Color.appAccent : .white.opacity(0.4))
-            }
-
-            Button { musicService.cycleRepeat() } label: {
-                Image(systemName: repeatIconName)
-                    .font(.system(size: 14))
-                    .foregroundColor(musicService.info.repeatMode != 0 ? Color.appAccent : .white.opacity(0.4))
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     private var repeatIconName: String {
@@ -436,322 +407,25 @@ struct ExpandedView: View {
 
     private var monitorTab: some View {
         RunCatMonitorView()
+            .environmentObject(monitorService)
     }
 
-    // MARK: - Helper
+    // MARK: - Stock Tab
+
+    private var stockTab: some View {
+        StockListView()
+            .environmentObject(stockStore)
+            .environmentObject(stockService)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 8)
+    }
+
+    // MARK: - Helpers
 
     private func formatDate(_ format: String) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: L10n.localeIdentifier)
         formatter.dateFormat = format
+        formatter.locale = Locale(identifier: loc.currentLanguage.rawValue)
         return formatter.string(from: Date())
-    }
-
-}
-// MARK: - Playback Button
-
-/// Polished playback control button
-struct PlaybackButton: View {
-    let systemName: String
-    var size: CGFloat = 18
-    var isPrimary: Bool = false
-    let action: () -> Void
-
-    @State private var isHovering = false
-    @State private var isPressed = false
-
-    var body: some View {
-        Button(action: {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isPressed = false
-                }
-            }
-            action()
-        }) {
-            Image(systemName: systemName)
-                .font(.system(size: size, weight: .medium))
-                .foregroundColor(.white)
-                .frame(width: isPrimary ? 48 : 36, height: isPrimary ? 48 : 36)
-                .background(
-                    Circle()
-                        .fill(isPrimary
-                            ? Color.white.opacity(isHovering ? 0.25 : 0.15)
-                            : Color.white.opacity(isHovering ? 0.15 : 0.06))
-                )
-                .scaleEffect(isPressed ? 0.85 : 1.0)
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isHovering = hovering
-            }
-        }
-    }
-}
-
-// MARK: - Toggle Button
-
-/// Toggle button for shuffle/repeat with active state
-struct ToggleButton: View {
-    let systemName: String
-    let isActive: Bool
-    let action: () -> Void
-
-    @State private var isHovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(
-                    isActive
-                        ? Color.appAccent
-                        : .white.opacity(isHovering ? 0.6 : 0.35)
-                )
-                .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(isActive
-                            ? Color.appAccent.opacity(isHovering ? 0.2 : 0.1)
-                            : Color.white.opacity(isHovering ? 0.1 : 0.05))
-                )
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isHovering = hovering
-            }
-        }
-    }
-}
-
-// MARK: - Draggable Progress View
-
-/// 可拖拽的播放进度条
-struct DraggableProgressView: View {
-    let progress: Double
-    let elapsed: String
-    let duration: String
-    let totalDuration: TimeInterval
-    let onSeek: (Double) -> Void
-
-    @State private var isDragging = false
-    @State private var dragFraction: Double = 0
-
-    var body: some View {
-        VStack(spacing: 4) {
-            GeometryReader { geometry in
-                let width = geometry.size.width
-                let trackHeight: CGFloat = 4
-
-                ZStack(alignment: .leading) {
-                    // 背景轨道
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(.white.opacity(0.15))
-                        .frame(height: trackHeight)
-
-                    // 已播放部分
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(.white)
-                        .frame(width: width * currentFraction, height: trackHeight)
-
-                    // 拖拽手柄
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 12, height: 12)
-                        .offset(x: width * currentFraction - 6)
-                        .shadow(color: .black.opacity(0.3), radius: 3)
-                }
-                .frame(height: trackHeight)
-                .frame(maxHeight: .infinity, alignment: .center)
-                .contentShape(Rectangle().size(CGSize(width: width, height: 20)))
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            isDragging = true
-                            let fraction = min(max(value.location.x / width, 0), 1)
-                            dragFraction = fraction
-                        }
-                        .onEnded { value in
-                            let fraction = min(max(value.location.x / width, 0), 1)
-                            onSeek(fraction)
-                            isDragging = false
-                        }
-                )
-            }
-            .frame(height: 20)
-
-            HStack {
-                Text(isDragging ? formatDragTime(dragFraction) : elapsed)
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.4))
-
-                Spacer()
-
-                Text(duration)
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.4))
-            }
-        }
-    }
-
-    private var currentFraction: Double {
-        isDragging ? dragFraction : progress
-    }
-
-    private func formatDragTime(_ fraction: Double) -> String {
-        let totalSeconds = Int(fraction * totalDuration)
-        return String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
-    }
-}
-
-// MARK: - Volume Control View
-
-/// 音量控制滑块
-struct VolumeControlView: View {
-    let volume: Float
-    let onVolumeChange: (Float) -> Void
-
-    @State private var isDragging = false
-    @State private var dragVolume: Float = 0
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: volumeIcon)
-                .font(.system(size: 11))
-                .foregroundColor(.white.opacity(0.5))
-                .frame(width: 16)
-
-            GeometryReader { geometry in
-                let width = geometry.size.width
-                let trackHeight: CGFloat = 3
-
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(.white.opacity(0.15))
-                        .frame(height: trackHeight)
-
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(.white.opacity(0.7))
-                        .frame(width: width * CGFloat(currentVolume), height: trackHeight)
-                }
-                .frame(height: trackHeight)
-                .frame(maxHeight: .infinity, alignment: .center)
-                .contentShape(Rectangle().size(CGSize(width: width, height: 16)))
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            isDragging = true
-                            let fraction = min(max(Float(value.location.x / width), 0), 1)
-                            dragVolume = fraction
-                            onVolumeChange(fraction)
-                        }
-                        .onEnded { _ in
-                            isDragging = false
-                        }
-                )
-            }
-            .frame(height: 16)
-
-            Text("\(Int(currentVolume * 100))")
-                .font(.system(size: 9, design: .monospaced))
-                .foregroundColor(.white.opacity(0.35))
-                .frame(width: 24, alignment: .trailing)
-        }
-    }
-
-    private var currentVolume: Float {
-        isDragging ? dragVolume : volume
-    }
-
-    private var volumeIcon: String {
-        if currentVolume <= 0 { return "speaker.slash.fill" }
-        if currentVolume < 0.33 { return "speaker.wave.1.fill" }
-        if currentVolume < 0.66 { return "speaker.wave.2.fill" }
-        return "speaker.wave.3.fill"
-    }
-}
-
-// MARK: - Weather Card
-
-/// 天气卡片组件
-struct WeatherCard: View {
-    let icon: String
-    let temp: String
-    let desc: String
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(.white.opacity(0.8))
-
-            Text(temp)
-                .font(.system(size: Theme.FontSize.body, weight: .semibold, design: .rounded))
-                .foregroundColor(.textPrimary)
-
-            Text(desc)
-                .font(.system(size: Theme.FontSize.caption2))
-                .foregroundColor(.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.Radius.md)
-                .fill(Color.fillSubtle)
-        )
-    }
-}
-
-// MARK: - Monitor Row
-
-/// 监控行组件
-struct MonitorRow: View {
-    let icon: String
-    let label: String
-    let value: String
-    let percent: Double
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.xs + 2) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.system(size: Theme.FontSize.body - 1))
-                    .foregroundColor(.textSecondary)
-                    .frame(width: 20)
-
-                Text(label)
-                    .font(.system(size: Theme.FontSize.body - 1, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-
-                Spacer()
-
-                Text(value)
-                    .font(.system(size: Theme.FontSize.body - 1, design: .monospaced))
-                    .foregroundColor(.textSecondary)
-            }
-
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(.white.opacity(0.1))
-
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(barColor)
-                        .frame(width: geometry.size.width * percent)
-                }
-            }
-            .frame(height: 4)
-        }
-    }
-
-    private var barColor: Color {
-        if percent > 0.8 { return .red }
-        if percent > 0.6 { return .orange }
-        return .green
     }
 }

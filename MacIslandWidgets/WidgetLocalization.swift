@@ -125,6 +125,12 @@ enum WidgetL10n {
     static var eventDays: String { t("widget_event_days") }
     static var eventMore: String { t("widget_event_more") }
     static var eventEvents: String { t("widget_event_events") }
+    
+    // MARk: - 股票小组件
+    static var stockDisplayName: String { t("widget_stock_display_name") }
+    static var stockDescription: String { t("widget_stock_description") }
+    static var stockNoData: String { t("widget_stock_no_data") }
+    static var stockSyncHint: String { t("widget_stock_sync_hint") }
 
     // MARK: - 通用
 
@@ -226,6 +232,12 @@ enum WidgetL10n {
         "widget_event_days": "天",
         "widget_event_more": "更多",
         "widget_event_events": "个事件",
+        
+        // 股票
+        "widget_stock_display_name": "股票",
+        "widget_stock_description": "显示自选股行情",
+        "widget_stock_no_data": "暂无自选股",
+        "widget_stock_sync_hint": "请在主应用中添加自选股",
 
         // 通用
         "widget_just_now": "刚刚",
@@ -327,6 +339,11 @@ enum WidgetL10n {
         "widget_event_days": " days",
         "widget_event_more": "more",
         "widget_event_events": "events",
+        // Stocks
+        "widget_stock_display_name": "Stock",
+        "widget_stock_description": "Show watchlist stocks",
+        "widget_stock_no_data": "No stocks in watchlist",
+        "widget_stock_sync_hint": "Add stocks in the main app",
 
         // Common
         "widget_just_now": "just now",
@@ -428,6 +445,12 @@ enum WidgetL10n {
         "widget_event_days": "日",
         "widget_event_more": "他",
         "widget_event_events": "件のイベント",
+        
+        // 株です
+        "widget_stock_display_name": "株式",
+        "widget_stock_description": "ウォッチリストの株式を表示",
+        "widget_stock_no_data": "ウォッチリストが空です",
+        "widget_stock_sync_hint": "メインアプリで株式を追加してください",
 
         // 共通
         "widget_just_now": "たった今",

@@ -323,6 +323,7 @@ enum L10n {
     static var voiceCmdTimer: String { t("voice_cmd_timer") }
     static var voiceCmdTodo: String { t("voice_cmd_todo") }
     static var voiceCmdHelp: String { t("voice_cmd_help") }
+    static var voiceCmdStock: String { t("voice_cmd_stock") }
     static var voiceCmdPlayDesc: String { t("voice_cmd_play_desc") }
     static var voiceCmdPauseDesc: String { t("voice_cmd_pause_desc") }
     static var voiceCmdNextDesc: String { t("voice_cmd_next_desc") }
@@ -335,6 +336,7 @@ enum L10n {
     static var voiceCmdTimerDesc: String { t("voice_cmd_timer_desc") }
     static var voiceCmdTodoDesc: String { t("voice_cmd_todo_desc") }
     static var voiceCmdHelpDesc: String { t("voice_cmd_help_desc") }
+    static var voiceCmdStockDesc: String { t("voice_cmd_stock_desc") }
 
     // MARK: - Voice State
     static var voiceStateIdle: String { t("voice_state_idle") }
@@ -635,6 +637,31 @@ enum L10n {
     static var descUsername: String { t("desc_username") }
     static var descHotkeyBindings: String { t("desc_hotkey_bindings") }
 
+    // MARK: - Stock
+      static var marketAShare: String { t("market_a_share") }
+      static var marketUS: String { t("market_us") }
+      static var marketHK: String { t("market_hk") }
+      static var stockTitle: String { t("stock_title") }
+      static var stockSearch: String { t("stock_search") }
+      static var stockSearchAction: String { t("stock_search_action") }
+      static var stockWatchlist: String { t("stock_watchlist") }
+      static var stockAdd: String { t("stock_add") }
+      static var stockRemove: String { t("stock_remove") }
+      static var stockPrice: String { t("stock_price") }
+      static var stockChange: String { t("stock_change") }
+      static var stockNoData: String { t("stock_no_data") }
+      static var stockSettings: String { t("stock_settings") }
+      static var stockAutoRefresh: String { t("stock_auto_refresh") }
+      static var stockRefreshFreq: String { t("stock_refresh_freq") }
+      static var stockWatchlistManage: String { t("stock_watchlist_manage") }
+      static var stockManageWatchlist: String { t("stock_manage_watchlist") }
+      static var stockAllMarkets: String { t("stock_all_markets") }
+      static var stockSearchResults: String { t("stock_search_results") }
+      static var stockNoResults: String { t("stock_no_results") }
+      static var stockAdded: String { t("stock_added") }
+      static var stockSearchAbove: String { t("stock_search_above") }
+      static var stockNoMarketStocks: String { t("stock_no_market_stocks") }
+
     // MARK: - Date Format
     static var dateFormatCN: String { t("date_format_cn") }
     static var dateFormatShort: String { t("date_format_short") }
@@ -783,13 +810,13 @@ private let zhStrings: [String: String] = [
     // Voice Commands
     "voice_cmd_play": "播放", "voice_cmd_pause": "暂停", "voice_cmd_next": "下一首", "voice_cmd_previous": "上一首",
     "voice_cmd_expand": "展开", "voice_cmd_collapse": "收起", "voice_cmd_show": "显示", "voice_cmd_hide": "隐藏",
-    "voice_cmd_weather": "天气", "voice_cmd_timer": "计时器", "voice_cmd_todo": "待办", "voice_cmd_help": "帮助",
+    "voice_cmd_weather": "天气", "voice_cmd_timer": "计时器", "voice_cmd_todo": "待办", "voice_cmd_help": "帮助", "voice_cmd_stock": "股票",
     "voice_cmd_play_desc": "播放音乐", "voice_cmd_pause_desc": "暂停音乐",
     "voice_cmd_next_desc": "下一首歌曲", "voice_cmd_previous_desc": "上一首歌曲",
     "voice_cmd_expand_desc": "展开灵动岛", "voice_cmd_collapse_desc": "收起灵动岛",
     "voice_cmd_show_desc": "显示灵动岛", "voice_cmd_hide_desc": "隐藏灵动岛",
     "voice_cmd_weather_desc": "播报天气", "voice_cmd_timer_desc": "播报计时器状态",
-    "voice_cmd_todo_desc": "播报待办事项", "voice_cmd_help_desc": "显示帮助",
+    "voice_cmd_todo_desc": "播报待办事项", "voice_cmd_help_desc": "显示帮助", "voice_cmd_stock_desc": "播报股票行情",
     // Voice State
     "voice_state_idle": "空闲", "voice_state_listening": "监听中",
     "voice_state_processing": "处理中", "voice_state_speaking": "播报中", "voice_state_error": "错误",
@@ -936,6 +963,28 @@ private let zhStrings: [String: String] = [
     "default_alarm_label": "闹钟",
     // Navigation
     "nav_settings": "设置", "nav_tools": "工具",
+    // Stock
+    "market_a_share": "A股", "market_us": "美股", "market_hk": "港股",
+    "stock_title": "股票",
+    "stock_search": "搜索股票",
+    "stock_search_action": "搜索",
+    "stock_watchlist": "自选股",
+    "stock_add": "添加",
+    "stock_remove": "移除",
+    "stock_price": "价格",
+    "stock_change": "涨跌幅",
+    "stock_no_data": "暂无股票数据",
+    "stock_settings": "股票设置",
+    "stock_auto_refresh": "自动刷新",
+    "stock_refresh_freq": "刷新频率",
+    "stock_watchlist_manage": "自选股管理",
+    "stock_manage_watchlist": "管理自选股",
+    "stock_all_markets": "全部",
+    "stock_search_results": "搜索结果",
+    "stock_no_results": "未找到匹配的股票",
+    "stock_added": "已添加",
+    "stock_search_above": "在上方搜索框输入股票代码或名称",
+    "stock_no_market_stocks": "该市场暂无自选股",
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
     "date_format_short": "M/d EEEE",
@@ -1082,13 +1131,13 @@ private let enStrings: [String: String] = [
     // Voice Commands
     "voice_cmd_play": "Play", "voice_cmd_pause": "Pause", "voice_cmd_next": "Next", "voice_cmd_previous": "Previous",
     "voice_cmd_expand": "Expand", "voice_cmd_collapse": "Collapse", "voice_cmd_show": "Show", "voice_cmd_hide": "Hide",
-    "voice_cmd_weather": "Weather", "voice_cmd_timer": "Timer", "voice_cmd_todo": "Todo", "voice_cmd_help": "Help",
+    "voice_cmd_weather": "Weather", "voice_cmd_timer": "Timer", "voice_cmd_todo": "Todo", "voice_cmd_help": "Help", "voice_cmd_stock": "Stock",
     "voice_cmd_play_desc": "Play music", "voice_cmd_pause_desc": "Pause music",
     "voice_cmd_next_desc": "Next track", "voice_cmd_previous_desc": "Previous track",
     "voice_cmd_expand_desc": "Expand island", "voice_cmd_collapse_desc": "Collapse island",
     "voice_cmd_show_desc": "Show island", "voice_cmd_hide_desc": "Hide island",
     "voice_cmd_weather_desc": "Announce weather", "voice_cmd_timer_desc": "Announce timer status",
-    "voice_cmd_todo_desc": "Announce todos", "voice_cmd_help_desc": "Show help",
+    "voice_cmd_todo_desc": "Announce todos", "voice_cmd_help_desc": "Show help", "voice_cmd_stock_desc": "Announce stock prices",
     // Voice State
     "voice_state_idle": "Idle", "voice_state_listening": "Listening",
     "voice_state_processing": "Processing", "voice_state_speaking": "Speaking", "voice_state_error": "Error",
@@ -1235,6 +1284,28 @@ private let enStrings: [String: String] = [
     "default_alarm_label": "Alarm",
     // Navigation
     "nav_settings": "Settings", "nav_tools": "Tools",
+    // Stock
+    "market_a_share": "A-Share", "market_us": "US", "market_hk": "HK",
+    "stock_title": "Stock",
+    "stock_search": "Search Stocks",
+    "stock_search_action": "Search",
+    "stock_watchlist": "Watchlist",
+    "stock_add": "Add",
+    "stock_remove": "Remove",
+    "stock_price": "Price",
+    "stock_change": "Change",
+    "stock_no_data": "No stock data",
+    "stock_settings": "Stock Settings",
+    "stock_auto_refresh": "Auto Refresh",
+    "stock_refresh_freq": "Refresh Interval",
+    "stock_watchlist_manage": "Watchlist Management",
+    "stock_manage_watchlist": "Manage Watchlist",
+    "stock_all_markets": "All",
+    "stock_search_results": "Search Results",
+    "stock_no_results": "No matching stocks found",
+    "stock_added": "Added",
+    "stock_search_above": "Search by stock code or name above",
+    "stock_no_market_stocks": "No stocks in this market",
     // Date Format
     "date_format_cn": "EEEE, MMMM d, yyyy",
     "date_format_short": "EEE, M/d",
@@ -1381,13 +1452,13 @@ private let jaStrings: [String: String] = [
     // Voice Commands
     "voice_cmd_play": "再生", "voice_cmd_pause": "一時停止", "voice_cmd_next": "次へ", "voice_cmd_previous": "前へ",
     "voice_cmd_expand": "展開", "voice_cmd_collapse": "折りたたむ", "voice_cmd_show": "表示", "voice_cmd_hide": "隠す",
-    "voice_cmd_weather": "天気", "voice_cmd_timer": "タイマー", "voice_cmd_todo": "TODO", "voice_cmd_help": "ヘルプ",
+    "voice_cmd_weather": "天気", "voice_cmd_timer": "タイマー", "voice_cmd_todo": "TODO", "voice_cmd_help": "ヘルプ", "voice_cmd_stock": "株式",
     "voice_cmd_play_desc": "音楽を再生", "voice_cmd_pause_desc": "音楽を一時停止",
     "voice_cmd_next_desc": "次の曲", "voice_cmd_previous_desc": "前の曲",
     "voice_cmd_expand_desc": "アイランドを展開", "voice_cmd_collapse_desc": "アイランドを折りたたむ",
     "voice_cmd_show_desc": "アイランドを表示", "voice_cmd_hide_desc": "アイランドを隠す",
     "voice_cmd_weather_desc": "天気を読み上げ", "voice_cmd_timer_desc": "タイマー状態を読み上げ",
-    "voice_cmd_todo_desc": "TODOを読み上げ", "voice_cmd_help_desc": "ヘルプを表示",
+    "voice_cmd_todo_desc": "TODOを読み上げ", "voice_cmd_help_desc": "ヘルプを表示", "voice_cmd_stock_desc": "株価を読み上げ",
     // Voice State
     "voice_state_idle": "アイドル", "voice_state_listening": "リスニング中",
     "voice_state_processing": "処理中", "voice_state_speaking": "読み上げ中", "voice_state_error": "エラー",
@@ -1534,6 +1605,29 @@ private let jaStrings: [String: String] = [
     "default_alarm_label": "アラーム",
     // Navigation
     "nav_settings": "設定", "nav_tools": "ツール",
+    // Stock
+    "market_a_share": "A株", "market_us": "米国", "market_hk": "香港",
+    "stock_title": "株式",
+    "stock_search": "株式検索",
+    "stock_search_action": "検索",
+    "stock_watchlist": "ウォッチリスト",
+    "stock_add": "追加",
+    "stock_remove": "削除",
+    "stock_price": "価格",
+    "stock_change": "変動",
+    "stock_no_data": "株式データなし",
+    "stock_settings": "株式設定",
+    "stock_auto_refresh": "自動更新",
+    "stock_refresh_freq": "更新間隔",
+    "stock_watchlist_manage": "ウォッチリスト管理",
+    "stock_manage_watchlist": "ウォッチリスト管理",
+    "stock_all_markets": "すべて",
+    "stock_search_results": "検索結果",
+    "stock_no_results": "一致する株式が見つかりません",
+    "stock_added": "追加済み",
+    "stock_search_above": "上記の検索ボックスにコードまたは銘柄名を入力",
+    "stock_no_market_stocks": "この市場の銘柄はありません",
+
     // Date Format
     "date_format_cn": "yyyy年M月d日 EEEE",
     "date_format_short": "M/d（EEE）",

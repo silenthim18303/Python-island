@@ -172,4 +172,12 @@ final class WidgetDataManager {
         set("widget_event_items", items)
         flush("EventWidget")
     }
+
+    // MARK: - Stocks
+
+    func updateStocks(items: [[String: Any]]) {
+        set("widget_stock_updated_at", Date().timeIntervalSince1970)
+        set("widget_stock_items", items)
+        flush("StockWidget")
+    }
 }
