@@ -55,22 +55,6 @@ private enum SettingsKeychainHelper {
     }
 }
 
-private enum BundledWeatherCredential {
-    private static let obfuscatedAPIKey: [UInt8] = [
-        79, 74, 140, 60, 47, 165, 188, 74,
-        66, 220, 52, 46, 161, 234, 16, 22,
-        216, 48, 47, 173, 237, 19, 92, 220,
-        100, 114, 170, 228, 23, 87, 128, 50
-    ]
-
-    static var apiKey: String {
-        let bytes = obfuscatedAPIKey.enumerated().map { index, byte in
-            byte ^ UInt8(truncatingIfNeeded: index * 73 + 41)
-        }
-        return String(bytes: bytes, encoding: .utf8) ?? ""
-    }
-}
-
 // MARK: - Appearance Mode
 
 enum AppAppearance: String, CaseIterable, Identifiable {
@@ -283,14 +267,7 @@ final class AppSettings: ObservableObject {
     }
 
     var weatherEffectiveAPIKey: String {
-        let userKey = weatherAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !userKey.isEmpty {
-            return userKey
-        }
-        return SettingsKeychainHelper.loadOrCreate(
-            key: Keys.weatherBundledAPIKey,
-            defaultValue: BundledWeatherCredential.apiKey
-        )
+        return weatherAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - 股票
@@ -374,7 +351,6 @@ final class AppSettings: ObservableObject {
         static let weatherManualCity = "weatherManualCity"
         static let weatherManualLocationID = "weatherManualLocationID"
         static let weatherAPIKey = "weatherAPIKey"
-        static let weatherBundledAPIKey = "weatherBundledAPIKey"
         static let customWallpaperPath = "customWallpaperPath"
         static let customWallpaperBookmark = "customWallpaperBookmark"
         static let stockAutoRefresh = "stockAutoRefresh"

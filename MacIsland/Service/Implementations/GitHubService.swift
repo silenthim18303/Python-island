@@ -10,10 +10,12 @@ import Combine
 import Security
 import AppKit
 
-// MARK: - URL Session Delegate (绕过代理 TLS 验证)
+// MARK: - URL Session Delegate (安全 TLS 验证)
 
-/// 代理（Clash 等）会拦截 HTTPS 并注入自签名证书，导致 TLS 握手失败。
-/// 此 delegate 仅对 GitHub API 域名跳过证书验证。
+/// 安全的 TLS 验证策略：
+/// 1. 先用系统默认验证（标准 CA 证书链）
+/// 2. 失败时检查证书是否被用户手动信任（如 Clash/Charles 的 CA 证书）
+/// 3. 都不满足则拒绝连接
 private class GitHubSessionDelegate: NSObject, URLSessionDelegate {
     func urlSession(
         _ session: URLSession,
@@ -21,12 +23,89 @@ private class GitHubSessionDelegate: NSObject, URLSessionDelegate {
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
         let host = challenge.protectionSpace.host
-        // 仅对 GitHub 相关域名跳过验证，其他域名走默认流程
-        if host.hasSuffix("github.com") || host.hasSuffix("githubusercontent.com") || host.hasSuffix("github.io") {
-            completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
-        } else {
+        let isGitHubDomain = host.hasSuffix("github.com")
+            || host.hasSuffix("githubusercontent.com")
+            || host.hasSuffix("github.io")
+
+        // 非 GitHub 域名走系统默认验证
+        guard isGitHubDomain else {
             completionHandler(.performDefaultHandling, nil)
+            return
         }
+
+        guard let trust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        // 第一步：系统默认验证（标准 CA 证书链）
+        var error: CFError?
+        if SecTrustEvaluateWithError(trust, &error) {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+            return
+        }
+
+        // 第二步：系统验证失败 → 检查是否有用户手动信任的根证书
+        // （兼容 Clash/Charles 等代理工具的 MITM 证书）
+        if isCertificateTrustedByUser(trust) {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+            return
+        }
+
+        // 第三步：都不满足 → 拒绝连接（防止 MITM 攻击）
+        completionHandler(.cancelAuthenticationChallenge, nil)
+    }
+
+    /// 检查证书链是否包含用户手动信任的根证书
+    /// 用户在钥匙串中手动安装并信任的 CA 证书会被系统标记为 kSecTrustSettingsResultTrustRoot
+    private func isCertificateTrustedByUser(_ trust: SecTrust) -> Bool {
+        // 获取证书链
+        let certCount = SecTrustGetCertificateCount(trust)
+        guard certCount > 0 else { return false }
+
+        // kSecTrustSettingsResult 对应的值:
+        // kSecTrustSettingsResultTrustRoot = 3 (完全信任的根证书)
+        // kSecTrustSettingsResultProceed = 1 (显式允许)
+        let kSecTrustResultTrustRoot: UInt32 = 3
+        let kSecTrustResultProceed: UInt32 = 1
+
+        // 检查每一级证书是否被用户显式信任
+        for i in 0..<certCount {
+            guard let cert = SecTrustGetCertificateAtIndex(trust, i) else { continue }
+
+            // 检查 user 级别的信任设置
+            if isCertTrusted(cert, domain: .user, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+            // 检查 admin 级别
+            if isCertTrusted(cert, domain: .admin, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+            // 检查 system 级别
+            if isCertTrusted(cert, domain: .system, trustRoot: kSecTrustResultTrustRoot, proceed: kSecTrustResultProceed) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// 检查指定证书在指定信任域是否被信任
+    private func isCertTrusted(_ cert: SecCertificate, domain: SecTrustSettingsDomain,
+                               trustRoot: UInt32, proceed: UInt32) -> Bool {
+        var trustSettings: CFArray?
+        let status = SecTrustSettingsCopyTrustSettings(cert, domain, &trustSettings)
+        guard status == errSecSuccess, let settings = trustSettings as? [[String: Any]] else {
+            return false
+        }
+        for setting in settings {
+            if let result = setting[kSecTrustSettingsResult as String] as? UInt32 {
+                if result == trustRoot || result == proceed {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }
 
@@ -52,7 +131,7 @@ final class GitHubService: ObservableObject {
 
     // GitHub OAuth App (Device Flow)
     /// 内置 Client ID，用户无需配置
-    private let builtinClientID = "Ov23li5Gsly8EYOKJEaJ"
+    private let builtinClientID = Secrets.githubClientID
     private var clientID: String {
         let stored = UserDefaults.standard.string(forKey: "githubClientID") ?? ""
         return stored.isEmpty ? builtinClientID : stored
