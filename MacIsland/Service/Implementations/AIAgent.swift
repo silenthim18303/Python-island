@@ -284,7 +284,7 @@ final class AIAgent {
     // MARK: - Tool Implementations
 
     private func executeGetWeather() async -> ToolResult {
-        let weather = QWeatherService(config: .autoDetect(apiKey: AppSettings.shared.weatherEffectiveAPIKey, locationID: "101010100"))
+        let weather = QWeatherService(config: .autoDetect(apiKey: AppSettings.shared.weatherEffectiveAPIKey, apiHost: AppSettings.shared.weatherEffectiveAPIHost, locationID: "101010100"))
         await weather.fetchWeather()
         let w = weather.weather
         let result = """

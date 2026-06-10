@@ -244,6 +244,7 @@ enum L10n {
     static var weatherAuto: String { t("weather_auto") }
     static var weatherCity: String { t("weather_city") }
     static var weatherAPIKey: String { t("weather_api_key") }
+    static var weatherAPIHost: String { t("weather_api_host") }
     static var weatherLocationID: String { t("weather_location_id") }
     static var weatherClear: String { t("weather_clear") }
 
@@ -638,6 +639,7 @@ enum L10n {
     static var descDndTime: String { t("desc_dnd_time") }
     static var descLyricsSource: String { t("desc_lyrics_source") }
     static var descWeatherAPIKey: String { t("desc_weather_api_key") }
+    static var descWeatherAPIHost: String { t("desc_weather_api_host") }
     static var descWeatherCity: String { t("desc_weather_city") }
     static var descWeatherLocationID: String { t("desc_weather_location_id") }
     static var descUsername: String { t("desc_username") }
@@ -775,7 +777,7 @@ private let zhStrings: [String: String] = [
     "music_netease": "网易云", "music_qq": "QQ 音乐", "music_kugou": "酷狗", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天气", "weather_wind": "风速", "weather_humidity": "湿度",
-    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_location_id": "Location ID",
+    "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
     "weather_clear": "清除手动设置",
     // Wallpaper
     "wallpaper_title": "壁纸", "wallpaper_local": "本地壁纸", "wallpaper_current": "当前壁纸",
@@ -1015,6 +1017,7 @@ private let zhStrings: [String: String] = [
     "desc_dnd_time": "设置免打扰的开始和结束时间。",
     "desc_lyrics_source": "优先使用的歌词数据来源。",
     "desc_weather_api_key": "和风天气 API Key（免费注册 qweather.com 获取）。保存在系统钥匙串，不写入 UserDefaults。",
+    "desc_weather_api_host": "和风天气 API 地址，默认为 devapi.qweather.com。支持自定义 CDN 节点。",
     "desc_weather_city": "指定城市名，留空则自动定位。",
     "desc_weather_location_id": "和风天气城市 ID，配合手动城市使用。",
     "desc_username": "上传社区壁纸时显示的作者名。",
@@ -1099,7 +1102,7 @@ private let enStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "Weather", "weather_wind": "Wind", "weather_humidity": "Humidity",
-    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
+    "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
     "weather_clear": "Clear Manual Settings",
     // Wallpaper
     "wallpaper_title": "Wallpaper", "wallpaper_local": "Local Wallpaper", "wallpaper_current": "Current",
@@ -1339,6 +1342,7 @@ private let enStrings: [String: String] = [
     "desc_dnd_time": "Set do-not-disturb start and end time.",
     "desc_lyrics_source": "Preferred lyrics data source.",
     "desc_weather_api_key": "QWeather API Key (free registration at qweather.com). Stored in Keychain, not UserDefaults.",
+    "desc_weather_api_host": "QWeather API host. Defaults to devapi.qweather.com. Supports custom CDN nodes.",
     "desc_weather_city": "Specify city name. Leave empty for auto location.",
     "desc_weather_location_id": "QWeather city ID, used with manual city.",
     "desc_username": "Author name shown when uploading community wallpapers.",
@@ -1423,7 +1427,7 @@ private let jaStrings: [String: String] = [
     "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天気", "weather_wind": "風速", "weather_humidity": "湿度",
-    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_location_id": "Location ID",
+    "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_api_host": "APIホスト", "weather_location_id": "Location ID",
     "weather_clear": "手動設定をクリア",
     // Wallpaper
     "wallpaper_title": "壁紙", "wallpaper_local": "ローカル壁紙", "wallpaper_current": "現在の壁紙",
@@ -1664,6 +1668,7 @@ private let jaStrings: [String: String] = [
     "desc_dnd_time": "通知オフの開始・終了時間を設定。",
     "desc_lyrics_source": "優先する歌詞データソース。",
     "desc_weather_api_key": "任意の QWeather API Key。空欄の場合は内蔵デフォルトを使用します。Key は UserDefaults ではなく Keychain に保存します。",
+    "desc_weather_api_host": "QWeather APIホスト。デフォルトは devapi.qweather.com。カスタムCDNノードに対応。",
     "desc_weather_city": "都市名を指定。空欄で自動位置。",
     "desc_weather_location_id": "和風天気の都市 ID。手動都市と併用。",
     "desc_username": "コミュニティ壁紙アップロード時の著者名。",

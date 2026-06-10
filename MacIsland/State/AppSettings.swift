@@ -219,9 +219,20 @@ final class AppSettings: ObservableObject {
     @Published var weatherAPIKey: String {
         didSet { SecureStorage.save(key: Keys.weatherAPIKey, value: weatherAPIKey) }
     }
+    /// 和风天气 API Host，保存在钥匙串中
+    @Published var weatherAPIHost: String {
+        didSet { SecureStorage.save(key: Keys.weatherAPIHost, value: weatherAPIHost) }
+    }
 
     var weatherEffectiveAPIKey: String {
         return weatherAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var weatherEffectiveAPIHost: String {
+        let host = weatherAPIHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        if host.isEmpty { return "https://devapi.qweather.com" }
+        if host.hasPrefix("http://") || host.hasPrefix("https://") { return host }
+        return "https://\(host)"
     }
 
     // MARK: - 股票
@@ -305,6 +316,7 @@ final class AppSettings: ObservableObject {
         static let weatherManualCity = "weatherManualCity"
         static let weatherManualLocationID = "weatherManualLocationID"
         static let weatherAPIKey = "weatherAPIKey"
+        static let weatherAPIHost = "weatherAPIHost"
         static let customWallpaperPath = "customWallpaperPath"
         static let customWallpaperBookmark = "customWallpaperBookmark"
         static let stockAutoRefresh = "stockAutoRefresh"
@@ -363,6 +375,7 @@ final class AppSettings: ObservableObject {
         weatherManualCity = defaults.string(forKey: Keys.weatherManualCity) ?? ""
         weatherManualLocationID = defaults.string(forKey: Keys.weatherManualLocationID) ?? ""
         weatherAPIKey = SecureStorage.load(key: Keys.weatherAPIKey) ?? ""
+        weatherAPIHost = SecureStorage.load(key: Keys.weatherAPIHost) ?? ""
 
         // 壁纸存储
         customWallpaperPath = defaults.string(forKey: Keys.customWallpaperPath) ?? ""

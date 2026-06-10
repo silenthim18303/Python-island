@@ -32,6 +32,10 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         config.apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    func updateAPIHost(_ host: String) {
+        config.baseURL = host
+    }
+
     func fetchWeather() async {
         await MainActor.run { isLoading = true }
         defer { Task { @MainActor in isLoading = false } }
@@ -330,25 +334,25 @@ private class LocationDelegate: NSObject, CLLocationManagerDelegate {
 
 struct QWeatherConfig {
     var apiKey: String
-    let baseURL: String
+    var baseURL: String
     let locationID: String
     let cityName: String
     let districtName: String
 
-    static func fixed(apiKey: String, locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
+    static func fixed(apiKey: String, apiHost: String, locationID: String, cityName: String, districtName: String) -> QWeatherConfig {
         return QWeatherConfig(
             apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
-            baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
+            baseURL: apiHost,
             locationID: locationID,
             cityName: cityName,
             districtName: districtName
         )
     }
 
-    static func autoDetect(apiKey: String, locationID: String) -> QWeatherConfig {
+    static func autoDetect(apiKey: String, apiHost: String, locationID: String) -> QWeatherConfig {
         return QWeatherConfig(
             apiKey: apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
-            baseURL: "https://mp3dna5w7u.re.qweatherapi.com",
+            baseURL: apiHost,
             locationID: locationID,
             cityName: "",
             districtName: ""
@@ -357,6 +361,7 @@ struct QWeatherConfig {
 
     static let `default` = QWeatherConfig.fixed(
         apiKey: "",
+        apiHost: "https://devapi.qweather.com",
         locationID: "101010100",
         cityName: "北京",
         districtName: "朝阳区"
