@@ -10,32 +10,9 @@ import Combine
 import Security
 import AppKit
 
-// MARK: - Keychain Helper
+// MARK: - Keychain Helper (已迁移至 SecureStorage)
 
-private enum AIKeychainHelper {
-    static func save(key: String, value: String) {
-        guard let data = value.data(using: .utf8) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data,
-        ]
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
-    }
-
-    static func load(key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-}
+// AIKeychainHelper 已废弃，统一使用 SecureStorage
 
 // MARK: - Chat Message
 
@@ -182,7 +159,7 @@ final class AIService: ObservableObject {
         }
     }
     @Published var apiKey: String {
-        didSet { AIKeychainHelper.save(key: "aiAPIKey", value: apiKey) }
+        didSet { SecureStorage.save(key: "aiAPIKey", value: apiKey) }
     }
     @Published var isConnected = false
 
@@ -193,7 +170,7 @@ final class AIService: ObservableObject {
         let saved = UserDefaults.standard.string(forKey: "aiServerURL") ?? "http://localhost:11434"
         self.serverURL = Self.normalizeURL(saved)
         self.selectedModel = UserDefaults.standard.string(forKey: "aiSelectedModel") ?? ""
-        self.apiKey = AIKeychainHelper.load(key: "aiAPIKey") ?? ""
+        self.apiKey = SecureStorage.load(key: "aiAPIKey") ?? ""
     }
 
     /// 标准化服务地址：补全协议、去空格、去尾斜杠
@@ -235,7 +212,7 @@ final class AIService: ObservableObject {
         // 1. 先用当前配置检测
         if await tryConnect(url: serverURL) { return }
 
-        // 2. 尝试 http/https 切换
+        // 2. 尝试 http/https 切换（仅对已有地址）
         let host = serverURL
             .replacingOccurrences(of: "http://", with: "")
             .replacingOccurrences(of: "https://", with: "")
@@ -249,20 +226,7 @@ final class AIService: ObservableObject {
             }
         }
 
-        // 3. 自动探测常见端口（仅 localhost）
-        if host.hasPrefix("localhost") || host.hasPrefix("127.0.0.1") {
-            for port in [11434, 8080, 3000, 5000, 5001, 1234, 4000, 8000, 9000] {
-                for scheme in ["http", "https"] {
-                    let candidate = "\(scheme)://localhost:\(port)"
-                    if candidate == serverURL { continue }
-                    if await tryConnect(url: candidate) {
-                        serverURL = candidate
-                        return
-                    }
-                }
-            }
-        }
-
+        // 不进行自动端口扫描，用户需手动配置地址
         isConnected = false
         availableModels = []
     }

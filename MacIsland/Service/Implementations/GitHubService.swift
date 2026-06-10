@@ -148,7 +148,7 @@ final class GitHubService: ObservableObject {
     }()
 
     private var token: String? {
-        KeychainHelper.load(key: "github_token")
+        SecureStorage.load(key: "github_token")
     }
 
     var authHeaders: [String: String] {
@@ -190,7 +190,7 @@ final class GitHubService: ObservableObject {
 
         let body: [String: Any] = [
             "client_id": clientID,
-            "scope": "repo",
+            "scope": "public_repo",
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
@@ -296,12 +296,12 @@ final class GitHubService: ObservableObject {
     // MARK: - Token Management
 
     func saveToken(_ token: String) {
-        KeychainHelper.save(key: "github_token", value: token)
+        SecureStorage.save(key: "github_token", value: token)
         isAuthenticated = true
     }
 
     func removeToken() {
-        KeychainHelper.delete(key: "github_token")
+        SecureStorage.delete(key: "github_token")
         isAuthenticated = false
     }
 
@@ -594,46 +594,6 @@ enum GitHubError: LocalizedError {
     }
 }
 
-// MARK: - Keychain Helper
+// MARK: - Keychain Helper (已迁移至 SecureStorage)
 
-private enum KeychainHelper {
-    private static let service = "com.geminimortal.MacIsland"
-
-    static func save(key: String, value: String) {
-        guard let data = value.data(using: .utf8) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-        SecItemDelete(query as CFDictionary)
-
-        var addQuery = query
-        addQuery[kSecValueData as String] = data
-        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        SecItemAdd(addQuery as CFDictionary, nil)
-    }
-
-    static func load(key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
-    static func delete(key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-}
+// KeychainHelper 已废弃，统一使用 SecureStorage

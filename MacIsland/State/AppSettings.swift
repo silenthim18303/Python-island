@@ -9,52 +9,6 @@ import SwiftUI
 import Combine
 import Security
 
-// MARK: - Secure Settings Storage
-
-private enum SettingsKeychainHelper {
-    private static let service = "geminimortal.MacIsland.settings"
-
-    static func save(key: String, value: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-        ]
-
-        SecItemDelete(query as CFDictionary)
-
-        guard !value.isEmpty, let data = value.data(using: .utf8) else { return }
-
-        var addQuery = query
-        addQuery[kSecValueData as String] = data
-        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(addQuery as CFDictionary, nil)
-    }
-
-    static func load(key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
-    static func loadOrCreate(key: String, defaultValue: @autoclosure () -> String) -> String {
-        if let value = load(key: key), !value.isEmpty {
-            return value
-        }
-
-        let value = defaultValue()
-        save(key: key, value: value)
-        return value
-    }
-}
-
 // MARK: - Appearance Mode
 
 enum AppAppearance: String, CaseIterable, Identifiable {
@@ -263,7 +217,7 @@ final class AppSettings: ObservableObject {
     }
     /// 和风天气 API Key，保存在钥匙串中
     @Published var weatherAPIKey: String {
-        didSet { SettingsKeychainHelper.save(key: Keys.weatherAPIKey, value: weatherAPIKey) }
+        didSet { SecureStorage.save(key: Keys.weatherAPIKey, value: weatherAPIKey) }
     }
 
     var weatherEffectiveAPIKey: String {
@@ -408,7 +362,7 @@ final class AppSettings: ObservableObject {
         // 天气
         weatherManualCity = defaults.string(forKey: Keys.weatherManualCity) ?? ""
         weatherManualLocationID = defaults.string(forKey: Keys.weatherManualLocationID) ?? ""
-        weatherAPIKey = SettingsKeychainHelper.load(key: Keys.weatherAPIKey) ?? ""
+        weatherAPIKey = SecureStorage.load(key: Keys.weatherAPIKey) ?? ""
 
         // 壁纸存储
         customWallpaperPath = defaults.string(forKey: Keys.customWallpaperPath) ?? ""
