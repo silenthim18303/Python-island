@@ -173,7 +173,9 @@ final class GitHubService: ObservableObject {
         isAuthorizing = true
 
         guard !clientID.isEmpty else {
+            #if DEBUG
             print("[GitHub] Client ID 未配置")
+            #endif
             isAuthorizing = false
             return
         }
@@ -200,7 +202,9 @@ final class GitHubService: ObservableObject {
                   let deviceCode = json["device_code"] as? String,
                   let userCode = json["user_code"] as? String,
                   let verificationURI = json["verification_uri"] as? String else {
+                #if DEBUG
                 print("[GitHub] Device Flow 响应解析失败")
+                #endif
                 isAuthorizing = false
                 return
             }
@@ -209,9 +213,11 @@ final class GitHubService: ObservableObject {
             self.userCode = userCode
             self.verificationURI = verificationURI
 
+            #if DEBUG
             print("[GitHub] Device Code: \(deviceCode)")
             print("[GitHub] User Code: \(userCode)")
             print("[GitHub] 请在浏览器中完成授权: \(verificationURI)")
+            #endif
 
             // 打开浏览器让用户授权
             if let url = URL(string: verificationURI) {
@@ -222,7 +228,9 @@ final class GitHubService: ObservableObject {
             let interval = json["interval"] as? Int ?? 5
             await pollForToken(deviceCodeValue: deviceCode, interval: interval)
         } catch {
+            #if DEBUG
             print("[GitHub] Device Flow 启动失败: \(error)")
+            #endif
             isAuthorizing = false
         }
     }
@@ -231,7 +239,9 @@ final class GitHubService: ObservableObject {
     @MainActor
     private func pollForToken(deviceCodeValue: String, interval: Int) async {
         var currentInterval = interval
+        #if DEBUG
         print("[GitHub] 开始轮询授权状态，间隔 \(currentInterval)s")
+        #endif
         while isAuthorizing {
             try? await Task.sleep(for: .seconds(currentInterval))
 
@@ -252,13 +262,17 @@ final class GitHubService: ObservableObject {
             do {
                 let (data, _) = try await session.data(for: request)
                 guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    #if DEBUG
                     print("[GitHub] 轮询响应解析失败")
+                    #endif
                     break
                 }
 
                 if let accessToken = json["access_token"] as? String {
                     // 授权成功
+                    #if DEBUG
                     print("[GitHub] 授权成功！")
+                    #endif
                     saveToken(accessToken)
                     isAuthorizing = false
                     deviceCode = nil
@@ -335,7 +349,9 @@ final class GitHubService: ObservableObject {
         do {
             let (repoData, repoResponse) = try await session.data(for: repoRequest)
             if let http = repoResponse as? HTTPURLResponse {
+                #if DEBUG
                 print("[GitHub] 仓库检查: HTTP \(http.statusCode)")
+                #endif
                 if http.statusCode == 404 {
                     throw GitHubError.uploadFailed(L10n.errorGitHubRepo)
                 }
@@ -418,11 +434,15 @@ final class GitHubService: ObservableObject {
 
         let (_, response) = try await session.data(for: request)
         if let httpResponse = response as? HTTPURLResponse {
+            #if DEBUG
             print("[GitHub] 分支 \(branch) 检查: HTTP \(httpResponse.statusCode)")
+            #endif
             if httpResponse.statusCode == 200 { return }
         }
 
+        #if DEBUG
         print("[GitHub] 分支 \(branch) 不存在，从 \(baseBranch) 创建")
+        #endif
         let baseSHA = try await getBranchSHA(branch: baseBranch)
 
         let createURL = URL(string: "\(apiBase)/repos/\(repoOwner)/\(repoName)/git/refs")!
@@ -448,7 +468,9 @@ final class GitHubService: ObservableObject {
 
         let (data, response) = try await session.data(for: request)
         if let http = response as? HTTPURLResponse {
+            #if DEBUG
             print("[GitHub] 获取 \(branch) SHA: HTTP \(http.statusCode)")
+            #endif
             if http.statusCode == 404 {
                 throw GitHubError.uploadFailed("\(branch) \(L10n.errorGitHubBranchNotFound)")
             }
@@ -456,10 +478,14 @@ final class GitHubService: ObservableObject {
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let commit = json["commit"] as? [String: Any],
               let sha = commit["sha"] as? String else {
+            #if DEBUG
             print("[GitHub] SHA 解析失败: \(String(data: data, encoding: .utf8) ?? "")")
+            #endif
             throw GitHubError.uploadFailed(L10n.errorGitHubBranchInfo)
         }
+        #if DEBUG
         print("[GitHub] \(branch) SHA: \(sha)")
+        #endif
         return sha
     }
 

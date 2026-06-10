@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.3.0 |
+| 版本 | v2.4.0 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.3.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.3.0/MacIsland_v2.3.0.dmg)
+[📥 下载最新版本 (v2.4.0)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.0/MacIsland_v2.4.0.dmg)
 
 ---
 
@@ -304,6 +304,11 @@ MacIsland/
 
 ## 更新日志
 
+### v2.4.0 (2026-06-11) — 安全审计修复
+- ✅ **High** 剪贴板监控默认关闭（隐私保护，需手动开启）
+- ✅ **High** GitHub OAuth 日志泄漏修复（Release 构建不再输出 Device Code）
+- ✅ 新增「为爱发电」赞赏码
+
 ### v2.3.0 (2026-06-10) — 安全加固
 - ✅ **High** 移除 AI 自动端口扫描（防止本地服务劫持）
 - ✅ **High** GitHub Token scope 缩小为 `public_repo`
@@ -398,3 +403,15 @@ MacIsland/
 - 设计与功能参考自 Windows 版 **eIsland**
 - 天气数据由 [和风天气](https://www.qweather.com/) 提供
 - 壁纸社区由 [GitHub](https://github.com) 托管，CDN 加速由 [jsDelivr](https://www.jsdelivr.com/) 提供
+
+---
+
+## 为爱发电 ❤️
+
+如果 MacIsland 对你有帮助，欢迎请作者喝杯咖啡 ☕
+
+> 加急需求和加急 bug 修复请备注说明
+
+<div align="center">
+  <img src="wx.jpg" alt="微信赞赏码" width="300" />
+</div>

@@ -319,7 +319,7 @@ final class AppSettings: ObservableObject {
         animationSpeed = (defaults.string(forKey: Keys.animationSpeed))
             .flatMap(AnimationSpeed.init) ?? .medium
         springAnimation = defaults.object(forKey: Keys.springAnimation) as? Bool ?? true
-        clipboardEnabled = defaults.object(forKey: Keys.clipboardEnabled) as? Bool ?? true
+        clipboardEnabled = defaults.object(forKey: Keys.clipboardEnabled) as? Bool ?? false
         widgetAppearanceMode = (defaults.string(forKey: Keys.widgetAppearanceMode))
             .flatMap(WidgetAppearanceMode.init) ?? .followIsland
         hotkeyBindings = Self.loadHotkeyBindings(defaults: defaults)
