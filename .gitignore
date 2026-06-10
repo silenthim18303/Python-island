@@ -21,6 +21,7 @@ xcuserdata/
 
 # 敏感配置（不提交到 Git）
 MacIsland/Config/Secrets.swift
+Secrets.example.swift.template
 
 # 其他常见
 node_modules/
