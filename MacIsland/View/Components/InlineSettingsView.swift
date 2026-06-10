@@ -425,6 +425,18 @@ struct InlineSettingsView: View {
     private var weatherSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             settingsGroup(L10n.weatherTitle) {
+                describedRow("weatherAPIHost") {
+                    TextField(SettingItemMeta.meta("weatherAPIHost")?.hint ?? "",
+                              text: $settings.weatherAPIHost)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textPrimary)
+                        .frame(width: 140)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.fillSubtle))
+                }
+
                 describedRow("weatherAPIKey") {
                     SecureField(SettingItemMeta.meta("weatherAPIKey")?.hint ?? "",
                                 text: $settings.weatherAPIKey)
