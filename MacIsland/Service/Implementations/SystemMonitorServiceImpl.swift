@@ -207,16 +207,13 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
             let interface = ptr.pointee
             let name = String(cString: interface.ifa_name)
 
-            if name == "en0" || name == "en1" {
+            // 只处理 IPv4 地址（AF_INET），跳过 IPv6（AF_INET6）
+            if (name == "en0" || name == "en1") && interface.ifa_addr.pointee.sa_family == UInt8(AF_INET) {
                 var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                 getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
                             &hostname, socklen_t(hostname.count), nil, 0, NI_NUMERICHOST)
                 let ip = String(cString: hostname)
-                if !ip.isEmpty && ip != "0.0.0.0" {
-                    // 确保标准 IPv4 点分十进制格式
-                    if let formatted = formatIPv4(ip) { return formatted }
-                    return ip
-                }
+                if isValidIPv4(ip) { return ip }
             }
 
             guard let next = interface.ifa_next else { break }
@@ -225,14 +222,13 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
         return ""
     }
 
-    /// 格式化为标准 IPv4 点分十进制（xxx.xxx.xxx.xxx）
-    private func formatIPv4(_ ip: String) -> String? {
-        // 如果已经是标准 IPv4 格式，直接返回
+    /// 验证标准 IPv4 点分十进制格式（xxx.xxx.xxx.xxx）
+    private func isValidIPv4(_ ip: String) -> Bool {
         let parts = ip.split(separator: ".")
-        guard parts.count == 4 else { return nil }
-        guard parts.allSatisfy({ $0.allSatisfy(\.isNumber) }) else { return nil }
-        guard parts.allSatisfy({ (Int($0) ?? -1) >= 0 && (Int($0) ?? -1) <= 255 }) else { return nil }
-        return ip
+        guard parts.count == 4 else { return false }
+        guard parts.allSatisfy({ $0.allSatisfy(\.isNumber) }) else { return false }
+        guard parts.allSatisfy({ (Int($0) ?? -1) >= 0 && (Int($0) ?? -1) <= 255 }) else { return false }
+        return true
     }
 
     // MARK: - Private Methods
