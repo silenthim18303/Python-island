@@ -146,7 +146,16 @@ enum AIProviders {
 final class AIService: ObservableObject {
     static let shared = AIService()
 
-    @Published var messages: [AIMessage] = []
+    /// 最大保留消息数（防止内存无限增长）
+    private static let maxMessages = 100
+
+    @Published var messages: [AIMessage] = [] {
+        didSet {
+            if messages.count > Self.maxMessages {
+                messages = Array(messages.suffix(Self.maxMessages))
+            }
+        }
+    }
     @Published var isGenerating = false
     @Published var availableModels: [String] = []
     @Published var selectedModel: String {
@@ -416,6 +425,13 @@ final class AIService: ObservableObject {
 
     func clearMessages() {
         messages.removeAll()
+    }
+
+    /// 裁剪消息列表，保留最近 maxMessages 条
+    private func trimMessages() {
+        if messages.count > Self.maxMessages {
+            messages = Array(messages.suffix(Self.maxMessages))
+        }
     }
 
     func openServerURL() {
