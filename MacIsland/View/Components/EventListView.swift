@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 
 // MARK: - Event List View
 
@@ -17,6 +19,7 @@ struct EventListView: View {
     @State private var newTitle = ""
     @State private var newType: EventType = .countdown
     @State private var newDate = Date()
+    @State private var newImagePath: String?
 
     var body: some View {
         if store.sortedItems.isEmpty && !showAddEvent {
@@ -83,8 +86,12 @@ struct EventListView: View {
                 addEventForm
             }
 
-            ForEach(store.sortedItems) { item in
-                eventRow(item)
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: Theme.Spacing.sm) {
+                    ForEach(store.sortedItems) { item in
+                        eventCard(item)
+                    }
+                }
             }
         }
     }
@@ -92,12 +99,19 @@ struct EventListView: View {
     // MARK: - Add Event Form
 
     private var addEventForm: some View {
-        VStack(spacing: Theme.Spacing.sm) {
+        VStack(spacing: Theme.Spacing.md) {
+            // 照片选择
+            photoPickerButton(imagePath: $newImagePath)
+
+            // 标题输入
             TextField(L10n.eventName, text: $newTitle)
                 .textFieldStyle(.plain)
                 .font(.system(size: Theme.FontSize.body))
                 .foregroundColor(.textPrimary)
+                .padding(8)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
 
+            // 类型 + 日期
             HStack(spacing: Theme.Spacing.sm) {
                 Picker(L10n.eventTitle, selection: $newType) {
                     ForEach(EventType.allCases) { type in
@@ -110,10 +124,12 @@ struct EventListView: View {
                     .labelsHidden()
             }
 
+            // 按钮
             HStack {
                 Button(L10n.cancel) {
                     showAddEvent = false
                     newTitle = ""
+                    newImagePath = nil
                 }
                 .font(.system(size: Theme.FontSize.caption))
                 .foregroundColor(.textTertiary)
@@ -124,9 +140,10 @@ struct EventListView: View {
                 Button(L10n.add) {
                     let title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !title.isEmpty else { return }
-                    store.addEvent(title: title, type: newType, targetDate: newDate)
+                    store.addEvent(title: title, type: newType, targetDate: newDate, backgroundImagePath: newImagePath)
                     showAddEvent = false
                     newTitle = ""
+                    newImagePath = nil
                 }
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.white)
@@ -140,58 +157,204 @@ struct EventListView: View {
         .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
     }
 
-    // MARK: - Event Row
+    // MARK: - Photo Picker
 
-    private func eventRow(_ item: EventItem) -> some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // 天数显示
-            VStack(spacing: 2) {
-                Text("\(abs(item.daysRemaining))")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(item.isPast ? .textQuaternary : daysColor(item.daysRemaining))
-                Text(item.isPast ? L10n.eventDaysPassed : L10n.days)
-                    .font(.system(size: Theme.FontSize.caption2))
-                    .foregroundColor(.textQuaternary)
+    private func photoPickerButton(imagePath: Binding<String?>) -> some View {
+        Button {
+            pickImage(path: imagePath)
+        } label: {
+            if let path = imagePath.wrappedValue, let nsImage = NSImage(contentsOfFile: path) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white.opacity(0.2), lineWidth: 1)
+                    )
+            } else {
+                VStack(spacing: 4) {
+                    Image(systemName: "photo.badge.plus")
+                        .font(.system(size: 18))
+                    Text("封面")
+                        .font(.system(size: 9))
+                }
+                .foregroundColor(.textTertiary)
+                .frame(width: 60, height: 60)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.05)))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.1), lineWidth: 1)
+                )
             }
-            .frame(width: 50)
+        }
+        .buttonStyle(.plain)
+    }
 
-            // 信息
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.title)
-                    .font(.system(size: Theme.FontSize.body, weight: .medium))
-                    .foregroundColor(item.enabled ? .textPrimary : .textQuaternary)
-                    .lineLimit(1)
+    // MARK: - Event Card
 
-                HStack(spacing: 4) {
-                    Text(item.eventType.rawValue)
+    private func eventCard(_ item: EventItem) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            // 背景图片或纯色
+            if let path = item.backgroundImagePath, let nsImage = NSImage(contentsOfFile: path) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 90)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                            .fill(
+                                LinearGradient(
+                                    colors: [.black.opacity(0.7), .black.opacity(0.3)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
+            } else {
+                RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                    .fill(eventTypeColor(item.eventType).opacity(0.12))
+                    .frame(height: 90)
+            }
+
+            // 内容
+            HStack(spacing: Theme.Spacing.md) {
+                // 天数
+                VStack(spacing: 2) {
+                    Text("\(abs(item.daysRemaining))")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(item.isPast ? .white.opacity(0.5) : .white)
+                    Text(item.isPast ? L10n.eventDaysPassed : L10n.days)
                         .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(eventTypeColor(item.eventType))
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(Capsule().fill(eventTypeColor(item.eventType).opacity(0.15)))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                .frame(width: 55)
 
-                    Text(item.targetDate, style: .date)
-                        .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(.textQuaternary)
+                // 信息
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.title)
+                        .font(.system(size: Theme.FontSize.body, weight: .semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+
+                    HStack(spacing: 6) {
+                        Text(item.eventType.rawValue)
+                            .font(.system(size: Theme.FontSize.caption2, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(.white.opacity(0.2)))
+
+                        Text(item.targetDate, style: .date)
+                            .font(.system(size: Theme.FontSize.caption2))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                }
+
+                Spacer()
+
+                // 操作按钮
+                VStack(spacing: 8) {
+                    // 更换照片
+                    Button {
+                        pickImageForEvent(item)
+                    } label: {
+                        Image(systemName: "photo")
+                            .font(.system(size: 10))
+                            .foregroundColor(.white.opacity(0.7))
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(.white.opacity(0.15)))
+                    }
+                    .buttonStyle(.plain)
+
+                    // 删除
+                    Button { store.deleteEvent(id: item.id) } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.7))
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(.white.opacity(0.15)))
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-
-            Spacer()
-
-            // 操作
-            Button { store.deleteEvent(id: item.id) } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.textQuaternary)
-                    .frame(width: 32, height: 32)
-                    .contentShape(Rectangle())
-                    .background(Circle().fill(.white.opacity(0.05)))
-            }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm)
         }
-        .padding(.vertical, Theme.Spacing.xs)
-        .padding(.horizontal, Theme.Spacing.sm)
-        .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
+        .frame(height: 90)
+    }
+
+    // MARK: - Image Picker
+
+    private func pickImage(path: Binding<String?>) {
+        let panel = NSOpenPanel()
+        panel.title = "选择封面图片"
+        panel.allowedContentTypes = [.image, .jpeg, .png]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        // 复制到应用目录并裁剪为正方形
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let eventsDir = appSupport.appendingPathComponent("EventImages")
+        try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
+
+        let fileName = "\(UUID().uuidString).jpg"
+        let destURL = eventsDir.appendingPathComponent(fileName)
+
+        guard let sourceImage = NSImage(contentsOf: url) else { return }
+        guard let cropped = cropToSquare(sourceImage) else { return }
+
+        // 压缩保存
+        if let tiffData = cropped.tiffRepresentation,
+           let bitmap = NSBitmapImageRep(data: tiffData),
+           let jpegData = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) {
+            try? jpegData.write(to: destURL)
+            path.wrappedValue = destURL.path
+        }
+    }
+
+    private func pickImageForEvent(_ item: EventItem) {
+        let panel = NSOpenPanel()
+        panel.title = "选择封面图片"
+        panel.allowedContentTypes = [.image, .jpeg, .png]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let eventsDir = appSupport.appendingPathComponent("EventImages")
+        try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
+
+        let fileName = "\(item.id.uuidString).jpg"
+        let destURL = eventsDir.appendingPathComponent(fileName)
+
+        guard let sourceImage = NSImage(contentsOf: url) else { return }
+        guard let cropped = cropToSquare(sourceImage) else { return }
+
+        if let tiffData = cropped.tiffRepresentation,
+           let bitmap = NSBitmapImageRep(data: tiffData),
+           let jpegData = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) {
+            try? jpegData.write(to: destURL)
+            store.updateBackgroundImage(id: item.id, path: destURL.path)
+        }
+    }
+
+    /// 裁剪为正方形（取中心区域）
+    private func cropToSquare(_ image: NSImage) -> NSImage? {
+        let size = image.size
+        let side = min(size.width, size.height)
+        let x = (size.width - side) / 2
+        let y = (size.height - side) / 2
+        let cropRect = NSRect(x: x, y: y, width: side, height: side)
+
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+        guard let croppedCG = cgImage.cropping(to: cropRect) else { return nil }
+        return NSImage(cgImage: croppedCG, size: NSSize(width: side, height: side))
     }
 
     // MARK: - Helpers
