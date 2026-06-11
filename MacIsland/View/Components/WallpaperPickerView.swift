@@ -226,6 +226,13 @@ struct WallpaperPickerView: View {
                 .init(filenameExtension: "webp") ?? .data,
                 .mpeg4Movie, .quickTimeMovie,
             ]
+            // 默认打开图片目录，如不存在则打开用户主目录
+            if let picturesDir = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first,
+               FileManager.default.fileExists(atPath: picturesDir.path) {
+                $0.directoryURL = picturesDir
+            } else {
+                $0.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+            }
         }) else { return }
         processSelectedFile(url)
     }
