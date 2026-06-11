@@ -197,6 +197,12 @@ struct EventListView: View {
             $0.allowedContentTypes = [.image, .jpeg, .png]
             $0.allowsMultipleSelection = false
             $0.canChooseDirectories = false
+            if let picturesDir = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first,
+               FileManager.default.fileExists(atPath: picturesDir.path) {
+                $0.directoryURL = picturesDir
+            } else {
+                $0.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+            }
         }) else { return }
         handleImageForEvent(url: url, item: item)
     }
@@ -377,6 +383,12 @@ struct AddEventSheet: View {
             $0.allowedContentTypes = [.image, .jpeg, .png]
             $0.allowsMultipleSelection = false
             $0.canChooseDirectories = false
+            if let picturesDir = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first,
+               FileManager.default.fileExists(atPath: picturesDir.path) {
+                $0.directoryURL = picturesDir
+            } else {
+                $0.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+            }
         }) else { return }
         handleImageSelection(url: url, id: UUID().uuidString)
     }
