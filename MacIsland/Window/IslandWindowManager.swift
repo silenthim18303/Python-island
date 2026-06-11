@@ -59,6 +59,7 @@ final class IslandWindowManager {
     private var lastAdaptiveHeight: CGFloat = 0
     private var isResizing = false
     private var cancellables = Set<AnyCancellable>()
+    private var positionCheckTimer: Timer?
 
     /// 最近一次鼠标点击/键盘输入时间，用于防止输入时误触空闲收起
     private(set) var lastInteraction: Date = .distantPast
@@ -149,6 +150,19 @@ final class IslandWindowManager {
                 self?.panel?.alphaValue = CGFloat(opacity)
             }
             .store(in: &cancellables)
+
+        // 监听屏幕参数变化（分辨率/显示器热插拔/菜单栏高度变化）
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.repositionIfNeeded()
+        }
+
+        // 定期校验窗口位置（防止累积漂移）
+        positionCheckTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.repositionIfNeeded()
+        }
     }
 
     func resize(to size: CGSize, state: IslandState, animated: Bool = true) {
@@ -247,8 +261,36 @@ final class IslandWindowManager {
     }
 
     func destroy() {
+        positionCheckTimer?.invalidate()
+        positionCheckTimer = nil
         panel?.close()
         panel = nil
+    }
+
+    // MARK: - Position Persistence
+
+    /// 校验并修正窗口位置（屏幕变化或定期检查时调用）
+    private func repositionIfNeeded() {
+        guard let panel = panel, panel.isVisible else { return }
+
+        let size = IslandLayout.size(for: currentState)
+        let effectiveSize = IslandLayout.isHeightAdaptive(currentState)
+            ? CGSize(width: size.width, height: max(size.height, lastAdaptiveHeight))
+            : size
+        let correctFrame = calculateFrame(for: effectiveSize, state: currentState)
+
+        // 允许 1pt 误差避免频繁微调
+        let dx = abs(panel.frame.origin.x - correctFrame.origin.x)
+        let dy = abs(panel.frame.origin.y - correctFrame.origin.y)
+        let dw = abs(panel.frame.width - correctFrame.width)
+        let dh = abs(panel.frame.height - correctFrame.height)
+
+        guard dx > 1 || dy > 1 || dw > 1 || dh > 1 else { return }
+
+        // 屏幕变化时立即修正，不做动画
+        hostingView?.blockResize = false
+        panel.setFrame(correctFrame, display: true)
+        hostingView?.blockResize = true
     }
 
     // MARK: - Private Configuration
