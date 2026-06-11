@@ -86,7 +86,9 @@ struct EventListView: View {
             }
 
             ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: Theme.Spacing.sm) {
+                LazyVGrid(columns: [
+                    GridItem(.adaptive(minimum: 140, maximum: 160), spacing: Theme.Spacing.sm)
+                ], spacing: Theme.Spacing.sm) {
                     ForEach(store.sortedItems) { item in
                         eventCard(item)
                     }
@@ -98,95 +100,102 @@ struct EventListView: View {
     // MARK: - Event Card
 
     private func eventCard(_ item: EventItem) -> some View {
-        ZStack(alignment: .bottomLeading) {
+        let cardSize: CGFloat = 140
+
+        return ZStack(alignment: .topTrailing) {
             // 背景图片或纯色
             if let path = item.backgroundImagePath, let nsImage = NSImage(contentsOfFile: path) {
                 Image(nsImage: nsImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(height: 90)
+                    .frame(width: cardSize, height: cardSize)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm))
                     .overlay(
                         RoundedRectangle(cornerRadius: Theme.Radius.sm)
                             .fill(
                                 LinearGradient(
-                                    colors: [.black.opacity(0.7), .black.opacity(0.3)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                                    colors: [.black.opacity(0.1), .black.opacity(0.7)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
                                 )
                             )
                     )
             } else {
                 RoundedRectangle(cornerRadius: Theme.Radius.sm)
-                    .fill(eventTypeColor(item.eventType).opacity(0.12))
-                    .frame(height: 90)
+                    .fill(eventTypeColor(item.eventType).opacity(0.15))
+                    .frame(width: cardSize, height: cardSize)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                            .fill(
+                                LinearGradient(
+                                    colors: [.clear, eventTypeColor(item.eventType).opacity(0.3)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    )
             }
 
-            // 内容
-            HStack(spacing: Theme.Spacing.md) {
+            // 操作按钮（右上角）
+            HStack(spacing: 4) {
+                Button {
+                    pickImageForEvent(item)
+                } label: {
+                    Image(systemName: "photo")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.8))
+                        .frame(width: 20, height: 20)
+                        .background(Circle().fill(.black.opacity(0.3)))
+                }
+                .buttonStyle(.plain)
+
+                Button { store.deleteEvent(id: item.id) } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white.opacity(0.8))
+                        .frame(width: 20, height: 20)
+                        .background(Circle().fill(.black.opacity(0.3)))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(6)
+
+            // 底部内容
+            VStack(alignment: .leading, spacing: 2) {
                 // 天数
-                VStack(spacing: 2) {
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
                     Text("\(abs(item.daysRemaining))")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundColor(item.isPast ? .white.opacity(0.5) : .white)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
                     Text(item.isPast ? L10n.eventDaysPassed : L10n.days)
-                        .font(.system(size: Theme.FontSize.caption2))
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.7))
+                }
+
+                // 标题
+                Text(item.title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.9))
+                    .lineLimit(1)
+
+                // 类型 + 日期
+                HStack(spacing: 4) {
+                    Text(item.eventType.rawValue)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(.white.opacity(0.2)))
+
+                    Text(item.targetDate, style: .date)
+                        .font(.system(size: 9))
                         .foregroundColor(.white.opacity(0.6))
                 }
-                .frame(width: 55)
-
-                // 信息
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .font(.system(size: Theme.FontSize.body, weight: .semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    HStack(spacing: 6) {
-                        Text(item.eventType.rawValue)
-                            .font(.system(size: Theme.FontSize.caption2, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Capsule().fill(.white.opacity(0.2)))
-
-                        Text(item.targetDate, style: .date)
-                            .font(.system(size: Theme.FontSize.caption2))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                }
-
-                Spacer()
-
-                // 操作按钮
-                VStack(spacing: 8) {
-                    // 更换照片
-                    Button {
-                        pickImageForEvent(item)
-                    } label: {
-                        Image(systemName: "photo")
-                            .font(.system(size: 10))
-                            .foregroundColor(.white.opacity(0.7))
-                            .frame(width: 24, height: 24)
-                            .background(Circle().fill(.white.opacity(0.15)))
-                    }
-                    .buttonStyle(.plain)
-
-                    // 删除
-                    Button { store.deleteEvent(id: item.id) } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white.opacity(0.7))
-                            .frame(width: 24, height: 24)
-                            .background(Circle().fill(.white.opacity(0.15)))
-                    }
-                    .buttonStyle(.plain)
-                }
             }
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.vertical, Theme.Spacing.sm)
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(height: 90)
+        .frame(width: cardSize, height: cardSize)
     }
 
     // MARK: - Image Picker (更换封面)
