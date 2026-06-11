@@ -15,17 +15,20 @@ import UniformTypeIdentifiers
 struct EventListView: View {
     @ObservedObject var store: EventStore
 
-    @State private var showAddEvent = false
-    @State private var newTitle = ""
-    @State private var newType: EventType = .countdown
-    @State private var newDate = Date()
-    @State private var newImagePath: String?
+    @State private var showAddSheet = false
 
     var body: some View {
-        if store.sortedItems.isEmpty && !showAddEvent {
-            onboardingView
-        } else {
-            eventListView
+        Group {
+            if store.sortedItems.isEmpty {
+                onboardingView
+            } else {
+                eventListView
+            }
+        }
+        .sheet(isPresented: $showAddSheet) {
+            AddEventSheet(store: store, isPresented: $showAddSheet)
+                .onAppear { NotificationCenter.default.post(name: .sheetPresented, object: nil) }
+                .onDisappear { NotificationCenter.default.post(name: .sheetDismissed, object: nil) }
         }
     }
 
@@ -48,7 +51,7 @@ struct EventListView: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                showAddEvent = true
+                showAddSheet = true
             } label: {
                 Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -73,17 +76,13 @@ struct EventListView: View {
                     .foregroundColor(.textTertiary)
                 Spacer()
                 Button {
-                    showAddEvent = true
+                    showAddSheet = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 18))
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .buttonStyle(.plain)
-            }
-
-            if showAddEvent {
-                addEventForm
             }
 
             ScrollView(.vertical, showsIndicators: false) {
@@ -94,102 +93,6 @@ struct EventListView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Add Event Form
-
-    private var addEventForm: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            // 照片选择
-            photoPickerButton(imagePath: $newImagePath)
-
-            // 标题输入
-            TextField(L10n.eventName, text: $newTitle)
-                .textFieldStyle(.plain)
-                .font(.system(size: Theme.FontSize.body))
-                .foregroundColor(.textPrimary)
-                .padding(8)
-                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
-
-            // 类型 + 日期
-            HStack(spacing: Theme.Spacing.sm) {
-                Picker(L10n.eventTitle, selection: $newType) {
-                    ForEach(EventType.allCases) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(.menu)
-
-                DatePicker(L10n.eventDate, selection: $newDate, displayedComponents: .date)
-                    .labelsHidden()
-            }
-
-            // 按钮
-            HStack {
-                Button(L10n.cancel) {
-                    showAddEvent = false
-                    newTitle = ""
-                    newImagePath = nil
-                }
-                .font(.system(size: Theme.FontSize.caption))
-                .foregroundColor(.textTertiary)
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button(L10n.add) {
-                    let title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !title.isEmpty else { return }
-                    store.addEvent(title: title, type: newType, targetDate: newDate, backgroundImagePath: newImagePath)
-                    showAddEvent = false
-                    newTitle = ""
-                    newImagePath = nil
-                }
-                .font(.system(size: Theme.FontSize.caption, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(Capsule().fill(Color.fillSubtle))
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(Theme.Spacing.sm)
-        .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
-    }
-
-    // MARK: - Photo Picker
-
-    private func photoPickerButton(imagePath: Binding<String?>) -> some View {
-        Button {
-            pickImage(path: imagePath)
-        } label: {
-            if let path = imagePath.wrappedValue, let nsImage = NSImage(contentsOfFile: path) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(.white.opacity(0.2), lineWidth: 1)
-                    )
-            } else {
-                VStack(spacing: 4) {
-                    Image(systemName: "photo.badge.plus")
-                        .font(.system(size: 18))
-                    Text("封面")
-                        .font(.system(size: 9))
-                }
-                .foregroundColor(.textTertiary)
-                .frame(width: 60, height: 60)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.05)))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(.white.opacity(0.1), lineWidth: 1)
-                )
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Event Card
@@ -286,36 +189,7 @@ struct EventListView: View {
         .frame(height: 90)
     }
 
-    // MARK: - Image Picker
-
-    private func pickImage(path: Binding<String?>) {
-        let panel = NSOpenPanel()
-        panel.title = "选择封面图片"
-        panel.allowedContentTypes = [.image, .jpeg, .png]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-
-        // 复制到应用目录并裁剪为正方形
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let eventsDir = appSupport.appendingPathComponent("EventImages")
-        try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
-
-        let fileName = "\(UUID().uuidString).jpg"
-        let destURL = eventsDir.appendingPathComponent(fileName)
-
-        guard let sourceImage = NSImage(contentsOf: url) else { return }
-        guard let cropped = cropToSquare(sourceImage) else { return }
-
-        // 压缩保存
-        if let tiffData = cropped.tiffRepresentation,
-           let bitmap = NSBitmapImageRep(data: tiffData),
-           let jpegData = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) {
-            try? jpegData.write(to: destURL)
-            path.wrappedValue = destURL.path
-        }
-    }
+    // MARK: - Image Picker (更换封面)
 
     private func pickImageForEvent(_ item: EventItem) {
         let panel = NSOpenPanel()
@@ -359,13 +233,6 @@ struct EventListView: View {
 
     // MARK: - Helpers
 
-    private func daysColor(_ days: Int) -> Color {
-        if days <= 1 { return .red }
-        if days <= 7 { return .orange }
-        if days <= 30 { return .yellow }
-        return .green
-    }
-
     private func eventTypeColor(_ type: EventType) -> Color {
         switch type {
         case .countdown: return .blue
@@ -374,5 +241,170 @@ struct EventListView: View {
         case .holiday: return .green
         case .exam: return .orange
         }
+    }
+}
+
+// MARK: - Add Event Sheet
+
+/// 添加倒数日 Sheet（显示在灵动岛上）
+struct AddEventSheet: View {
+    @ObservedObject var store: EventStore
+    @Binding var isPresented: Bool
+
+    @State private var title = ""
+    @State private var type: EventType = .countdown
+    @State private var date = Date()
+    @State private var imagePath: String?
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // 标题栏
+            HStack {
+                Text("新建倒数日")
+                    .font(.system(size: Theme.FontSize.headline, weight: .semibold))
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.textTertiary)
+                        .frame(width: 20, height: 20)
+                        .background(Circle().fill(Color.fillSubtle))
+                }
+                .buttonStyle(.plain)
+            }
+
+            // 照片 + 表单
+            HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                // 照片选择
+                photoPickerButton
+
+                // 表单
+                VStack(spacing: Theme.Spacing.sm) {
+                    TextField("输入标题", text: $title)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.body))
+                        .foregroundColor(.textPrimary)
+                        .padding(8)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
+
+                    HStack(spacing: Theme.Spacing.sm) {
+                        Picker("类型", selection: $type) {
+                            ForEach(EventType.allCases) { t in
+                                Text(t.rawValue).tag(t)
+                            }
+                        }
+                        .pickerStyle(.menu)
+
+                        DatePicker("日期", selection: $date, displayedComponents: .date)
+                            .labelsHidden()
+                    }
+                }
+            }
+
+            // 按钮
+            HStack {
+                Button("取消") {
+                    isPresented = false
+                }
+                .font(.system(size: Theme.FontSize.caption))
+                .foregroundColor(.textTertiary)
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Button("添加") {
+                    let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
+                    store.addEvent(title: trimmed, type: type, targetDate: date, backgroundImagePath: imagePath)
+                    isPresented = false
+                }
+                .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(Color.accentColor))
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .frame(width: 360)
+        .background(VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow))
+    }
+
+    // MARK: - Photo Picker
+
+    private var photoPickerButton: some View {
+        Button {
+            pickImage()
+        } label: {
+            if let path = imagePath, let nsImage = NSImage(contentsOfFile: path) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white.opacity(0.2), lineWidth: 1)
+                    )
+            } else {
+                VStack(spacing: 4) {
+                    Image(systemName: "photo.badge.plus")
+                        .font(.system(size: 20))
+                    Text("选择封面")
+                        .font(.system(size: 9))
+                }
+                .foregroundColor(.textTertiary)
+                .frame(width: 80, height: 80)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.05)))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.1), lineWidth: 1)
+                )
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func pickImage() {
+        let panel = NSOpenPanel()
+        panel.title = "选择封面图片"
+        panel.allowedContentTypes = [.image, .jpeg, .png]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let eventsDir = appSupport.appendingPathComponent("EventImages")
+        try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
+
+        let fileName = "\(UUID().uuidString).jpg"
+        let destURL = eventsDir.appendingPathComponent(fileName)
+
+        guard let sourceImage = NSImage(contentsOf: url) else { return }
+        guard let cropped = cropToSquare(sourceImage) else { return }
+
+        if let tiffData = cropped.tiffRepresentation,
+           let bitmap = NSBitmapImageRep(data: tiffData),
+           let jpegData = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) {
+            try? jpegData.write(to: destURL)
+            imagePath = destURL.path
+        }
+    }
+
+    private func cropToSquare(_ image: NSImage) -> NSImage? {
+        let size = image.size
+        let side = min(size.width, size.height)
+        let x = (size.width - side) / 2
+        let y = (size.height - side) / 2
+        let cropRect = NSRect(x: x, y: y, width: side, height: side)
+
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+        guard let croppedCG = cgImage.cropping(to: cropRect) else { return nil }
+        return NSImage(cgImage: croppedCG, size: NSSize(width: side, height: side))
     }
 }
