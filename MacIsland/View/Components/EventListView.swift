@@ -178,6 +178,14 @@ struct EventListView: View {
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(1)
 
+                // 内容
+                if !item.content.isEmpty {
+                    Text(item.content)
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.6))
+                        .lineLimit(2)
+                }
+
                 // 类型 + 日期
                 HStack(spacing: 4) {
                     Text(item.eventType.rawValue)
@@ -269,6 +277,7 @@ struct AddEventSheet: View {
     @Binding var isPresented: Bool
 
     @State private var title = ""
+    @State private var content = ""
     @State private var type: EventType = .countdown
     @State private var date = Date()
     @State private var imagePath: String?
@@ -300,10 +309,17 @@ struct AddEventSheet: View {
 
                 // 表单
                 VStack(spacing: Theme.Spacing.sm) {
-                    TextField("输入标题", text: $title)
+                    TextField("标题", text: $title)
                         .textFieldStyle(.plain)
-                        .font(.system(size: Theme.FontSize.body))
+                        .font(.system(size: Theme.FontSize.body, weight: .medium))
                         .foregroundColor(.textPrimary)
+                        .padding(8)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
+
+                    TextField("内容（可选）", text: $content)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: Theme.FontSize.caption))
+                        .foregroundColor(.textSecondary)
                         .padding(8)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
 
@@ -335,7 +351,8 @@ struct AddEventSheet: View {
                 Button("添加") {
                     let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
-                    store.addEvent(title: trimmed, type: type, targetDate: date, backgroundImagePath: imagePath)
+                    let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                    store.addEvent(title: trimmed, content: trimmedContent, type: type, targetDate: date, backgroundImagePath: imagePath)
                     isPresented = false
                 }
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
