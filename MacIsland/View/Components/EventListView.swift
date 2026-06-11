@@ -198,18 +198,16 @@ struct EventListView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
 
-        // 附加到灵动岛窗口
-        if let islandWindow = IslandWindowManager.shared.islandWindow {
-            IslandWindowManager.shared.temporarilyLowerLevel()
-            panel.beginSheetModal(for: islandWindow) { [weak panel] response in
-                IslandWindowManager.shared.restoreLevel()
-                guard response == .OK, let url = panel?.url else { return }
-                self.handleImageForEvent(url: url, item: item)
-            }
-        } else {
-            guard panel.runModal() == .OK, let url = panel.url else { return }
-            handleImageForEvent(url: url, item: item)
-        }
+        // 降低窗口层级，避免被遮挡
+        IslandWindowManager.shared.temporarilyLowerLevel()
+
+        let response = panel.runModal()
+
+        // 恢复窗口层级
+        IslandWindowManager.shared.restoreLevel()
+
+        guard response == .OK, let url = panel.url else { return }
+        handleImageForEvent(url: url, item: item)
     }
 
     private func handleImageForEvent(url: URL, item: EventItem) {
@@ -389,18 +387,16 @@ struct AddEventSheet: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
 
-        // 附加到灵动岛窗口
-        if let islandWindow = IslandWindowManager.shared.islandWindow {
-            IslandWindowManager.shared.temporarilyLowerLevel()
-            panel.beginSheetModal(for: islandWindow) { [weak panel] response in
-                IslandWindowManager.shared.restoreLevel()
-                guard response == .OK, let url = panel?.url else { return }
-                self.handleImageSelection(url: url, id: UUID().uuidString)
-            }
-        } else {
-            guard panel.runModal() == .OK, let url = panel.url else { return }
-            handleImageSelection(url: url, id: UUID().uuidString)
-        }
+        // 降低窗口层级，避免被遮挡
+        IslandWindowManager.shared.temporarilyLowerLevel()
+
+        let response = panel.runModal()
+
+        // 恢复窗口层级
+        IslandWindowManager.shared.restoreLevel()
+
+        guard response == .OK, let url = panel.url else { return }
+        handleImageSelection(url: url, id: UUID().uuidString)
     }
 
     private func handleImageSelection(url: URL, id: String) {
