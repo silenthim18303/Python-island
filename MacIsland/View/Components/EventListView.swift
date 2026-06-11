@@ -192,21 +192,12 @@ struct EventListView: View {
     // MARK: - Image Picker (更换封面)
 
     private func pickImageForEvent(_ item: EventItem) {
-        let panel = NSOpenPanel()
-        panel.title = "选择封面图片"
-        panel.allowedContentTypes = [.image, .jpeg, .png]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-
-        // 降低窗口层级，避免被遮挡
-        IslandWindowManager.shared.temporarilyLowerLevel()
-
-        let response = panel.runModal()
-
-        // 恢复窗口层级
-        IslandWindowManager.shared.restoreLevel()
-
-        guard response == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.title = "选择封面图片"
+            $0.allowedContentTypes = [.image, .jpeg, .png]
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = false
+        }) else { return }
         handleImageForEvent(url: url, item: item)
     }
 
@@ -381,21 +372,12 @@ struct AddEventSheet: View {
     }
 
     private func pickImage() {
-        let panel = NSOpenPanel()
-        panel.title = "选择封面图片"
-        panel.allowedContentTypes = [.image, .jpeg, .png]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-
-        // 降低窗口层级，避免被遮挡
-        IslandWindowManager.shared.temporarilyLowerLevel()
-
-        let response = panel.runModal()
-
-        // 恢复窗口层级
-        IslandWindowManager.shared.restoreLevel()
-
-        guard response == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.title = "选择封面图片"
+            $0.allowedContentTypes = [.image, .jpeg, .png]
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = false
+        }) else { return }
         handleImageSelection(url: url, id: UUID().uuidString)
     }
 
