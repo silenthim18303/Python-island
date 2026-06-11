@@ -30,6 +30,7 @@ struct EventItem: Codable, Identifiable, Equatable {
     var targetDate: Date
     var createdAt: Date
     var enabled: Bool
+    var backgroundImagePath: String?
 
     init(
         id: UUID = UUID(),
@@ -37,7 +38,8 @@ struct EventItem: Codable, Identifiable, Equatable {
         eventType: EventType = .countdown,
         targetDate: Date,
         createdAt: Date = Date(),
-        enabled: Bool = true
+        enabled: Bool = true,
+        backgroundImagePath: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -45,6 +47,7 @@ struct EventItem: Codable, Identifiable, Equatable {
         self.targetDate = targetDate
         self.createdAt = createdAt
         self.enabled = enabled
+        self.backgroundImagePath = backgroundImagePath
     }
 
     /// 距离目标日期的天数（正数为未来，负数为过去）

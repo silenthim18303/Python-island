@@ -101,9 +101,9 @@ final class IslandStore: ObservableObject {
     /// Bind clipboard service — wire notification callback
     func bindClipboardService(_ service: ClipboardService) {
         self.clipboardService = service
-        service.setNotificationHandler { [weak self] title, body in
+        service.setNotificationHandler { [weak self] title, body, url in
             DispatchQueue.main.async {
-                self?.setNotification(title: title, body: body, source: .clipboard)
+                self?.setNotification(title: title, body: body, url: url, source: .clipboard)
             }
         }
     }
@@ -187,7 +187,7 @@ final class IslandStore: ObservableObject {
         animate(to: .maxExpand)
     }
 
-    func setNotification(title: String, body: String, source: NotificationSource = .other) {
+    func setNotification(title: String, body: String, url: String? = nil, source: NotificationSource = .other) {
         // 保存到通知历史（无论是否显示）
         NotificationCenterStore.shared.addNotification(title: title, body: body, source: source)
 
@@ -196,7 +196,7 @@ final class IslandStore: ObservableObject {
 
         previousState = state
         cancelIdleTimer()
-        animate(to: .notification(title: title, body: body))
+        animate(to: .notification(title: title, body: body, url: url))
         scheduleIdleAfter(3.0)
     }
 

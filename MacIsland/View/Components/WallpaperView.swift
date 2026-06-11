@@ -239,22 +239,16 @@ struct WallpaperView: View {
     // MARK: - Empty State
 
     private func openFilePicker() {
-        IslandWindowManager.shared.temporarilyLowerLevel()
-
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowedContentTypes = [
-            .image, .jpeg, .png,
-            .init(filenameExtension: "webp") ?? .data,
-            .mpeg4Movie, .quickTimeMovie,
-        ]
-
-        let result = panel.runModal()
-        IslandWindowManager.shared.restoreLevel()
-
-        guard result == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = false
+            $0.canChooseFiles = true
+            $0.allowedContentTypes = [
+                .image, .jpeg, .png,
+                .init(filenameExtension: "webp") ?? .data,
+                .mpeg4Movie, .quickTimeMovie,
+            ]
+        }) else { return }
         store.addWallpaper(from: url)
     }
 

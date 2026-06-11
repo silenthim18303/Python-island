@@ -50,8 +50,8 @@ final class EventStore: ObservableObject {
 
     // MARK: - CRUD
 
-    func addEvent(title: String, type: EventType, targetDate: Date) {
-        let item = EventItem(title: title, eventType: type, targetDate: targetDate)
+    func addEvent(title: String, type: EventType, targetDate: Date, backgroundImagePath: String? = nil) {
+        let item = EventItem(title: title, eventType: type, targetDate: targetDate, backgroundImagePath: backgroundImagePath)
         items.append(item)
     }
 
@@ -61,7 +61,21 @@ final class EventStore: ObservableObject {
     }
 
     func deleteEvent(id: UUID) {
+        // 删除关联的背景图片文件
+        if let index = items.firstIndex(where: { $0.id == id }),
+           let path = items[index].backgroundImagePath {
+            try? FileManager.default.removeItem(atPath: path)
+        }
         items.removeAll { $0.id == id }
+    }
+
+    func updateBackgroundImage(id: UUID, path: String?) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        // 删除旧图片
+        if let oldPath = items[index].backgroundImagePath, oldPath != path {
+            try? FileManager.default.removeItem(atPath: oldPath)
+        }
+        items[index].backgroundImagePath = path
     }
 
     /// 按距离目标日期排序（最近的在前）

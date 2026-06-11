@@ -91,6 +91,27 @@ final class IslandWindowManager {
         panel?.level = .statusBar
     }
 
+    /// 获取灵动岛窗口（用于附加 Sheet）
+    var islandWindow: NSWindow? { panel }
+
+    /// 统一文件选择器：降低窗口层级 → 暂停空闲计时 → 弹出 → 恢复
+    /// 返回选中的 URL（取消返回 nil）
+    static func openFilePanel(configure: ((NSOpenPanel) -> Void)? = nil) -> URL? {
+        let panel = NSOpenPanel()
+        configure?(panel)
+
+        shared.temporarilyLowerLevel()
+        IslandStore.isPanelPresented = true
+
+        let response = panel.runModal()
+
+        IslandStore.isPanelPresented = false
+        shared.restoreLevel()
+
+        guard response == .OK else { return nil }
+        return panel.url
+    }
+
     private init() {}
 
     // MARK: - Window Lifecycle

@@ -15,7 +15,7 @@ enum IslandState: Equatable {
     case hover
     case expanded
     case maxExpand
-    case notification(title: String, body: String)
+    case notification(title: String, body: String, url: String?)
     case lyrics
     case countdown
 }

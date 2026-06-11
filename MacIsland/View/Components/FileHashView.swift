@@ -95,16 +95,11 @@ struct FileHashView: View {
     // MARK: - File Selection
 
     private func selectFile() {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-
-        IslandStore.isPanelPresented = true
-        let result = panel.runModal()
-        IslandStore.isPanelPresented = false
-
-        guard result == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = false
+            $0.canChooseFiles = true
+        }) else { return }
         filePath = url.path
         computeHashes(for: url)
     }

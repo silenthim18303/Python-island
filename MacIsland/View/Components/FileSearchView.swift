@@ -189,19 +189,13 @@ struct FileSearchView: View {
     }
 
     private func selectSearchRootURL() -> URL? {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.canCreateDirectories = false
-        panel.message = L10n.fileSearchFolder
-
-        IslandStore.isPanelPresented = true
-        let result = panel.runModal()
-        IslandStore.isPanelPresented = false
-
-        guard result == .OK else { return nil }
-        return panel.url
+        IslandWindowManager.openFilePanel(configure: {
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = true
+            $0.canChooseFiles = false
+            $0.canCreateDirectories = false
+            $0.message = L10n.fileSearchFolder
+        })
     }
 
     nonisolated private static func searchFiles(query: String, depth: Int, extension ext: String, searchPath: URL) -> [SearchResult] {

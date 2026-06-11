@@ -217,27 +217,16 @@ struct WallpaperPickerView: View {
     // MARK: - Actions
 
     private func openFilePicker() {
-        // 临时降低灵动岛窗口层级，避免遮挡文件选择器
-        IslandWindowManager.shared.temporarilyLowerLevel()
-        IslandStore.isPanelPresented = true
-
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowedContentTypes = [
-            .image, .jpeg, .png,
-            .init(filenameExtension: "webp") ?? .data,
-            .mpeg4Movie, .quickTimeMovie,
-        ]
-
-        let result = panel.runModal()
-
-        // 恢复灵动岛窗口层级
-        IslandStore.isPanelPresented = false
-        IslandWindowManager.shared.restoreLevel()
-
-        guard result == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = false
+            $0.canChooseFiles = true
+            $0.allowedContentTypes = [
+                .image, .jpeg, .png,
+                .init(filenameExtension: "webp") ?? .data,
+                .mpeg4Movie, .quickTimeMovie,
+            ]
+        }) else { return }
         processSelectedFile(url)
     }
 

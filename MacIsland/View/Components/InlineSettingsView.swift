@@ -876,18 +876,13 @@ struct InlineSettingsView: View {
     }
 
     private func selectWallpaperPath() {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.canCreateDirectories = true
-        panel.message = L10n.wallpaperSelect
-
-        IslandStore.isPanelPresented = true
-        let result = panel.runModal()
-        IslandStore.isPanelPresented = false
-
-        guard result == .OK, let url = panel.url else { return }
+        guard let url = IslandWindowManager.openFilePanel(configure: {
+            $0.allowsMultipleSelection = false
+            $0.canChooseDirectories = true
+            $0.canChooseFiles = false
+            $0.canCreateDirectories = true
+            $0.message = L10n.wallpaperSelect
+        }) else { return }
         settings.setCustomWallpaperDirectory(url)
     }
 }
