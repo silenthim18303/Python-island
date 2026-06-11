@@ -13,16 +13,29 @@ import SwiftUI
 struct MemoListView: View {
     @ObservedObject var store: MemoStore
 
-    @State private var showNewMemo = false
-    @State private var editingId: UUID?
-    @State private var editTitle = ""
-    @State private var editContent = ""
+    @State private var showAddSheet = false
+    @State private var editingItem: MemoItem?
 
     var body: some View {
-        if store.sortedItems.isEmpty && !showNewMemo {
-            onboardingView
-        } else {
-            memoListView
+        Group {
+            if store.sortedItems.isEmpty {
+                onboardingView
+            } else {
+                memoListView
+            }
+        }
+        .sheet(isPresented: $showAddSheet) {
+            MemoEditorSheet(store: store, isPresented: $showAddSheet)
+                .onAppear { NotificationCenter.default.post(name: .sheetPresented, object: nil) }
+                .onDisappear { NotificationCenter.default.post(name: .sheetDismissed, object: nil) }
+        }
+        .sheet(item: $editingItem) { item in
+            MemoEditorSheet(store: store, isPresented: .init(
+                get: { editingItem != nil },
+                set: { if !$0 { editingItem = nil } }
+            ), editItem: item)
+                .onAppear { NotificationCenter.default.post(name: .sheetPresented, object: nil) }
+                .onDisappear { NotificationCenter.default.post(name: .sheetDismissed, object: nil) }
         }
     }
 
@@ -44,9 +57,7 @@ struct MemoListView: View {
                 .foregroundColor(.textTertiary)
 
             Button {
-                showNewMemo = true
-                editTitle = ""
-                editContent = ""
+                showAddSheet = true
             } label: {
                 Label(L10n.add, systemImage: "plus")
                     .font(.system(size: Theme.FontSize.body, weight: .medium))
@@ -65,16 +76,13 @@ struct MemoListView: View {
 
     private var memoListView: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            // 顶部操作栏
             HStack {
                 Text("\(store.items.count) \(L10n.count)")
                     .font(.system(size: Theme.FontSize.caption))
                     .foregroundColor(.textTertiary)
                 Spacer()
                 Button {
-                    showNewMemo = true
-                    editTitle = ""
-                    editContent = ""
+                    showAddSheet = true
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 18))
@@ -83,59 +91,10 @@ struct MemoListView: View {
                 .buttonStyle(.plain)
             }
 
-            // 新建/编辑区
-            if showNewMemo || editingId != nil {
-                memoEditor
-            }
-
-            // 便签列表
             ForEach(store.sortedItems) { item in
                 memoRow(item)
             }
         }
-    }
-
-    // MARK: - Editor
-
-    private var memoEditor: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            TextField(L10n.memoPlaceholder, text: $editTitle)
-                .textFieldStyle(.plain)
-                .font(.system(size: Theme.FontSize.body, weight: .semibold))
-                .foregroundColor(.textPrimary)
-
-            TextEditor(text: $editContent)
-                .font(.system(size: Theme.FontSize.caption))
-                .foregroundColor(.textSecondary)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 60, maxHeight: 120)
-                .padding(6)
-                .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
-
-            HStack {
-                Button(L10n.cancel) {
-                    showNewMemo = false
-                    editingId = nil
-                }
-                .font(.system(size: Theme.FontSize.caption))
-                .foregroundColor(.textTertiary)
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button(L10n.save) {
-                    saveMemo()
-                }
-                .font(.system(size: Theme.FontSize.caption, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(Capsule().fill(Color.fillSubtle))
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(Theme.Spacing.sm)
-        .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
     }
 
     // MARK: - Memo Row
@@ -177,10 +136,7 @@ struct MemoListView: View {
                 .buttonStyle(.plain)
 
                 Button {
-                    editingId = item.id
-                    editTitle = item.title
-                    editContent = item.content
-                    showNewMemo = false
+                    editingItem = item
                 } label: {
                     Image(systemName: "pencil")
                         .font(.system(size: 12))
@@ -203,21 +159,95 @@ struct MemoListView: View {
         .padding(Theme.Spacing.sm)
         .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Memo Editor Sheet
 
-    private func saveMemo() {
-        let title = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        let content = editContent.trimmingCharacters(in: .whitespacesAndNewlines)
+/// 便签编辑 Sheet（新建/编辑共用）
+struct MemoEditorSheet: View {
+    @ObservedObject var store: MemoStore
+    @Binding var isPresented: Bool
+    var editItem: MemoItem?
 
-        if let editId = editingId {
-            store.updateMemo(id: editId, title: title, content: content)
-            editingId = nil
-        } else {
-            store.addMemo(title: title, content: content)
-            showNewMemo = false
+    @State private var title = ""
+    @State private var content = ""
+
+    private var isEditing: Bool { editItem != nil }
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // 标题栏
+            HStack {
+                Text(isEditing ? "编辑便签" : "新建便签")
+                    .font(.system(size: Theme.FontSize.headline, weight: .semibold))
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.textTertiary)
+                        .frame(width: 20, height: 20)
+                        .background(Circle().fill(Color.fillSubtle))
+                }
+                .buttonStyle(.plain)
+            }
+
+            // 标题输入
+            TextField("标题", text: $title)
+                .textFieldStyle(.plain)
+                .font(.system(size: Theme.FontSize.body, weight: .medium))
+                .foregroundColor(.textPrimary)
+                .padding(8)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
+
+            // 内容输入
+            TextEditor(text: $content)
+                .font(.system(size: Theme.FontSize.caption))
+                .foregroundColor(.textSecondary)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 80, maxHeight: 160)
+                .padding(6)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
+
+            // 按钮
+            HStack {
+                Button("取消") {
+                    isPresented = false
+                }
+                .font(.system(size: Theme.FontSize.caption))
+                .foregroundColor(.textTertiary)
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Button(isEditing ? "保存" : "添加") {
+                    let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let c = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let editId = editItem?.id {
+                        store.updateMemo(id: editId, title: t, content: c)
+                    } else {
+                        store.addMemo(title: t, content: c)
+                    }
+                    isPresented = false
+                }
+                .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(Color.accentColor))
+                .buttonStyle(.plain)
+            }
         }
-        editTitle = ""
-        editContent = ""
+        .padding(Theme.Spacing.md)
+        .frame(width: 320)
+        .background(VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow))
+        .onAppear {
+            if let item = editItem {
+                title = item.title
+                content = item.content
+            }
+        }
     }
 }

@@ -239,17 +239,32 @@ struct WallpaperView: View {
     // MARK: - Empty State
 
     private func openFilePicker() {
-        guard let url = IslandWindowManager.openFilePanel(configure: {
-            $0.allowsMultipleSelection = false
-            $0.canChooseDirectories = false
-            $0.canChooseFiles = true
-            $0.allowedContentTypes = [
-                .image, .jpeg, .png,
-                .init(filenameExtension: "webp") ?? .data,
-                .mpeg4Movie, .quickTimeMovie,
-            ]
-        }) else { return }
-        store.addWallpaper(from: url)
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [
+            .image, .jpeg, .png,
+            .init(filenameExtension: "webp") ?? .data,
+            .mpeg4Movie, .quickTimeMovie,
+        ]
+        if let picturesDir = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first,
+           FileManager.default.fileExists(atPath: picturesDir.path) {
+            panel.directoryURL = picturesDir
+        } else {
+            panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+        }
+
+        IslandWindowManager.shared.temporarilyLowerLevel()
+        IslandStore.isPanelPresented = true
+        let response = panel.runModal()
+        IslandStore.isPanelPresented = false
+        IslandWindowManager.shared.restoreLevel()
+
+        guard response == .OK else { return }
+        for url in panel.urls {
+            store.addWallpaper(from: url)
+        }
     }
 
     private var emptyState: some View {

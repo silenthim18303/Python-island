@@ -63,8 +63,8 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
     }
 
     func startMonitoring() {
-        // 系统资源轮询（0.5秒间隔，快速响应）
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        // 系统资源轮询（1秒间隔，平衡响应速度与资源消耗）
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             DispatchQueue.main.async { self?.update() }
         }
         // 初始调用也在主线程，确保线程一致
@@ -177,9 +177,12 @@ final class SystemMonitorServiceImpl: SystemMonitorServiceProtocol, ObservableOb
         var stats = vm_statistics64()
         var size = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size) / 4
 
+        let hostPort = mach_host_self()
+        defer { mach_port_deallocate(mach_task_self_, hostPort) }
+
         guard withUnsafeMutablePointer(to: &stats, {
             $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
-                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &size)
+                host_statistics64(hostPort, HOST_VM_INFO64, $0, &size)
             }
         }) == KERN_SUCCESS else { return (0, 0, 0, 0) }
 
@@ -329,9 +332,13 @@ final class DefaultSystemMonitor: SystemMonitorProtocol {
     private func readCPUTicks() -> (user: UInt64, system: UInt64, idle: UInt64, nice: UInt64)? {
         var size = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info>.size / MemoryLayout<integer_t>.size)
         var data = host_cpu_load_info()
+
+        let hostPort = mach_host_self()
+        defer { mach_port_deallocate(mach_task_self_, hostPort) }
+
         let result = withUnsafeMutablePointer(to: &data) {
             $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
-                host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &size)
+                host_statistics(hostPort, HOST_CPU_LOAD_INFO, $0, &size)
             }
         }
         guard result == KERN_SUCCESS else { return nil }
@@ -349,9 +356,12 @@ final class DefaultSystemMonitor: SystemMonitorProtocol {
         var stats = vm_statistics64()
         var size = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size) / 4
 
+        let hostPort = mach_host_self()
+        defer { mach_port_deallocate(mach_task_self_, hostPort) }
+
         guard withUnsafeMutablePointer(to: &stats, {
             $0.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
-                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &size)
+                host_statistics64(hostPort, HOST_VM_INFO64, $0, &size)
             }
         }) == KERN_SUCCESS else { return (0, totalGB) }
 

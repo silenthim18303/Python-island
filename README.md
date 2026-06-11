@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.4.3 |
+| 版本 | v2.4.4 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.4.3)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.3/MacIsland_v2.4.3.dmg)
+[📥 下载最新版本 (v2.4.4)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.4/MacIsland_v2.4.4.dmg)
 
 ---
 
@@ -303,6 +303,13 @@ MacIsland/
 ---
 
 ## 更新日志
+
+### v2.4.4 (2026-06-11) — 便签优化 + 运行持久化
+- ✅ 便签新建/编辑改为 Sheet 弹窗（标题+内容）
+- ✅ 倒数日改为正方形卡片网格布局
+- ✅ 倒数日/便签 Sheet 弹窗显示在灵动岛上
+- ✅ 运行持久化修复（Mach端口泄漏/AI消息限制/壁纸观察者泄漏）
+- ✅ 壁纸选择默认打开图片目录 + 支持多选
 
 ### v2.4.3 (2026-06-11) — 倒数日优化 + 文件选择器统一
 - ✅ 倒数日支持照片背景（自动裁剪正方形）

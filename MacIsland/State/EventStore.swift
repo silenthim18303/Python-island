@@ -50,8 +50,8 @@ final class EventStore: ObservableObject {
 
     // MARK: - CRUD
 
-    func addEvent(title: String, type: EventType, targetDate: Date, backgroundImagePath: String? = nil) {
-        let item = EventItem(title: title, eventType: type, targetDate: targetDate, backgroundImagePath: backgroundImagePath)
+    func addEvent(title: String, content: String = "", type: EventType, targetDate: Date, backgroundImagePath: String? = nil) {
+        let item = EventItem(title: title, content: content, eventType: type, targetDate: targetDate, backgroundImagePath: backgroundImagePath)
         items.append(item)
     }
 

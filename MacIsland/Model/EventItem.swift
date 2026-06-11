@@ -26,6 +26,7 @@ enum EventType: String, Codable, CaseIterable, Identifiable {
 struct EventItem: Codable, Identifiable, Equatable {
     let id: UUID
     var title: String
+    var content: String
     var eventType: EventType
     var targetDate: Date
     var createdAt: Date
@@ -35,6 +36,7 @@ struct EventItem: Codable, Identifiable, Equatable {
     init(
         id: UUID = UUID(),
         title: String,
+        content: String = "",
         eventType: EventType = .countdown,
         targetDate: Date,
         createdAt: Date = Date(),
@@ -43,6 +45,7 @@ struct EventItem: Codable, Identifiable, Equatable {
     ) {
         self.id = id
         self.title = title
+        self.content = content
         self.eventType = eventType
         self.targetDate = targetDate
         self.createdAt = createdAt

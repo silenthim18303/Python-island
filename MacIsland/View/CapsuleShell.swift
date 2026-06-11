@@ -297,6 +297,8 @@ struct VisualEffectBlur: NSViewRepresentable {
 struct VideoWallpaperView: NSViewRepresentable {
     let url: URL
 
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
     func makeNSView(context: Context) -> AVPlayerView {
         let view = AVPlayerView()
         let player = AVPlayer(url: url)
@@ -308,8 +310,8 @@ struct VideoWallpaperView: NSViewRepresentable {
         view.showsSharingServiceButton = false
         view.videoGravity = .resizeAspectFill
 
-        // 循环播放
-        NotificationCenter.default.addObserver(
+        // 循环播放 — 存储 observer token 以便清理
+        let token = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: player.currentItem,
             queue: .main
@@ -317,12 +319,23 @@ struct VideoWallpaperView: NSViewRepresentable {
             player.seek(to: .zero)
             player.play()
         }
+        context.coordinator.observerToken = token
 
         player.play()
         return view
     }
 
     func updateNSView(_ nsView: AVPlayerView, context: Context) {}
+
+    static func dismantleNSView(_ nsView: AVPlayerView, coordinator: Coordinator) {
+        if let token = coordinator.observerToken {
+            NotificationCenter.default.removeObserver(token)
+        }
+    }
+
+    class Coordinator {
+        var observerToken: NSObjectProtocol?
+    }
 }
 
 // MARK: - Wallpaper Image View
