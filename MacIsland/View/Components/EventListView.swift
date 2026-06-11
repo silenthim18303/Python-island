@@ -198,8 +198,21 @@ struct EventListView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        // 附加到灵动岛窗口
+        if let islandWindow = IslandWindowManager.shared.islandWindow {
+            IslandWindowManager.shared.temporarilyLowerLevel()
+            panel.beginSheetModal(for: islandWindow) { [weak panel] response in
+                IslandWindowManager.shared.restoreLevel()
+                guard response == .OK, let url = panel?.url else { return }
+                self.handleImageForEvent(url: url, item: item)
+            }
+        } else {
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            handleImageForEvent(url: url, item: item)
+        }
+    }
 
+    private func handleImageForEvent(url: URL, item: EventItem) {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let eventsDir = appSupport.appendingPathComponent("EventImages")
         try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
@@ -376,13 +389,26 @@ struct AddEventSheet: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        // 附加到灵动岛窗口
+        if let islandWindow = IslandWindowManager.shared.islandWindow {
+            IslandWindowManager.shared.temporarilyLowerLevel()
+            panel.beginSheetModal(for: islandWindow) { [weak panel] response in
+                IslandWindowManager.shared.restoreLevel()
+                guard response == .OK, let url = panel?.url else { return }
+                self.handleImageSelection(url: url, id: UUID().uuidString)
+            }
+        } else {
+            guard panel.runModal() == .OK, let url = panel.url else { return }
+            handleImageSelection(url: url, id: UUID().uuidString)
+        }
+    }
 
+    private func handleImageSelection(url: URL, id: String) {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let eventsDir = appSupport.appendingPathComponent("EventImages")
         try? FileManager.default.createDirectory(at: eventsDir, withIntermediateDirectories: true)
 
-        let fileName = "\(UUID().uuidString).jpg"
+        let fileName = "\(id).jpg"
         let destURL = eventsDir.appendingPathComponent(fileName)
 
         guard let sourceImage = NSImage(contentsOf: url) else { return }

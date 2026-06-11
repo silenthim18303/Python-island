@@ -91,6 +91,9 @@ final class IslandWindowManager {
         panel?.level = .statusBar
     }
 
+    /// 获取灵动岛窗口（用于附加 Sheet）
+    var islandWindow: NSWindow? { panel }
+
     private init() {}
 
     // MARK: - Window Lifecycle
