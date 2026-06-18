@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit
 
 // MARK: - Notification View
 
@@ -42,7 +43,7 @@ struct NotificationView: View {
             Spacer(minLength: Theme.Spacing.sm)
 
             // 打开链接按钮
-            if let url, let linkURL = URL(string: url) {
+            if let url, let linkURL = normalizeURL(url) {
                 Button {
                     NSWorkspace.shared.open(linkURL)
                     store.setIdle()
@@ -68,5 +69,18 @@ struct NotificationView: View {
         }
         .padding(.horizontal, Theme.Spacing.lg)
         .padding(.vertical, Theme.Spacing.md)
+    }
+
+    private func normalizeURL(_ urlString: String) -> URL? {
+        if let url = URL(string: urlString),
+           let scheme = url.scheme?.lowercased(),
+           ["http", "https"].contains(scheme) {
+            return url
+        }
+        let withScheme = "https://\(urlString)"
+        if let url = URL(string: withScheme) {
+            return url
+        }
+        return nil
     }
 }

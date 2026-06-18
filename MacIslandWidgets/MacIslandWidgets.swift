@@ -12,7 +12,6 @@ import SwiftUI
 struct MacIslandWidgets: WidgetBundle {
     var body: some Widget {
         WeatherWidget()
-        MusicWidget()
         TimerWidget()
         SystemMonitorWidget()
         TodoWidget()

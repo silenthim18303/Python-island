@@ -50,7 +50,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case wallpaper     // 壁纸
     case animation     // 动画
     case clipboard     // 剪贴板
-    case music         // 音乐与歌词
     case weather       // 天气
     case notifications // 通知中心
     case community     // 社区
@@ -68,7 +67,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .wallpaper:     return L10n.wallpaperTitle
         case .animation:     return L10n.settingsAnimation
         case .clipboard:     return L10n.settingsClipboard
-        case .music:         return L10n.musicLyrics
         case .weather:       return L10n.weatherTitle
         case .notifications: return L10n.notifCenter
         case .community:     return L10n.settingsCommunity
@@ -86,7 +84,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .wallpaper:     return "photo"
         case .animation:     return "wand.and.rays"
         case .clipboard:     return "doc.on.clipboard"
-        case .music:         return "music.note"
         case .weather:       return "cloud.sun"
         case .notifications: return "bell.badge"
         case .community:     return "person.2"
@@ -105,7 +102,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .wallpaper:  return ["壁纸", "存储", "路径", "wallpaper", "path"]
         case .animation:  return ["动画", "弹簧", "速度", "animation", "spring", "speed"]
         case .clipboard:  return ["剪贴板", "链接", "url", "黑名单", "clipboard", "link"]
-        case .music:      return ["音乐", "歌词", "lyrics", "netease", "music"]
         case .weather:       return ["天气", "城市", "weather", "city", "location"]
         case .notifications: return ["通知", "免打扰", "历史", "notification", "dnd", "mute"]
         case .community:     return ["社区", "上传", "用户名", "community", "upload"]
@@ -227,11 +223,6 @@ struct SettingItemMeta: Identifiable {
             .init("dndTimeRange", .notifications,
                   title: L10n.notifDNDTime, description: L10n.descDndTime,
                   keywords: ["time", "时段", "时间"]),
-
-            // 音乐与歌词
-            .init("preferredLyricsSource", .music,
-                  title: L10n.settingsLyricsSource, description: L10n.descLyricsSource,
-                  keywords: ["lyrics", "netease", "网易", "qq", "酷狗", "lrclib"]),
 
             // 天气
             .init("weatherAPIHost", .weather,

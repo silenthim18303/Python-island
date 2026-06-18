@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVKit
+import Combine
 
 // MARK: - Capsule Shell
 
@@ -17,41 +18,51 @@ struct CapsuleShell: View {
     @ObservedObject private var wallpaperStore = WallpaperStore.shared
     @ObservedObject private var settings = AppSettings.shared
     @EnvironmentObject var timerService: TimerService
-    @EnvironmentObject var musicService: SystemMusicService
+    @EnvironmentObject var musicService: MusicService
     @EnvironmentObject var lyricsService: LyricsService
     @State private var isDragOver = false
+    @State private var lastSyncedSize: CGSize = .zero
+    /// SwiftUI 实际渲染的尺寸（延迟同步，与 NSPanel 动画对齐）
+    @State private var displaySize: CGSize = IslandLayout.size(for: .idle)
 
     var body: some View {
         ZStack {
-            // 透明背景层 — 不接受命中测试，让点击穿透
             Color.clear.allowsHitTesting(false)
-
-            // 内容区域 — 接受命中测试
             contentWithInteraction
         }
-        .frame(width: currentSize.width)
-        .frame(
-            height: isHeightAdaptive ? nil : currentSize.height
-        )
-        .frame(
-            minHeight: isHeightAdaptive ? currentSize.height : nil,
-            alignment: .center
-        )
+        .frame(width: displaySize.width, height: isHeightAdaptive ? nil : displaySize.height)
+        .frame(minHeight: isHeightAdaptive ? displaySize.height : nil, alignment: .center)
+        .onAppear {
+            displaySize = currentSize
+            lastSyncedSize = currentSize
+            DispatchQueue.main.async {
+                IslandWindowManager.shared.resize(to: currentSize, state: store.state, animated: false)
+            }
+        }
+        .onReceive(store.$state) { _ in syncWindowSize() }
     }
 
     private var isHeightAdaptive: Bool {
         IslandLayout.isHeightAdaptive(store.state)
     }
 
-    /// 当前形态的目标尺寸，空闲态根据内容动态调整宽度
+    /// 当前窗口尺寸 — 各状态严格固定
     private var currentSize: CGSize {
-        switch store.state {
-        case .idle:
-            let hasTimer = timerService.pomodoro.running || timerService.countdown.state == .running
-            let hasLyrics = musicService.hasMedia && !lyricsService.currentLyrics.lines.isEmpty
-            return IslandLayout.idleSize(hasTimer: hasTimer, hasLyrics: hasLyrics)
-        default:
-            return IslandLayout.size(for: store.state)
+        IslandLayout.size(for: store.state)
+    }
+
+    private func syncWindowSize() {
+        let size = currentSize
+        guard size != lastSyncedSize else { return }
+        lastSyncedSize = size
+        // NSPanel 动画
+        DispatchQueue.main.async {
+            IslandWindowManager.shared.resize(to: size, state: self.store.state, animated: true)
+        }
+        // SwiftUI 帧同步动画（与面板动画对齐）
+        let duration = AppSettings.shared.animationSpeed.duration
+        withAnimation(.easeInOut(duration: duration)) {
+            displaySize = size
         }
     }
 
@@ -59,7 +70,7 @@ struct CapsuleShell: View {
 
     @ViewBuilder
     private var contentWithInteraction: some View {
-        let size = currentSize
+        let size = displaySize
         ZStack {
             // 背景遮罩（有壁纸时换为半透明暗色）
             backgroundView
@@ -89,13 +100,14 @@ struct CapsuleShell: View {
     // MARK: - Hover Handling
 
     private func handleHover(_ hovering: Bool) {
-        // 拖拽期间忽略 hover 事件，防止灵动岛收起
         if isDragOver { return }
 
-        switch store.state {
-        case .idle, .lyrics, .countdown:
+        if store.state.isCompact {
             if hovering { store.setHover() }
+            return
+        }
 
+        switch store.state {
         case .hover:
             if hovering {
                 store.cancelIdleTimer()
@@ -107,7 +119,6 @@ struct CapsuleShell: View {
             if hovering {
                 store.cancelIdleTimer()
             } else {
-                // 窗口有键盘焦点、sheet/面板显示、或刚交互过（输入中）时不自动收起
                 let recentlyInteracted = Date().timeIntervalSince(IslandWindowManager.shared.lastInteraction) < 2.0
                 if IslandWindowManager.shared.isKeyWindow || store.isSheetPresented || store.isPanelPresented || recentlyInteracted {
                     return
@@ -117,14 +128,22 @@ struct CapsuleShell: View {
 
         case .notification:
             break
+
+        default:
+            break
         }
     }
 
     // MARK: - Tap Handling
 
     private func handleTap() {
+        if store.state.isCompact {
+            store.setExpanded()
+            return
+        }
+
         switch store.state {
-        case .idle, .lyrics, .countdown, .hover:
+        case .hover:
             store.setExpanded()
         case .notification(_, _, let url):
             if let url, let linkURL = URL(string: url) {
@@ -142,34 +161,48 @@ struct CapsuleShell: View {
     private var backgroundView: some View {
         let cornerRadius = IslandLayout.cornerRadius(for: store.state)
 
-        switch store.state {
-        case .idle:
-            Color.black
+        if store.state.isCompact {
+            let baseOpacity = wallpaperStore.activeWallpaper == nil ? 0.78 : 0.58
+            // 所有缩小态：深色材质底 + 细描边，壁纸存在时保留一点透出感
+            Rectangle()
+                .fill(Color.black.opacity(baseOpacity))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.13),
+                            Color.white.opacity(0.02),
+                            Color.black.opacity(0.12),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .overlay(
                     Capsule()
-                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
+                        .stroke(.white.opacity(0.16), lineWidth: 0.5)
                 )
+        } else {
+            switch store.state {
+            case .hover, .expanded, .maxExpand:
+                VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
+                    .overlay(Color.black.opacity(0.12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(.white.opacity(Theme.FillOpacity.strong), lineWidth: 0.5)
+                    )
 
-        case .hover, .expanded, .maxExpand:
-            VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(.white.opacity(Theme.FillOpacity.strong), lineWidth: 0.5)
-                )
+            case .notification:
+                VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
+                    .overlay(Color.black.opacity(0.10))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
+                    )
 
-        case .notification:
-            VisualEffectBlur(material: .hudWindow, blendingMode: .behindWindow)
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
-                )
-
-        case .lyrics, .countdown:
-            Color.black.opacity(0.7)
-                .overlay(
-                    Capsule()
-                        .stroke(.white.opacity(Theme.FillOpacity.hairline), lineWidth: 0.5)
-                )
+            default:
+                EmptyView()
+            }
         }
     }
 
@@ -193,27 +226,25 @@ struct CapsuleShell: View {
 
     @ViewBuilder
     private var stateContent: some View {
-        switch store.state {
-        case .idle:
-            IdleView(store: store)
+        if store.state.isCompact {
+            IdleView()
+        } else {
+            switch store.state {
+            case .hover:
+                HoverView()
 
-        case .hover:
-            HoverView(store: store)
+            case .expanded:
+                ExpandedView(store: store)
 
-        case .expanded:
-            ExpandedView(store: store)
+            case .maxExpand:
+                MaxExpandView(store: store)
 
-        case .maxExpand:
-            MaxExpandView(store: store)
+            case .notification(let title, let body, let url):
+                NotificationView(title: title, notificationBody: body, url: url, store: store)
 
-        case .notification(let title, let body, let url):
-            NotificationView(title: title, notificationBody: body, url: url, store: store)
-
-        case .lyrics:
-            LyricsView(store: store)
-
-        case .countdown:
-            CountdownCompactView(store: store)
+            default:
+                EmptyView()
+            }
         }
     }
 
@@ -222,12 +253,10 @@ struct CapsuleShell: View {
     private var capsuleShape: some Shape {
         let cornerRadius = IslandLayout.cornerRadius(for: store.state)
 
-        switch store.state {
-        case .idle, .lyrics, .countdown:
+        if store.state.isCompact {
             return AnyShape(Capsule())
-        default:
-            return AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
+        return AnyShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 
     // MARK: - Shadow Config
@@ -239,17 +268,24 @@ struct CapsuleShell: View {
     }
 
     private var stateShadow: ShadowConfig {
+        if store.state.isCompact {
+            switch store.state {
+            case .idle, .idleClock1, .idleClock2, .idleClock1Clock2:
+                return ShadowConfig(opacity: 0.3, radius: 8, y: 2)
+            default:
+                return ShadowConfig(opacity: 0.35, radius: 10, y: 3)
+            }
+        }
+
         switch store.state {
-        case .idle:
-            return ShadowConfig(opacity: 0.3, radius: 8, y: 2)
         case .hover, .notification:
             return ShadowConfig(opacity: 0.35, radius: 12, y: 4)
         case .expanded:
             return ShadowConfig(opacity: 0.4, radius: 16, y: 6)
         case .maxExpand:
             return ShadowConfig(opacity: 0.45, radius: 20, y: 8)
-        case .lyrics, .countdown:
-            return ShadowConfig(opacity: 0.25, radius: 10, y: 3)
+        default:
+            return ShadowConfig(opacity: 0.35, radius: 10, y: 3)
         }
     }
 }

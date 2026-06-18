@@ -30,11 +30,11 @@ final class LocalAIService: ObservableObject {
 
         // 功能
         "功能": ["我可以帮你：\n1. 播放/暂停音乐\n2. 查看天气\n3. 设置计时器\n4. 管理待办事项\n5. 聊天解闷\n\n有什么需要帮忙的吗？"],
-        "features": ["I can help you with:\n1. Play/pause music\n2. Check weather\n3. Set timers\n4. Manage todos\n5. Chat\n\nWhat do you need?"],
+        "features": ["I can help you with:\n1. Check weather\n2. Set timers\n3. Manage todos\n4. Chat\n\nWhat do you need?"],
 
         // 音乐
         "音乐": ["正在为你播放音乐！", "音乐已暂停。", "让我为你切到下一首歌。"],
-        "music": ["Playing music for you!", "Music paused.", "Let me skip to the next song."],
+        "music": ["Music playback is not available."],
 
         // 计时器
         "计时器": ["计时器已启动！", "计时器已暂停。", "计时器已重置。"],
@@ -50,7 +50,7 @@ final class LocalAIService: ObservableObject {
 
         // 帮助
         "帮助": ["你可以问我：\n- 今天天气怎么样？\n- 现在几点了？\n- 播放音乐\n- 设置计时器\n- 有什么功能？\n\n随时告诉我你需要什么！"],
-        "help": ["You can ask me:\n- What's the weather like?\n- What time is it?\n- Play music\n- Set a timer\n- What features do you have?\n\nLet me know what you need!"],
+        "help": ["You can ask me:\n- What's the weather like?\n- What time is it?\n- Set a timer\n- What features do you have?\n\nLet me know what you need!"],
 
         // 笑话
         "笑话": ["为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 = Dec 25 😄", "什么动物最懒？当然是懒羊羊啦！🐑"],

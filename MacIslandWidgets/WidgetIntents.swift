@@ -62,44 +62,6 @@ struct TodoToggleIntent: AppIntent {
     }
 }
 
-// MARK: - Music Play/Pause Intent
-
-/// 音乐播放/暂停
-struct MusicPlayPauseIntent: AppIntent {
-    static var title: LocalizedStringResource = "Play/Pause Music"
-    static var description = IntentDescription("Toggle music playback")
-
-    func perform() async throws -> some IntentResult {
-        // 通过共享 UserDefaults 通知主应用
-        let sharedDefaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
-        sharedDefaults.set(true, forKey: "widget_music_toggle")
-        sharedDefaults.synchronize()
-
-        // 发送通知给主应用
-        NotificationCenter.default.post(name: NSNotification.Name("WidgetMusicToggle"), object: nil)
-
-        return .result()
-    }
-}
-
-// MARK: - Music Next Track Intent
-
-/// 音乐下一首
-struct MusicNextTrackIntent: AppIntent {
-    static var title: LocalizedStringResource = "Next Track"
-    static var description = IntentDescription("Skip to next track")
-
-    func perform() async throws -> some IntentResult {
-        let sharedDefaults = UserDefaults(suiteName: "group.geminimortal.MacIsland") ?? UserDefaults.standard
-        sharedDefaults.set(true, forKey: "widget_music_next")
-        sharedDefaults.synchronize()
-
-        NotificationCenter.default.post(name: NSNotification.Name("WidgetMusicNext"), object: nil)
-
-        return .result()
-    }
-}
-
 // MARK: - Timer Start/Stop Intent
 
 /// 计时器开始/停止

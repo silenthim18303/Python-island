@@ -40,18 +40,6 @@ enum WidgetL10n {
     static var weatherWindSpeed: String { t("widget_weather_wind_speed") }
     static var weatherCurrentLocation: String { t("widget_weather_current_location") }
 
-    // MARK: - 音乐小组件
-
-    static var musicDisplayName: String { t("widget_music_display_name") }
-    static var musicDescription: String { t("widget_music_description") }
-    static var musicTitle: String { t("widget_music_title") }
-    static var musicNoPlayback: String { t("widget_music_no_playback") }
-    static var musicNoContent: String { t("widget_music_no_content") }
-    static var musicPlaying: String { t("widget_music_playing") }
-    static var musicPaused: String { t("widget_music_paused") }
-    static var musicUnknownArtist: String { t("widget_music_unknown_artist") }
-    static var musicNowPlaying: String { t("widget_music_now_playing") }
-
     // MARK: - 计时器小组件
 
     static var timerDisplayName: String { t("widget_timer_display_name") }
@@ -153,17 +141,6 @@ enum WidgetL10n {
         "widget_weather_wind_speed": "风速",
         "widget_weather_current_location": "当前位置",
 
-        // 音乐
-        "widget_music_display_name": "音乐",
-        "widget_music_description": "显示当前播放的音乐",
-        "widget_music_title": "音乐",
-        "widget_music_no_playback": "暂无播放",
-        "widget_music_no_content": "暂无播放内容",
-        "widget_music_playing": "播放中",
-        "widget_music_paused": "已暂停",
-        "widget_music_unknown_artist": "未知艺人",
-        "widget_music_now_playing": "正在播放",
-
         // 计时器
         "widget_timer_display_name": "计时器",
         "widget_timer_description": "番茄钟和倒计时",
@@ -260,17 +237,6 @@ enum WidgetL10n {
         "widget_weather_wind_speed": "Wind",
         "widget_weather_current_location": "Current Location",
 
-        // Music
-        "widget_music_display_name": "Music",
-        "widget_music_description": "Show currently playing music",
-        "widget_music_title": "Music",
-        "widget_music_no_playback": "No Playback",
-        "widget_music_no_content": "No music playing",
-        "widget_music_playing": "Playing",
-        "widget_music_paused": "Paused",
-        "widget_music_unknown_artist": "Unknown Artist",
-        "widget_music_now_playing": "Now Playing",
-
         // Timer
         "widget_timer_display_name": "Timer",
         "widget_timer_description": "Pomodoro and countdown",
@@ -365,17 +331,6 @@ enum WidgetL10n {
         "widget_weather_humidity": "湿度",
         "widget_weather_wind_speed": "風速",
         "widget_weather_current_location": "現在地",
-
-        // 音楽
-        "widget_music_display_name": "音楽",
-        "widget_music_description": "再生中の音楽を表示",
-        "widget_music_title": "音楽",
-        "widget_music_no_playback": "再生なし",
-        "widget_music_no_content": "再生中の音楽がありません",
-        "widget_music_playing": "再生中",
-        "widget_music_paused": "一時停止",
-        "widget_music_unknown_artist": "不明なアーティスト",
-        "widget_music_now_playing": "再生中",
 
         // タイマー
         "widget_timer_display_name": "タイマー",

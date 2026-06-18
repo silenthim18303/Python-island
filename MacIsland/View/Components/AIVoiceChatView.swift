@@ -10,7 +10,7 @@ import SwiftUI
 /// AI 语音对话视图
 struct AIVoiceChatView: View {
     @EnvironmentObject var voiceService: VoiceService
-    @StateObject private var localAI = LocalAIService.shared
+    @ObservedObject private var localAI = LocalAIService.shared
     @State private var chatMessages: [ChatMessage] = []
     @State private var isProcessing = false
     @State private var inputText = ""

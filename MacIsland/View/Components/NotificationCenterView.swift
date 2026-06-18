@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit
 
 // MARK: - Notification Center View
 
@@ -149,7 +150,7 @@ struct NotificationCenterView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Spacing.xs) {
                 filterChip(nil, label: L10n.notifAll)
-                ForEach([NotificationSource.timer, .clipboard, .music, .system], id: \.self) { source in
+                ForEach([NotificationSource.timer, .clipboard, .system], id: \.self) { source in
                     filterChip(source, label: source.displayName)
                 }
             }
@@ -235,10 +236,7 @@ private struct NotificationRecordRow: View {
                     .foregroundColor(.textPrimary)
                     .lineLimit(1)
 
-                Text(record.body)
-                    .font(.system(size: Theme.FontSize.caption2))
-                    .foregroundColor(.textTertiary)
-                    .lineLimit(2)
+                linkifiedBody
             }
 
             Spacer()
@@ -261,6 +259,91 @@ private struct NotificationRecordRow: View {
         }
         .padding(Theme.Spacing.sm)
         .background(RoundedRectangle(cornerRadius: Theme.Radius.sm).fill(Color.fillSubtle))
+    }
+
+    private var linkifiedBody: some View {
+        linkifiedTextView
+            .lineLimit(2)
+    }
+
+    private var linkifiedTextView: some View {
+        let segments = parseURLSegments(from: record.body)
+        return HStack(spacing: 0) {
+            ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                switch segment {
+                case .text(let text):
+                    Text(text)
+                        .font(.system(size: Theme.FontSize.caption2))
+                        .foregroundColor(.textTertiary)
+                case .link(let text, let url):
+                    Button {
+                        NSWorkspace.shared.open(url)
+                    } label: {
+                        Text(text)
+                            .font(.system(size: Theme.FontSize.caption2))
+                            .foregroundColor(Color.appAccent)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private enum TextSegment {
+        case text(String)
+        case link(String, URL)
+    }
+
+    private func parseURLSegments(from text: String) -> [TextSegment] {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return [.text(text)]
+        }
+
+        let range = NSRange(text.startIndex..., in: text)
+        let matches = detector.matches(in: text, options: [], range: range)
+
+        guard !matches.isEmpty else {
+            return [.text(text)]
+        }
+
+        var segments: [TextSegment] = []
+        var lastIndex = text.startIndex
+
+        for match in matches {
+            guard let matchRange = Range(match.range, in: text) else { continue }
+            if lastIndex < matchRange.lowerBound {
+                let preceding = String(text[lastIndex..<matchRange.lowerBound])
+                segments.append(.text(preceding))
+            }
+            let urlString = String(text[matchRange])
+            let normalizedURL = normalizeURL(urlString)
+            if let url = normalizedURL {
+                segments.append(.link(url.absoluteString, url))
+            } else {
+                segments.append(.text(urlString))
+            }
+            lastIndex = matchRange.upperBound
+        }
+
+        if lastIndex < text.endIndex {
+            segments.append(.text(String(text[lastIndex...])))
+        }
+
+        return segments
+    }
+
+    private func normalizeURL(_ urlString: String) -> URL? {
+        if let url = URL(string: urlString),
+           let scheme = url.scheme?.lowercased(),
+           ["http", "https"].contains(scheme) {
+            return url
+        }
+        let withScheme = "https://\(urlString)"
+        if let url = URL(string: withScheme) {
+            return url
+        }
+        return nil
     }
 
     private var timeString: String {

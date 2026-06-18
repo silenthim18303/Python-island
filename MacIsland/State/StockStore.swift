@@ -122,7 +122,7 @@ final class StockStore: ObservableObject {
         isLoading = true
         error = nil
 
-        let dataProvider = StockDataProvider()
+        let dataProvider = StockDataProvider.shared
         let symbols = watchlist.map { ($0.id, $0.market) }
 
         do {
@@ -177,7 +177,7 @@ final class StockStore: ObservableObject {
 
     /// 为新添加的自选股立即获取行情
     private func fetchQuoteForNewStock(_ item: WatchlistItem) async {
-        let dataProvider = StockDataProvider()
+        let dataProvider = StockDataProvider.shared
         do {
             let quote = try await dataProvider.fetchQuote(symbol: item.id, market: item.market)
             quotes[item.id] = quote

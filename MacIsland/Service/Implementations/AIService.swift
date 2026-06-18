@@ -380,22 +380,26 @@ final class AIService: ObservableObject {
                 messages.append(AIMessage(role: .assistant, content: response))
             }
         } else {
+            // 显示工具调用提示
+            let toolNames = toolCalls.map { $0.name }.joined(separator: ", ")
+            messages.append(AIMessage(role: .assistant, content: "🔧 \(toolNames)..."))
+
             // 执行工具调用
             var toolResults: [String] = []
             for toolCall in toolCalls {
                 let result = await AIAgent.shared.execute(toolCall: toolCall)
                 let status = result.success ? "✅" : "❌"
-                toolResults.append("\(status) \(result.toolName): \(result.result)")
+                toolResults.append("\(status) \(toolCall.name): \(result.result)")
             }
 
-            // 将工具结果发送给 AI 获取最终回复
+            // 将工具结果加入消息历史，让 AI 看到上下文
             let toolResultText = toolResults.joined(separator: "\n")
-            let followUp = "工具执行结果:\n\(toolResultText)\n\n请根据以上结果回复用户。"
+            messages.append(AIMessage(role: .user, content: "工具执行结果:\n\(toolResultText)\n\n请根据以上结果回复用户。"))
 
             // 递归调用（限制最多 3 轮工具调用）
-            let currentDepth = messages.filter { $0.content.contains("[TOOL_CALL]") }.count
-            if currentDepth < 3 {
-                await sendWithAgent(content: followUp)
+            let toolCallCount = messages.filter { $0.content.contains("🔧 ") }.count
+            if toolCallCount < 3 {
+                await sendWithAgent(content: "工具执行结果:\n\(toolResultText)\n\n请根据以上结果回复用户。")
             } else {
                 messages.append(AIMessage(role: .assistant, content: toolResultText))
             }
@@ -638,7 +642,7 @@ final class AIService: ObservableObject {
                     serverURL = url
                     selectedModel = model
                     // 尝试获取更多模型
-                    _ = try? await fetchAnthropicModels(url: url)
+                    _ = await fetchAnthropicModels(url: url)
                     return true
                 }
 
@@ -743,7 +747,7 @@ final class AIService: ObservableObject {
     /// 构建多个可能的 Anthropic 端点 URL
     private func buildAnthropicEndpoints(_ baseURL: String) -> [String] {
         // 去掉尾部 /v1, /messages, /v1/messages
-        var base = baseURL
+        let base = baseURL
             .replacingOccurrences(of: "/v1/messages$", with: "", options: .regularExpression)
             .replacingOccurrences(of: "/v1$", with: "", options: .regularExpression)
             .replacingOccurrences(of: "/messages$", with: "", options: .regularExpression)

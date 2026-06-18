@@ -120,7 +120,7 @@ final class IslandWindowManager {
     func createWindow<Content: View>(content: Content) {
         guard panel == nil else { return }
 
-        let size = IslandLayout.idle
+        let size = IslandLayout.size(for: .idle)
         let frame = calculateFrame(for: size, state: .idle)
 
         let panel = ActivatablePanel(
@@ -191,15 +191,24 @@ final class IslandWindowManager {
         let newFrame = calculateFrame(for: effectiveSize, state: state)
         let cornerRadius = IslandLayout.cornerRadius(for: state)
 
+        // 先解除 SwiftUI 自动尺寸锁定
         hostingView?.blockResize = false
+
+        // 同步 hostingView 尺寸与面板一致，消除内外框间隙
+        let contentRect = NSRect(origin: .zero, size: newFrame.size)
+        hostingView?.frame = contentRect
+
         if animated {
             let duration = AppSettings.shared.animationSpeed.duration
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = duration
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 panel.animator().setFrame(newFrame, display: true)
+                self.hostingView?.animator().frame = contentRect
             } completionHandler: { [weak self] in
-                self?.hostingView?.blockResize = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self?.hostingView?.blockResize = true
+                }
             }
         } else {
             panel.setFrame(newFrame, display: true)
@@ -321,7 +330,9 @@ final class IslandWindowManager {
     // MARK: - Frame Calculation
 
     private func calculateFrame(for size: CGSize, state: IslandState) -> CGRect {
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else {
+            return NSRect(x: 0, y: 0, width: size.width, height: size.height)
+        }
         let screenFrame = screen.frame
         let visibleFrame = screen.visibleFrame
 
@@ -332,7 +343,9 @@ final class IslandWindowManager {
         // 各形态垂直定位（macOS 坐标系 y 向上，故用顶端减去高度得到底边 y）
         let y: CGFloat
         switch state {
-        case .idle, .lyrics, .countdown:
+        case .idle, .idleMusic, .idleClock1, .idleClock2,
+             .idleClock1Music, .idleMusicClock2,
+             .idleClock1Clock2, .idleClock1MusicClock2:
             // 缩小态：贴物理顶端后再下移一个刘海高度，落在刘海正下方
             y = screenTop - size.height - NotchInfo.height
         case .hover, .notification:

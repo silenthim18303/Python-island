@@ -12,12 +12,12 @@ import SwiftUI
 /// 最大展开态视图 — 待办/便签/倒计时/闹钟/书签/AI/通知/设置/工具/股票
 struct MaxExpandView: View {
     @ObservedObject var store: IslandStore
-    @StateObject private var todoStore = TodoStore.shared
-    @StateObject private var memoStore = MemoStore.shared
-    @StateObject private var eventStore = EventStore.shared
-    @StateObject private var alarmStore = AlarmStore.shared
-    @StateObject private var bookmarkStore = BookmarkStore.shared
-    @StateObject private var wallpaperStore = WallpaperStore.shared
+    @ObservedObject private var todoStore = TodoStore.shared
+    @ObservedObject private var memoStore = MemoStore.shared
+    @ObservedObject private var eventStore = EventStore.shared
+    @ObservedObject private var alarmStore = AlarmStore.shared
+    @ObservedObject private var bookmarkStore = BookmarkStore.shared
+    @ObservedObject private var wallpaperStore = WallpaperStore.shared
     @EnvironmentObject var stockStore: StockStore
     @EnvironmentObject var stockService: StockServiceImpl
     @State private var selectedTab: Tab = .todo
@@ -63,15 +63,28 @@ struct MaxExpandView: View {
             headerBar
             tabBar
 
-            ScrollView {
-                tabContent
+            if selectedTab == .ai {
+                AIChatView()
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    tabContent
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
             if let tabName = store.maxExpandInitialTab,
+               let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
+                selectedTab = tab
+                store.maxExpandInitialTab = nil
+            }
+        }
+        .onChange(of: store.maxExpandInitialTab) { _, tabName in
+            if let tabName,
                let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
                 selectedTab = tab
                 store.maxExpandInitialTab = nil
@@ -225,7 +238,7 @@ struct MaxExpandView: View {
             case .alarm: AlarmListView(store: alarmStore)
             case .bookmark: BookmarkListView(store: bookmarkStore)
             case .wallpaper: WallpaperView(store: wallpaperStore)
-            case .ai: AIChatView()
+            case .ai: EmptyView()
             case .notifications: NotificationCenterView()
             case .toolbox: ToolboxView()
             case .stock:

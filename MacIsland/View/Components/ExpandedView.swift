@@ -14,10 +14,11 @@ struct ExpandedView: View {
     @ObservedObject var store: IslandStore
     @ObservedObject private var settings = AppSettings.shared
     @EnvironmentObject var weatherService: QWeatherService
-    @EnvironmentObject var musicService: SystemMusicService
     @EnvironmentObject var monitorService: SystemMonitorServiceImpl
     @EnvironmentObject var stockStore: StockStore
     @EnvironmentObject var stockService: StockServiceImpl
+    @EnvironmentObject var musicService: MusicService
+    @EnvironmentObject var lyricsService: LyricsService
 
     @State private var selectedTab: Tab = .overview
     @ObservedObject private var loc = LocalizationManager.shared
@@ -34,7 +35,7 @@ struct ExpandedView: View {
         var displayName: String {
             switch self {
             case .overview: return L10n.taboverview
-            case .music: return L10n.tabmusic
+            case .music: return L10n.tabMusic
             case .tools: return L10n.tabToolbox
             case .monitor: return L10n.monitorTitle
             case .stock: return L10n.stockTitle
@@ -44,7 +45,7 @@ struct ExpandedView: View {
         var icon: String {
             switch self {
             case .overview: return "square.grid.2x2"
-            case .music: return "music.note"
+            case .music: return "waveform"
             case .tools: return "clock"
             case .monitor: return "desktopcomputer"
             case .stock: return "chart.line.uptrend.xyaxis"
@@ -77,6 +78,13 @@ struct ExpandedView: View {
         }
         .onAppear {
             if let tabName = store.expandedInitialTab,
+               let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
+                selectedTab = tab
+                store.expandedInitialTab = nil
+            }
+        }
+        .onChange(of: store.expandedInitialTab) { _, tabName in
+            if let tabName,
                let tab = Tab.allCases.first(where: { $0.rawValue == tabName }) {
                 selectedTab = tab
                 store.expandedInitialTab = nil
@@ -171,10 +179,7 @@ struct ExpandedView: View {
         VStack(spacing: 12) {
             dateTimeSection
             weatherCards
-
-            if musicService.hasMedia {
-                nowPlayingCard
-            }
+            sliderSection
 
             if !stockStore.watchlist.isEmpty {
                 StockMiniCard()
@@ -224,6 +229,54 @@ struct ExpandedView: View {
         }
     }
 
+    // MARK: - Slider Section (Volume + Brightness)
+
+    @State private var volume: Double = Double(SystemControl.shared.getVolume())
+    @State private var brightness: Double = Double(SystemControl.shared.getBrightness())
+
+    private var sliderSection: some View {
+        HStack(spacing: 12) {
+            systemSlider(
+                icon: volume > 0.5 ? "speaker.wave.3.fill" : (volume > 0 ? "speaker.wave.1.fill" : "speaker.slash.fill"),
+                value: $volume,
+                color: .cyan
+            ) { val in
+                SystemControl.shared.setVolume(Float(val))
+            }
+
+            systemSlider(
+                icon: "sun.max.fill",
+                value: $brightness,
+                color: .yellow
+            ) { val in
+                SystemControl.shared.setBrightness(Float(val))
+            }
+        }
+    }
+
+    private func systemSlider(icon: String, value: Binding<Double>, color: Color, onChange: @escaping (Double) -> Void) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundColor(.white.opacity(0.6))
+                .frame(width: 14)
+
+            Slider(value: value, in: 0...1)
+                .tint(color)
+                .onChange(of: value.wrappedValue) { _, newVal in
+                    onChange(newVal)
+                }
+
+            Text("\(Int(value.wrappedValue * 100))")
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .foregroundColor(.white.opacity(0.5))
+                .frame(width: 26, alignment: .trailing)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.08)))
+    }
+
     private func weatherCard(icon: String, value: String, label: String, color: Color) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
@@ -243,157 +296,158 @@ struct ExpandedView: View {
         .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.08)))
     }
 
-    private var nowPlayingCard: some View {
-        HStack(spacing: 10) {
+    // MARK: - Music Tab
+
+    private var musicTab: some View {
+        VStack(spacing: 12) {
+            // 播放信息
+            if musicService.hasMedia {
+                musicInfoSection
+                musicProgressSection
+                musicControlSection
+                musicLyricsSection
+            } else {
+                VStack(spacing: 8) {
+                    Image(systemName: "music.note.slash")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.3))
+                    Text(L10n.musicNoPlayback)
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+    }
+
+    private var musicInfoSection: some View {
+        HStack(spacing: 12) {
+            // 封面
             if let artwork = musicService.info.artwork {
                 Image(nsImage: artwork)
                     .resizable()
-                    .frame(width: 36, height: 36)
-                    .cornerRadius(6)
+                    .frame(width: 48, height: 48)
+                    .cornerRadius(8)
             } else {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(.purple.opacity(0.3))
-                    .frame(width: 36, height: 36)
-                    .overlay(Image(systemName: "music.note").foregroundColor(.purple))
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.white.opacity(0.1))
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Image(systemName: "music.note")
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.3))
+                    )
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(musicService.info.title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
+
                 Text(musicService.info.artist)
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.6))
                     .lineLimit(1)
+
+                if !musicService.info.album.isEmpty {
+                    Text(musicService.info.album)
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.4))
+                        .lineLimit(1)
+                }
             }
 
             Spacer()
+        }
+    }
+
+    private var musicProgressSection: some View {
+        VStack(spacing: 4) {
+            // 进度条
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(.white.opacity(0.15))
+                        .frame(height: 3)
+
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(.white.opacity(0.6))
+                        .frame(width: geo.size.width * musicService.info.progress, height: 3)
+                }
+            }
+            .frame(height: 3)
+
+            // 时间
+            HStack {
+                Text(musicService.info.formattedElapsed)
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.5))
+                Spacer()
+                Text(musicService.info.formattedDuration)
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+        }
+    }
+
+    private var musicControlSection: some View {
+        HStack(spacing: 24) {
+            Button { musicService.previousTrack() } label: {
+                Image(systemName: "backward.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .buttonStyle(.plain)
 
             Button { musicService.togglePlay() } label: {
                 Image(systemName: musicService.info.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: 22))
                     .foregroundColor(.white)
             }
             .buttonStyle(.plain)
+
+            Button { musicService.nextTrack() } label: {
+                Image(systemName: "forward.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .buttonStyle(.plain)
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.08)))
+        .padding(.vertical, 4)
     }
 
-    // MARK: - Music Tab
-
-    private var musicTab: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                albumArtSmall
-                songInfoCompact
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 10)
-
-            Spacer().frame(height: 10)
-
-            DraggableProgressView(
-                progress: musicService.info.progress,
-                elapsed: musicService.info.formattedElapsed,
-                duration: musicService.info.formattedDuration,
-                totalDuration: musicService.info.duration,
-                onSeek: { fraction in
-                    musicService.seek(to: fraction * musicService.info.duration)
-                }
-            )
-            .padding(.horizontal, 20)
-
-            Spacer().frame(height: 10)
-
-            musicPlaybackControls
-
-            Spacer().frame(height: 8)
-
-            HStack(spacing: 12) {
-                shuffleRepeatCompact
-                Spacer()
-                VolumeControlView(volume: musicService.info.volume) { newVolume in
-                    musicService.setVolume(newVolume)
-                }
-            }
-            .padding(.horizontal, 20)
-
-            Spacer()
-        }
-    }
-
-    private var albumArtSmall: some View {
+    private var musicLyricsSection: some View {
         Group {
-            if let artwork = musicService.info.artwork {
-                Image(nsImage: artwork)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 44, height: 44)
-                    .cornerRadius(6)
-                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-            } else {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(.white.opacity(0.08))
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: "music.note")
+            if !lyricsService.currentLyrics.lines.isEmpty,
+               let activeIndex = lyricsService.currentLyrics.activeLineIndex(at: musicService.info.elapsedTime) {
+                VStack(spacing: 6) {
+                    if activeIndex > 0 {
+                        Text(lyricsService.currentLyrics.lines[activeIndex - 1].text)
+                            .font(.system(size: 11))
                             .foregroundColor(.white.opacity(0.3))
-                    )
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity)
+                    }
+
+                    Text(lyricsService.currentLyrics.lines[activeIndex].text)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity)
+
+                    if activeIndex + 1 < lyricsService.currentLyrics.lines.count {
+                        Text(lyricsService.currentLyrics.lines[activeIndex + 1].text)
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.3))
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.top, 4)
             }
-        }
-    }
-
-    private var songInfoCompact: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(musicService.info.title.isEmpty ? L10n.musicLyrics : musicService.info.title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.white)
-                .lineLimit(1)
-
-            Text(musicService.info.artist.isEmpty ? "—" : musicService.info.artist)
-                .font(.system(size: 11))
-                .foregroundColor(.white.opacity(0.55))
-                .lineLimit(1)
-        }
-    }
-
-    private var shuffleRepeatCompact: some View {
-        HStack(spacing: 12) {
-            MusicToggleButton(
-                systemName: "shuffle",
-                isActive: musicService.info.isShuffle,
-                action: { musicService.toggleShuffle() }
-            )
-            MusicToggleButton(
-                systemName: repeatIconName,
-                isActive: musicService.info.repeatMode != 0,
-                action: { musicService.cycleRepeat() }
-            )
-        }
-    }
-
-    private var musicPlaybackControls: some View {
-        HStack(spacing: 24) {
-            PlaybackButton(systemName: "backward.fill", size: 18) {
-                musicService.previousTrack()
-            }
-            PlaybackButton(systemName: musicService.info.isPlaying ? "pause.fill" : "play.fill", size: 32, isPrimary: true) {
-                musicService.togglePlay()
-            }
-            PlaybackButton(systemName: "forward.fill", size: 18) {
-                musicService.nextTrack()
-            }
-        }
-    }
-
-    private var repeatIconName: String {
-        switch musicService.info.repeatMode {
-        case 1: return "repeat"
-        case 2: return "repeat.1"
-        default: return "repeat"
         }
     }
 

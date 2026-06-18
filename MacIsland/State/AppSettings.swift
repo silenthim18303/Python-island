@@ -198,13 +198,6 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(breakReminderMinutes, forKey: Keys.breakReminderMinutes) }
     }
 
-    // MARK: - 歌词
-
-    /// 歌词源偏好（netease/qqmusic/kugou/lrclib/auto）
-    @Published var preferredLyricsSource: String {
-        didSet { defaults.set(preferredLyricsSource, forKey: Keys.preferredLyricsSource) }
-    }
-
     // MARK: - 天气
 
     /// 手动城市名（空=自动定位）
@@ -312,7 +305,6 @@ final class AppSettings: ObservableObject {
         static let launchAtLogin = "launchAtLogin"
         static let breakReminderEnabled = "breakReminderEnabled"
         static let breakReminderMinutes = "breakReminderMinutes"
-        static let preferredLyricsSource = "preferredLyricsSource"
         static let weatherManualCity = "weatherManualCity"
         static let weatherManualLocationID = "weatherManualLocationID"
         static let weatherAPIKey = "weatherAPIKey"
@@ -363,9 +355,6 @@ final class AppSettings: ObservableObject {
         // 久坐提醒
         breakReminderEnabled = defaults.object(forKey: Keys.breakReminderEnabled) as? Bool ?? false
         breakReminderMinutes = defaults.object(forKey: Keys.breakReminderMinutes) as? Int ?? 60
-
-        // 歌词
-        preferredLyricsSource = defaults.string(forKey: Keys.preferredLyricsSource) ?? "auto"
 
         // 股票
         stockAutoRefresh = defaults.object(forKey: Keys.stockAutoRefresh) as? Bool ?? false

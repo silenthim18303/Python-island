@@ -14,7 +14,7 @@ import ServiceManagement
 
 /// 开机自启切换组件
 struct LaunchAtLoginToggle: View {
-    @StateObject private var manager = LaunchAtLoginManager.shared
+    @ObservedObject private var manager = LaunchAtLoginManager.shared
 
     var body: some View {
         Toggle(isOn: Binding(
@@ -85,7 +85,7 @@ struct SettingsView: View {
     private var detailContent: some View {
         switch selection {
         case .appearance, .wallpaper, .animation, .clipboard,
-             .music, .weather, .notifications, .community:
+             .weather, .notifications, .community:
             GeneralSettingsView(category: selection)
         case .shortcuts:
             ShortcutsSettingsView()
@@ -139,7 +139,6 @@ private struct GeneralSettingsView: View {
             case .wallpaper:     wallpaperSection
             case .animation:     animationSection
             case .clipboard:     clipboardSection
-            case .music:         musicSection
             case .weather:       weatherSection
             case .notifications: notificationsSection
             case .community:     communitySection
@@ -280,20 +279,6 @@ private struct GeneralSettingsView: View {
                         .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-        }
-    }
-
-    // MARK: - Music
-
-    @ViewBuilder private var musicSection: some View {
-        Section(L10n.musicLyrics) {
-            Picker(selection: $settings.preferredLyricsSource) {
-                Text(L10n.translateAuto).tag("auto")
-                Text(L10n.musicNetease).tag("netease")
-                Text(L10n.musicQQ).tag("qqmusic")
-                Text(L10n.musicKugou).tag("kugou")
-                Text(L10n.musicLRCLIB).tag("lrclib")
-            } label: { SettingLabel(key: "preferredLyricsSource") }
         }
     }
 

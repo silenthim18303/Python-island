@@ -20,7 +20,7 @@ final class StockServiceImpl: ObservableObject, StockServiceProtocol {
 
     // MARK: - Private
 
-    private let dataProvider = StockDataProvider()
+    private let dataProvider = StockDataProvider.shared
 
     // MARK: - 股票服务实现
 

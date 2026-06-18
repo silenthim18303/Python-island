@@ -14,7 +14,7 @@ import ServiceManagement
 
 /// 开机自启切换组件（内联版本，深色背景适配）
 struct LaunchAtLoginToggleInline: View {
-    @StateObject private var manager = LaunchAtLoginManager.shared
+    @ObservedObject private var manager = LaunchAtLoginManager.shared
 
     var body: some View {
         Toggle("", isOn: Binding(
@@ -143,7 +143,6 @@ struct InlineSettingsView: View {
             case .wallpaper:     wallpaperSection
             case .animation:     animationSection
             case .clipboard:     clipboardSection
-            case .music:         musicSection
             case .weather:       weatherSection
             case .notifications: notificationsSection
             case .community:     communitySection
@@ -396,26 +395,6 @@ struct InlineSettingsView: View {
                 .font(.system(size: Theme.FontSize.caption2))
                 .foregroundColor(.textSecondary)
                 .disabled(newDomain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-        }
-    }
-
-    // MARK: - Music Section
-
-    private var musicSection: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            settingsGroup(L10n.musicLyrics) {
-                describedRow("preferredLyricsSource") {
-                    Picker("", selection: $settings.preferredLyricsSource) {
-                        Text(L10n.translateAuto).tag("auto")
-                        Text(L10n.musicNetease).tag("netease")
-                        Text(L10n.musicQQ).tag("qqmusic")
-                        Text(L10n.musicKugou).tag("kugou")
-                        Text(L10n.musicLRCLIB).tag("lrclib")
-                    }
-                    .labelsHidden()
-                    .frame(width: 100)
-                }
             }
         }
     }

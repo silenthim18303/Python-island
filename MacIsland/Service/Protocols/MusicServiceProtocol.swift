@@ -2,33 +2,34 @@
 //  MusicServiceProtocol.swift
 //  MacIsland
 //
-//  Created by GeminiMortal on 2026/6/1.
+//  音乐服务协议 + 数据模型
 //
 
 import Foundation
 import AppKit
 
-// MARK: - Media Playback Info
+// MARK: - Music Info
 
-/// 媒体播放信息
-struct MediaPlaybackInfo {
+/// 当前播放信息
+struct MusicInfo {
     let title: String
     let artist: String
     let album: String
-    let isPlaying: Bool
     let duration: TimeInterval
     let elapsedTime: TimeInterval
+    let isPlaying: Bool
     let artwork: NSImage?
-    let volume: Float
-    let isShuffle: Bool
-    let repeatMode: Int  // 0=off, 1=all, 2=one
 
-    /// 空播放信息（无曲目时的占位）。volume 取 0.5 作为音量滑块的初始中位，非笔误。
-    static let empty = MediaPlaybackInfo(
+    static let empty = MusicInfo(
         title: "", artist: "", album: "",
-        isPlaying: false, duration: 0, elapsedTime: 0, artwork: nil,
-        volume: 0.5, isShuffle: false, repeatMode: 0
+        duration: 0, elapsedTime: 0, isPlaying: false, artwork: nil
     )
+
+    static func == (lhs: MusicInfo, rhs: MusicInfo) -> Bool {
+        lhs.title == rhs.title && lhs.artist == rhs.artist && lhs.album == rhs.album
+            && lhs.duration == rhs.duration && lhs.elapsedTime == rhs.elapsedTime
+            && lhs.isPlaying == rhs.isPlaying
+    }
 
     var progress: Double {
         guard duration > 0 else { return 0 }
@@ -48,8 +49,9 @@ struct MediaPlaybackInfo {
 
 /// 音乐服务协议
 protocol MusicServiceProtocol: AnyObject {
-    var info: MediaPlaybackInfo { get }
+    var info: MusicInfo { get }
     var hasMedia: Bool { get }
+    var canSeek: Bool { get }
     func startMonitoring()
     func stopMonitoring()
     func togglePlay()
@@ -57,6 +59,4 @@ protocol MusicServiceProtocol: AnyObject {
     func previousTrack()
     func setVolume(_ volume: Float)
     func seek(to time: TimeInterval)
-    func toggleShuffle()
-    func cycleRepeat()
 }
