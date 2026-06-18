@@ -309,18 +309,15 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
 // MARK: - Location Continuation Guard
 
 /// 确保 continuation 只恢复一次
-private final class LocationContinuation<T> {
-    private let continuation: CheckedContinuation<T, Never>
-    private let hasResumed = NSLock()
+private final class LocationContinuation {
+    private let continuation: CheckedContinuation<CLLocation?, Never>
     private var resumed = false
 
-    init(continuation: CheckedContinuation<T, Never>) {
+    init(continuation: CheckedContinuation<CLLocation?, Never>) {
         self.continuation = continuation
     }
 
-    func resume(returning value: T) {
-        hasResumed.lock()
-        defer { hasResumed.unlock() }
+    func resume(returning value: CLLocation?) {
         guard !resumed else { return }
         resumed = true
         continuation.resume(returning: value)
