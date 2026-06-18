@@ -50,15 +50,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(AppSettings.shared)
                 .environmentObject(LocalizationManager.shared)
                 .environmentObject(serviceContainer.weather)
-                .environmentObject(serviceContainer.music)
                 .environmentObject(serviceContainer.monitor)
-                .environmentObject(serviceContainer.lyrics)
                 .environmentObject(serviceContainer.timer)
                 .environmentObject(serviceContainer.clipboard)
                 .environmentObject(serviceContainer.hotkey)
                 .environmentObject(serviceContainer.voice)
                 .environmentObject(serviceContainer.stocks)
                 .environmentObject(StockStore.shared)
+                .environmentObject(serviceContainer.music)
+                .environmentObject(serviceContainer.lyrics)
         )
 
         // 启动所有数据服务

@@ -16,14 +16,14 @@ final class ServiceContainer {
     // MARK: - Services
 
     let weather: QWeatherService
-    let music: SystemMusicService
     let monitor: SystemMonitorServiceImpl
-    let lyrics: LyricsService
     let timer: TimerService
     let clipboard: ClipboardService
     let hotkey: HotkeyService
     let voice: VoiceService
     let stocks: StockServiceImpl
+    let music: MusicService
+    let lyrics: LyricsService
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -31,7 +31,6 @@ final class ServiceContainer {
 
     init(
         weatherConfig: QWeatherConfig? = nil,
-        mediaKeySender: MediaKeySenderProtocol? = nil,
         systemMonitor: SystemMonitorProtocol? = nil
     ) {
         let settings = AppSettings.shared
@@ -50,14 +49,14 @@ final class ServiceContainer {
             weatherCfg = weatherConfig ?? .autoDetect(apiKey: settings.weatherEffectiveAPIKey, apiHost: settings.weatherEffectiveAPIHost, locationID: "101010100")
         }
         self.weather = QWeatherService(config: weatherCfg)
-        self.music = SystemMusicService(mediaKeySender: mediaKeySender ?? DefaultMediaKeySender())
         self.monitor = SystemMonitorServiceImpl(monitor: systemMonitor ?? DefaultSystemMonitor())
-        self.lyrics = LyricsService()
         self.timer = TimerService()
         self.clipboard = ClipboardService()
         self.hotkey = HotkeyService()
         self.voice = VoiceService()
         self.stocks = StockServiceImpl()
+        self.music = MusicService()
+        self.lyrics = LyricsService()
 
         // Wire voice command callbacks
         self.voice.onCommand = { [weak self] command, text in
@@ -106,18 +105,6 @@ final class ServiceContainer {
 
     private func handleVoiceCommand(_ command: VoiceCommand, text: String) {
         switch command {
-        case .play:
-            music.togglePlay()
-            voice.speak(L10n.voiceResponsePlaying)
-        case .pause:
-            music.togglePlay()
-            voice.speak(L10n.voiceResponsePaused)
-        case .next:
-            music.nextTrack()
-            voice.speak(L10n.voiceResponseNext)
-        case .previous:
-            music.previousTrack()
-            voice.speak(L10n.voiceResponsePrevious)
         case .expand:
             IslandWindowManager.shared.show()
             NotificationCenter.default.post(name: .openIslandSettings, object: nil)
@@ -148,16 +135,28 @@ final class ServiceContainer {
             voice.speak(L10n.voiceResponseHelp)
         case .stock:
             voice.speak("股票功能开发中")
+        case .play:
+            music.togglePlay()
+            voice.speak(L10n.voiceResponsePlaying)
+        case .pause:
+            music.togglePlay()
+            voice.speak(L10n.voiceResponsePaused)
+        case .next:
+            music.nextTrack()
+            voice.speak(L10n.voiceResponseNext)
+        case .previous:
+            music.previousTrack()
+            voice.speak(L10n.voiceResponsePrevious)
         }
     }
 
     // MARK: - Lifecycle
 
     func startAll() {
-        music.startMonitoring()
         monitor.startMonitoring()
         clipboard.startMonitoring()
         hotkey.startMonitoring()
+        music.startMonitoring()
         Task { await weather.fetchWeather() }
 
         // 恢复股票自动刷新 & 初始行情获取
@@ -173,10 +172,10 @@ final class ServiceContainer {
     }
 
     func stopAll() {
-        music.stopMonitoring()
         monitor.stopMonitoring()
         clipboard.stopMonitoring()
         hotkey.stopMonitoring()
+        music.stopMonitoring()
         voice.stopListening()
         voice.stopSpeaking()
     }

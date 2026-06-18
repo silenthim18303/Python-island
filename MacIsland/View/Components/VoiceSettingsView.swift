@@ -174,6 +174,8 @@ struct VoiceSettingsView: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
         .sheet(isPresented: $showCommandList) {
             CommandListView()
+                .onAppear { NotificationCenter.default.post(name: .sheetPresented, object: nil) }
+                .onDisappear { NotificationCenter.default.post(name: .sheetDismissed, object: nil) }
         }
     }
 

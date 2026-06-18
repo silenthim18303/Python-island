@@ -52,8 +52,8 @@ struct KeyCombo: Codable, Equatable, Hashable {
     static let defaultBindings: [HotkeyAction: KeyCombo] = [
         .toggleIsland:  KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x22),
         .playPause:     KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x23),
-        .nextTrack:     KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x7C),
-        .previousTrack: KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x7B),
+        .nextTrack:     KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x26),
+        .previousTrack: KeyCombo(modifiers: NSEvent.ModifierFlags([.option, .command]).rawValue, keyCode: 0x25),
     ]
 
     /// keyCode → 显示字符串映射

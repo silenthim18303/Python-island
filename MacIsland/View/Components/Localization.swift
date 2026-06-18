@@ -70,7 +70,6 @@ enum L10n {
 
     // MARK: - Tab
     static var taboverview: String { t("tab_overview")}
-    static var tabmusic: String { t("tab_music")}
     static var tabTodo: String { t("tab_todo") }
     static var tabMemo: String { t("tab_memo") }
     static var tabEvent: String { t("tab_event") }
@@ -79,6 +78,7 @@ enum L10n {
     static var tabAI: String { t("tab_ai") }
     static var tabSettings: String { t("tab_settings") }
     static var tabToolbox: String { t("tab_toolbox") }
+    static var tabMusic: String { t("tab_music") }
     static var tabNotifications: String { t("tab_notifications") }
     static var tabWallpaper: String { t("tab_wallpaper") }
 
@@ -227,16 +227,6 @@ enum L10n {
     static var notifDNDActive: String { t("notif_dnd_active") }
     static var notifFrom: String { t("notif_from") }
 
-    // MARK: - Music
-    static var musicNowPlaying: String { t("music_now_playing") }
-    static var musicNoPlayback: String { t("music_no_playback") }
-    static var musicLyrics: String { t("music_lyrics") }
-    static var musicSource: String { t("music_source") }
-    static var musicNetease: String { t("music_netease") }
-    static var musicQQ: String { t("music_qq") }
-    static var musicKugou: String { t("music_kugou") }
-    static var musicLRCLIB: String { t("music_lrclib") }
-
     // MARK: - Weather
     static var weatherTitle: String { t("weather_title") }
     static var weatherWind: String { t("weather_wind") }
@@ -355,10 +345,6 @@ enum L10n {
     // MARK: - Voice Responses
     static var voiceResponseHere: String { t("voice_response_here") }
     static var voiceResponseUnknown: String { t("voice_response_unknown") }
-    static var voiceResponsePlaying: String { t("voice_response_playing") }
-    static var voiceResponsePaused: String { t("voice_response_paused") }
-    static var voiceResponseNext: String { t("voice_response_next") }
-    static var voiceResponsePrevious: String { t("voice_response_previous") }
     static var voiceResponseExpanded: String { t("voice_response_expanded") }
     static var voiceResponseCollapsed: String { t("voice_response_collapsed") }
     static var voiceResponseShown: String { t("voice_response_shown") }
@@ -367,6 +353,10 @@ enum L10n {
     static var voiceResponseTimerIdle: String { t("voice_response_timer_idle") }
     static var voiceResponseTodoDev: String { t("voice_response_todo_dev") }
     static var voiceResponseHelp: String { t("voice_response_help") }
+    static var voiceResponsePlaying: String { t("voice_response_playing") }
+    static var voiceResponsePaused: String { t("voice_response_paused") }
+    static var voiceResponseNext: String { t("voice_response_next") }
+    static var voiceResponsePrevious: String { t("voice_response_previous") }
     static func voiceResponseTimerRemaining(minutes: Int) -> String {
         t("voice_response_timer_remaining").replacingOccurrences(of: "%d", with: "\(minutes)")
     }
@@ -403,7 +393,6 @@ enum L10n {
     static var settingsThemeSystem: String { t("settings_theme_system") }
     static var settingsBlacklist: String { t("settings_blacklist") }
     static var settingsBlacklistEmpty: String { t("settings_blacklist_empty") }
-    static var settingsLyricsSource: String { t("settings_lyrics_source") }
     static var settingsCommunity: String { t("settings_community") }
     static var settingsUsername: String { t("settings_username") }
     static var settingsSpring: String { t("settings_spring") }
@@ -439,11 +428,14 @@ enum L10n {
     static var timerCountdown: String { t("timer_countdown") }
     static var timerWork: String { t("timer_work") }
     static var timerBreak: String { t("timer_break") }
-    static var timerLongBreak: String { t("timer_long_break") }
+    static var timerLongBreak: String { t("timer_longBreak") }
     static var timerStart: String { t("timer_start") }
     static var timerPause: String { t("timer_pause") }
     static var timerResume: String { t("timer_resume") }
     static var timerStop: String { t("timer_stop") }
+
+    // MARK: - Music
+    static var musicNoPlayback: String { t("music_no_playback") }
 
     // MARK: - Monitor
     static var monitorTitle: String { t("monitor_title") }
@@ -584,7 +576,6 @@ enum L10n {
     static var errorWeatherLocation: String { t("error_weather_location") }
     static var errorWeatherFetch: String { t("error_weather_fetch") }
     static var errorWeatherAPIKey: String { t("error_weather_api_key") }
-    static var errorLyricsNotFound: String { t("error_lyrics_not_found") }
     static var errorAIConnection: String { t("error_ai_connection") }
     static var errorAIRequest: String { t("error_ai_request") }
     static var errorGitHubLogin: String { t("error_github_login") }
@@ -637,7 +628,6 @@ enum L10n {
     static var descBlacklist: String { t("desc_blacklist") }
     static var descDnd: String { t("desc_dnd") }
     static var descDndTime: String { t("desc_dnd_time") }
-    static var descLyricsSource: String { t("desc_lyrics_source") }
     static var descWeatherAPIKey: String { t("desc_weather_api_key") }
     static var descWeatherAPIHost: String { t("desc_weather_api_host") }
     static var descWeatherCity: String { t("desc_weather_city") }
@@ -703,10 +693,10 @@ struct LanguageSettingsView: View {
 
 private let zhStrings: [String: String] = [
     // Tab
-    "tab_overview":"概览", "tab_music":"音乐",
+    "tab_overview":"概览",
     "tab_todo": "待办", "tab_memo": "便签", "tab_event": "倒数日",
     "tab_alarm": "闹钟", "tab_bookmark": "书签", "tab_ai": "AI",
-    "tab_settings": "设置", "tab_toolbox": "工具", "tab_notifications": "通知",
+        "tab_settings": "设置", "tab_toolbox": "工具", "tab_music": "音乐", "tab_notifications": "通知",
     "tab_wallpaper": "壁纸",
     // Common
     "common_add": "添加", "common_delete": "删除", "common_save": "保存",
@@ -771,10 +761,6 @@ private let zhStrings: [String: String] = [
     "notif_clear_confirm": "确定要清空所有通知记录吗？", "notif_empty": "暂无通知",
     "notif_all": "全部", "notif_dnd": "免打扰", "notif_dnd_time": "时段",
     "notif_dnd_active": "生效中", "notif_from": "来源",
-    // Music
-    "music_now_playing": "正在播放", "music_no_playback": "暂无播放",
-    "music_lyrics": "歌词", "music_source": "歌词源",
-    "music_netease": "网易云", "music_qq": "QQ 音乐", "music_kugou": "酷狗", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天气", "weather_wind": "风速", "weather_humidity": "湿度",
     "weather_auto": "自动定位", "weather_city": "手动城市", "weather_api_key": "和风天气 API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
@@ -833,14 +819,16 @@ private let zhStrings: [String: String] = [
     "voice_state_processing": "处理中", "voice_state_speaking": "播报中", "voice_state_error": "错误",
     // Voice Responses
     "voice_response_here": "我在", "voice_response_unknown": "抱歉，我没有理解您的指令",
-    "voice_response_playing": "正在播放", "voice_response_paused": "已暂停",
-    "voice_response_next": "下一首", "voice_response_previous": "上一首",
     "voice_response_expanded": "已展开", "voice_response_collapsed": "已收起",
     "voice_response_shown": "已显示", "voice_response_hidden": "已隐藏",
     "voice_response_fetching_weather": "正在获取天气信息",
     "voice_response_timer_remaining": "番茄钟还剩%d分钟", "voice_response_timer_idle": "计时器空闲中",
     "voice_response_todo_dev": "待办功能开发中",
-    "voice_response_help": "您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令",
+        "voice_response_help": "您可以说：播放、暂停、下一首、展开、收起、天气、计时器等指令",
+        "voice_response_playing": "正在播放",
+        "voice_response_paused": "已暂停",
+        "voice_response_next": "下一首",
+        "voice_response_previous": "上一首",
     // AI Voice Chat
     "ai_voice_chat_title": "AI 语音对话",
     "ai_voice_chat_empty": "开始与 AI 对话",
@@ -862,7 +850,7 @@ private let zhStrings: [String: String] = [
     "settings_accent_color": "强调色", "settings_language": "语言",
     "settings_theme": "外观模式", "settings_theme_dark": "深色", "settings_theme_light": "浅色",
     "settings_theme_system": "跟随系统", "settings_blacklist": "域名黑名单",
-    "settings_blacklist_empty": "暂无黑名单域名", "settings_lyrics_source": "歌词源",
+    "settings_blacklist_empty": "暂无黑名单域名",
     "settings_community": "社区", "settings_username": "上传用户名",
     "settings_spring": "弹簧动画", "settings_speed": "动画速度",
     "settings_speed_slow": "慢速", "settings_speed_medium": "中速", "settings_speed_fast": "快速",
@@ -882,6 +870,8 @@ private let zhStrings: [String: String] = [
     "timer_title": "计时器", "timer_pomodoro": "番茄钟", "timer_countdown": "倒计时",
     "timer_work": "专注", "timer_break": "短休", "timer_long_break": "长休",
     "timer_start": "开始", "timer_pause": "暂停", "timer_resume": "继续", "timer_stop": "停止",
+    // Music
+    "music_no_playback": "暂无播放",
     // Monitor
     "monitor_title": "系统监控", "monitor_cpu": "CPU", "monitor_memory": "内存",
     "monitor_disk": "磁盘", "monitor_battery": "电池", "monitor_network": "网络",
@@ -951,7 +941,6 @@ private let zhStrings: [String: String] = [
     // Service Errors
     "error_clipboard_link": "🔗 链接检测",
     "error_weather_location": "获取位置失败", "error_weather_fetch": "获取天气失败", "error_weather_api_key": "请先配置和风天气 API Key",
-    "error_lyrics_not_found": "未找到歌词",
     "error_ai_connection": "连接失败", "error_ai_request": "API 请求失败",
     "error_github_login": "请先登录 GitHub", "error_github_token": "请先在设置中登录 GitHub",
     "error_github_size": "文件大小超过 100MB 限制", "error_github_video": "无法读取视频文件",
@@ -1015,7 +1004,6 @@ private let zhStrings: [String: String] = [
     "desc_blacklist": "命中黑名单的域名不会触发链接提示。",
     "desc_dnd": "在指定时段内静默所有灵动岛通知。",
     "desc_dnd_time": "设置免打扰的开始和结束时间。",
-    "desc_lyrics_source": "优先使用的歌词数据来源。",
     "desc_weather_api_key": "和风天气 API Key（免费注册 qweather.com 获取）。保存在系统钥匙串，不写入 UserDefaults。",
     "desc_weather_api_host": "和风天气 API 地址，默认为 devapi.qweather.com。支持自定义 CDN 节点。",
     "desc_weather_city": "指定城市名，留空则自动定位。",
@@ -1028,10 +1016,10 @@ private let zhStrings: [String: String] = [
 
 private let enStrings: [String: String] = [
     // Tab
-    "tab_overview":"Overview", "tab_music":"Music",
+    "tab_overview":"Overview",
     "tab_todo": "Todo", "tab_memo": "Memo", "tab_event": "Events",
     "tab_alarm": "Alarm", "tab_bookmark": "Bookmarks", "tab_ai": "AI",
-    "tab_settings": "Settings", "tab_toolbox": "Tools", "tab_notifications": "Notifications",
+        "tab_settings": "Settings", "tab_toolbox": "Tools", "tab_music": "Music", "tab_notifications": "Notifications",
     "tab_wallpaper": "Wallpaper",
     // Common
     "common_add": "Add", "common_delete": "Delete", "common_save": "Save",
@@ -1096,10 +1084,6 @@ private let enStrings: [String: String] = [
     "notif_clear_confirm": "Clear all notifications?", "notif_empty": "No notifications",
     "notif_all": "All", "notif_dnd": "Do Not Disturb", "notif_dnd_time": "Time Range",
     "notif_dnd_active": "Active", "notif_from": "Source",
-    // Music
-    "music_now_playing": "Now Playing", "music_no_playback": "No Playback",
-    "music_lyrics": "Lyrics", "music_source": "Lyrics Source",
-    "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "Weather", "weather_wind": "Wind", "weather_humidity": "Humidity",
     "weather_auto": "Auto Locate", "weather_city": "Manual City", "weather_api_key": "QWeather API Key", "weather_api_host": "API Host", "weather_location_id": "Location ID",
@@ -1125,7 +1109,7 @@ private let enStrings: [String: String] = [
     "voice_enable_control": "Enable Voice Control", "voice_enable_control_desc": "Use voice commands to control the island",
     "voice_enable_speech": "Enable Voice Speech", "voice_enable_speech_desc": "Announce weather, timer, notifications, etc.",
     "voice_wake_word": "Wake Word", "voice_current_wake_word": "Current Wake Word",
-    "voice_wake_word_hint": "Say the wake word followed by a command. E.g., \"Hey Island, play music\"",
+    "voice_wake_word_hint": "Say the wake word followed by a command. E.g., \"Hey Island, what's the weather?\"",
     "voice_view_all": "View All", "voice_test": "Test",
     "voice_start_listening": "Start Listening", "voice_stop_listening": "Stop Listening",
     "voice_recognition_result": "Recognition Result", "voice_test_speech": "Test Voice Speech",
@@ -1147,7 +1131,7 @@ private let enStrings: [String: String] = [
     "voice_cmd_play": "Play", "voice_cmd_pause": "Pause", "voice_cmd_next": "Next", "voice_cmd_previous": "Previous",
     "voice_cmd_expand": "Expand", "voice_cmd_collapse": "Collapse", "voice_cmd_show": "Show", "voice_cmd_hide": "Hide",
     "voice_cmd_weather": "Weather", "voice_cmd_timer": "Timer", "voice_cmd_todo": "Todo", "voice_cmd_help": "Help", "voice_cmd_stock": "Stock",
-    "voice_cmd_play_desc": "Play music", "voice_cmd_pause_desc": "Pause music",
+    "voice_cmd_play_desc": "Play", "voice_cmd_pause_desc": "Pause",
     "voice_cmd_next_desc": "Next track", "voice_cmd_previous_desc": "Previous track",
     "voice_cmd_expand_desc": "Expand island", "voice_cmd_collapse_desc": "Collapse island",
     "voice_cmd_show_desc": "Show island", "voice_cmd_hide_desc": "Hide island",
@@ -1158,14 +1142,16 @@ private let enStrings: [String: String] = [
     "voice_state_processing": "Processing", "voice_state_speaking": "Speaking", "voice_state_error": "Error",
     // Voice Responses
     "voice_response_here": "I'm here", "voice_response_unknown": "Sorry, I didn't understand",
-    "voice_response_playing": "Playing", "voice_response_paused": "Paused",
-    "voice_response_next": "Next track", "voice_response_previous": "Previous track",
     "voice_response_expanded": "Expanded", "voice_response_collapsed": "Collapsed",
     "voice_response_shown": "Shown", "voice_response_hidden": "Hidden",
     "voice_response_fetching_weather": "Fetching weather",
     "voice_response_timer_remaining": "Pomodoro has %d minutes left", "voice_response_timer_idle": "Timer is idle",
     "voice_response_todo_dev": "Todo feature in development",
-    "voice_response_help": "You can say: play, pause, next, expand, collapse, weather, timer, etc.",
+        "voice_response_help": "You can say: play, pause, next, expand, collapse, weather, timer, etc.",
+        "voice_response_playing": "Now playing",
+        "voice_response_paused": "Paused",
+        "voice_response_next": "Next track",
+        "voice_response_previous": "Previous track",
     // AI Voice Chat
     "ai_voice_chat_title": "AI Voice Chat",
     "ai_voice_chat_empty": "Start a conversation with AI",
@@ -1187,7 +1173,7 @@ private let enStrings: [String: String] = [
     "settings_accent_color": "Accent Color", "settings_language": "Language",
     "settings_theme": "Theme", "settings_theme_dark": "Dark", "settings_theme_light": "Light",
     "settings_theme_system": "System", "settings_blacklist": "Domain Blacklist",
-    "settings_blacklist_empty": "No blacklisted domains", "settings_lyrics_source": "Lyrics Source",
+    "settings_blacklist_empty": "No blacklisted domains",
     "settings_community": "Community", "settings_username": "Upload Username",
     "settings_spring": "Spring Animation", "settings_speed": "Animation Speed",
     "settings_speed_slow": "Slow", "settings_speed_medium": "Medium", "settings_speed_fast": "Fast",
@@ -1207,6 +1193,8 @@ private let enStrings: [String: String] = [
     "timer_title": "Timer", "timer_pomodoro": "Pomodoro", "timer_countdown": "Countdown",
     "timer_work": "Work", "timer_break": "Break", "timer_long_break": "Long Break",
     "timer_start": "Start", "timer_pause": "Pause", "timer_resume": "Resume", "timer_stop": "Stop",
+    // Music
+    "music_no_playback": "No Playback",
     // Monitor
     "monitor_title": "System Monitor", "monitor_cpu": "CPU", "monitor_memory": "Memory",
     "monitor_disk": "Disk", "monitor_battery": "Battery", "monitor_network": "Network",
@@ -1276,7 +1264,6 @@ private let enStrings: [String: String] = [
     // Service Errors
     "error_clipboard_link": "🔗 Link Detected",
     "error_weather_location": "Failed to get location", "error_weather_fetch": "Failed to fetch weather", "error_weather_api_key": "Please configure QWeather API Key first",
-    "error_lyrics_not_found": "Lyrics not found",
     "error_ai_connection": "Connection failed", "error_ai_request": "API request failed",
     "error_github_login": "Please login to GitHub first", "error_github_token": "Please login to GitHub in settings first",
     "error_github_size": "File size exceeds 100MB limit", "error_github_video": "Cannot read video file",
@@ -1340,7 +1327,6 @@ private let enStrings: [String: String] = [
     "desc_blacklist": "Domains in blacklist won't trigger link notifications.",
     "desc_dnd": "Silence all island notifications during specified hours.",
     "desc_dnd_time": "Set do-not-disturb start and end time.",
-    "desc_lyrics_source": "Preferred lyrics data source.",
     "desc_weather_api_key": "QWeather API Key (free registration at qweather.com). Stored in Keychain, not UserDefaults.",
     "desc_weather_api_host": "QWeather API host. Defaults to devapi.qweather.com. Supports custom CDN nodes.",
     "desc_weather_city": "Specify city name. Leave empty for auto location.",
@@ -1353,10 +1339,10 @@ private let enStrings: [String: String] = [
 
 private let jaStrings: [String: String] = [
     // Tab
-    "tab_overview":"概要","tab_music":"音楽",
+    "tab_overview":"概要",
     "tab_todo": "やること", "tab_memo": "メモ", "tab_event": "イベント",
     "tab_alarm": "アラーム", "tab_bookmark": "ブックマーク", "tab_ai": "AI",
-    "tab_settings": "設定", "tab_toolbox": "ツール", "tab_notifications": "通知",
+        "tab_settings": "設定", "tab_toolbox": "ツール", "tab_music": "音楽", "tab_notifications": "通知",
     "tab_wallpaper": "壁紙",
     // Common
     "common_add": "追加", "common_delete": "削除", "common_save": "保存",
@@ -1421,10 +1407,6 @@ private let jaStrings: [String: String] = [
     "notif_clear_confirm": "すべての通知を消去しますか？", "notif_empty": "通知なし",
     "notif_all": "すべて", "notif_dnd": "通知オフ", "notif_dnd_time": "時間帯",
     "notif_dnd_active": "有効中", "notif_from": "ソース",
-    // Music
-    "music_now_playing": "再生中", "music_no_playback": "再生なし",
-    "music_lyrics": "歌詞", "music_source": "歌詞ソース",
-    "music_netease": "NetEase", "music_qq": "QQ Music", "music_kugou": "Kugou", "music_lrclib": "LRCLIB",
     // Weather
     "weather_title": "天気", "weather_wind": "風速", "weather_humidity": "湿度",
     "weather_auto": "自動位置", "weather_city": "手動都市", "weather_api_key": "QWeather API Key", "weather_api_host": "APIホスト", "weather_location_id": "Location ID",
@@ -1483,14 +1465,16 @@ private let jaStrings: [String: String] = [
     "voice_state_processing": "処理中", "voice_state_speaking": "読み上げ中", "voice_state_error": "エラー",
     // Voice Responses
     "voice_response_here": "はい", "voice_response_unknown": "申し訳ありません、理解できませんでした",
-    "voice_response_playing": "再生中", "voice_response_paused": "一時停止",
-    "voice_response_next": "次の曲", "voice_response_previous": "前の曲",
     "voice_response_expanded": "展開しました", "voice_response_collapsed": "折りたたみました",
     "voice_response_shown": "表示しました", "voice_response_hidden": "隠しました",
     "voice_response_fetching_weather": "天気を取得中",
     "voice_response_timer_remaining": "ポモドーロはあと%d分です", "voice_response_timer_idle": "タイマーはアイドルです",
     "voice_response_todo_dev": "TODO機能は開発中です",
-    "voice_response_help": "「再生」「一時停止」「次へ」「展開」「折りたたむ」「天気」「タイマー」などと言ってください",
+        "voice_response_help": "「再生」「一時停止」「次へ」「展開」「折りたたむ」「天気」「タイマー」などと言ってください",
+        "voice_response_playing": "再生中",
+        "voice_response_paused": "一時停止",
+        "voice_response_next": "次の曲",
+        "voice_response_previous": "前の曲",
     // AI Voice Chat
     "ai_voice_chat_title": "AI 音声チャット",
     "ai_voice_chat_empty": "AIとの会話を開始",
@@ -1512,7 +1496,7 @@ private let jaStrings: [String: String] = [
     "settings_accent_color": "アクセントカラー", "settings_language": "言語",
     "settings_theme": "テーマ", "settings_theme_dark": "ダーク", "settings_theme_light": "ライト",
     "settings_theme_system": "システム", "settings_blacklist": "ドメインブラックリスト",
-    "settings_blacklist_empty": "ブラックリストなし", "settings_lyrics_source": "歌詞ソース",
+    "settings_blacklist_empty": "ブラックリストなし",
     "settings_community": "コミュニティ", "settings_username": "アップロードユーザー名",
     "settings_spring": "スプリングアニメーション", "settings_speed": "アニメーション速度",
     "settings_speed_slow": "遅い", "settings_speed_medium": "普通", "settings_speed_fast": "速い",
@@ -1532,6 +1516,8 @@ private let jaStrings: [String: String] = [
     "timer_title": "タイマー", "timer_pomodoro": "ポモドーロ", "timer_countdown": "カウントダウン",
     "timer_work": "作業", "timer_break": "休憩", "timer_long_break": "長休憩",
     "timer_start": "開始", "timer_pause": "一時停止", "timer_resume": "再開", "timer_stop": "停止",
+    // Music
+    "music_no_playback": "再生なし",
     // Monitor
     "monitor_title": "システムモニター", "monitor_cpu": "CPU", "monitor_memory": "メモリ",
     "monitor_disk": "ディスク", "monitor_battery": "バッテリー", "monitor_network": "ネットワーク",
@@ -1601,7 +1587,6 @@ private let jaStrings: [String: String] = [
     // Service Errors
     "error_clipboard_link": "🔗 リンク検出",
     "error_weather_location": "位置情報の取得に失敗", "error_weather_fetch": "天気の取得に失敗", "error_weather_api_key": "先に QWeather API Key を設定してください",
-    "error_lyrics_not_found": "歌詞が見つかりません",
     "error_ai_connection": "接続失敗", "error_ai_request": "API リクエスト失敗",
     "error_github_login": "先に GitHub にログインしてください", "error_github_token": "設定で先に GitHub にログインしてください",
     "error_github_size": "ファイルサイズが 100MB 制限を超えています", "error_github_video": "動画ファイルを読み込めません",
@@ -1666,7 +1651,6 @@ private let jaStrings: [String: String] = [
     "desc_blacklist": "ブラックリストのドメインはリンク通知をトリガーしません。",
     "desc_dnd": "指定時間内にアイランド通知をミュート。",
     "desc_dnd_time": "通知オフの開始・終了時間を設定。",
-    "desc_lyrics_source": "優先する歌詞データソース。",
     "desc_weather_api_key": "任意の QWeather API Key。空欄の場合は内蔵デフォルトを使用します。Key は UserDefaults ではなく Keychain に保存します。",
     "desc_weather_api_host": "QWeather APIホスト。デフォルトは devapi.qweather.com。カスタムCDNノードに対応。",
     "desc_weather_city": "都市名を指定。空欄で自動位置。",

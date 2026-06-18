@@ -92,21 +92,6 @@ final class AIAgent {
             parameters: .init(type: "object", properties: [:], required: nil)
         ),
         AgentTool(
-            name: "play_music",
-            description: "播放音乐或暂停音乐",
-            parameters: .init(type: "object", properties: [:], required: nil)
-        ),
-        AgentTool(
-            name: "next_track",
-            description: "播放下一首歌曲",
-            parameters: .init(type: "object", properties: [:], required: nil)
-        ),
-        AgentTool(
-            name: "previous_track",
-            description: "播放上一首歌曲",
-            parameters: .init(type: "object", properties: [:], required: nil)
-        ),
-        AgentTool(
             name: "add_todo",
             description: "添加一个待办事项",
             parameters: .init(
@@ -256,12 +241,6 @@ final class AIAgent {
             return await executeGetWeather()
         case "get_system_status":
             return executeGetSystemStatus()
-        case "play_music":
-            return executePlayMusic()
-        case "next_track":
-            return executeNextTrack()
-        case "previous_track":
-            return executePreviousTrack()
         case "add_todo":
             return executeAddTodo(args: toolCall.arguments)
         case "get_todos":
@@ -310,21 +289,6 @@ final class AIAgent {
         return ToolResult(toolName: "get_system_status", success: true, result: result)
     }
 
-    private func executePlayMusic() -> ToolResult {
-        SystemMusicService(mediaKeySender: DefaultMediaKeySender()).togglePlay()
-        return ToolResult(toolName: "play_music", success: true, result: "已切换播放/暂停状态")
-    }
-
-    private func executeNextTrack() -> ToolResult {
-        SystemMusicService(mediaKeySender: DefaultMediaKeySender()).nextTrack()
-        return ToolResult(toolName: "next_track", success: true, result: "已切换到下一首")
-    }
-
-    private func executePreviousTrack() -> ToolResult {
-        SystemMusicService(mediaKeySender: DefaultMediaKeySender()).previousTrack()
-        return ToolResult(toolName: "previous_track", success: true, result: "已切换到上一首")
-    }
-
     private func executeAddTodo(args: [String: AnyCodable]) -> ToolResult {
         guard let title = args["title"]?.stringValue, !title.isEmpty else {
             return ToolResult(toolName: "add_todo", success: false, result: "缺少标题参数")
@@ -361,7 +325,7 @@ final class AIAgent {
             return ToolResult(toolName: "search_stock", success: false, result: "缺少搜索关键词")
         }
         do {
-            let results = try await StockDataProvider().searchStocks(keyword: keyword, market: nil)
+            let results = try await StockDataProvider.shared.searchStocks(keyword: keyword, market: nil)
             if results.isEmpty {
                 return ToolResult(toolName: "search_stock", success: true, result: "未找到相关股票")
             }

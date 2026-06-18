@@ -17,7 +17,6 @@ struct OnboardingView: View {
 
     private let pages: [(title: String, subtitle: String, icon: String)] = [
         (L10n.aboutTitle, L10n.aboutSubtitle, "island"),
-        (L10n.musicLyrics, L10n.musicNowPlaying, "music.note"),
         (L10n.weatherTitle, L10n.timerTitle, "cloud.sun"),
         (L10n.toolboxTitle, L10n.toolboxFileSearch, "wrench.and.screwdriver"),
         (L10n.memoTitle, L10n.bookmarkEmpty, "bookmark.fill")

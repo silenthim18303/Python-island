@@ -2,169 +2,167 @@
 //  LyricsView.swift
 //  MacIsland
 //
-//  Created by GeminiMortal on 2026/6/1.
+//  歌词态视图 — 紧凑胶囊：时间 · 番茄钟 · 歌词/歌曲名 · 倒计时 ·日期
+//  与 IdleView 布局一致，中间区域显示音乐内容
 //
 
 import SwiftUI
+import Combine
 
-// MARK: - Lyrics View
-
-/// 歌词态视图 — 横向绕刘海胶囊：封面 + 歌词居中 + 进度/音波
 struct LyricsView: View {
     @ObservedObject var store: IslandStore
-    @EnvironmentObject var musicService: SystemMusicService
+    @EnvironmentObject var musicService: MusicService
     @EnvironmentObject var lyricsService: LyricsService
+    @EnvironmentObject var timerService: TimerService
+    @State private var currentTime = Date()
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var pomRunning: Bool { timerService.pomodoro.running }
+    private var cdRunning: Bool { timerService.countdown.state == .running }
+
+    /// 播放中且有歌词
+    private var hasLyrics: Bool {
+        musicService.hasMedia
+            && musicService.info.isPlaying
+            && !lyricsService.currentLyrics.lines.isEmpty
+            && lyricsService.currentLyrics.lines.first?.text != ""
+    }
+
+    /// 播放中（有歌曲名）
+    private var isPlaying: Bool {
+        musicService.hasMedia
+            && musicService.info.isPlaying
+            && !musicService.info.title.isEmpty
+    }
+
+    /// 暂停中
+    private var isPaused: Bool {
+        musicService.hasMedia
+            && !musicService.info.isPlaying
+            && !musicService.info.title.isEmpty
+    }
 
     var body: some View {
-        // 自定义布局：左封面 + 中歌词(居中覆盖刘海区) + 右音波
-        HStack(spacing: 0) {
-            // 左侧：封面图标
-            musicIcon
-                .padding(.leading, Theme.Spacing.sm)
+        HStack(spacing: 4) {
+            // 1. 时间
+            Text(timeString)
+                .font(.system(size: Theme.FontSize.body, weight: .semibold, design: .rounded))
+                .foregroundColor(.textPrimary)
+                .monospacedDigit()
+                .fixedSize()
 
-            Spacer(minLength: Theme.Spacing.xs)
-
-            // 中间：歌词行居中显示
-            centerContent
-                .lineLimit(1)
-
-            Spacer(minLength: Theme.Spacing.xs)
-
-            // 右侧：进度 + 音波动画
-            rightSection
-                .padding(.trailing, Theme.Spacing.sm)
-        }
-    }
-
-    // MARK: - Music Icon
-
-    private var musicIcon: some View {
-        Group {
-            if let artwork = musicService.info.artwork {
-                Image(nsImage: artwork)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 22, height: 22)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else {
-                Image(systemName: "music.note")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
+            // 2. 番茄钟徽章
+            if pomRunning {
+                HStack(spacing: 3) {
+                    Circle()
+                        .fill(pomodoroPhaseColor)
+                        .frame(width: 4, height: 4)
+                    Text(timerService.pomodoro.formattedTime)
+                        .font(.system(size: Theme.FontSize.caption, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.9))
+                        .monospacedDigit()
+                }
+                .fixedSize()
             }
-        }
-    }
 
-    // MARK: - Center Content
+            Spacer(minLength: 0)
 
-    @ViewBuilder
-    private var centerContent: some View {
-        if musicService.hasMedia {
-            let lyrics = lyricsService.currentLyrics
-            let elapsed = musicService.info.elapsedTime
+            // 3. 音乐内容（歌词或歌曲名）
+            if hasLyrics {
+                let lyrics = lyricsService.currentLyrics
+                let elapsed = musicService.info.elapsedTime
+                HStack(spacing: 4) {
+                    Image(systemName: "waveform")
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundColor(.white.opacity(0.5))
+                        .symbolEffect(.variableColor.iterative, isActive: true)
 
-            if !lyrics.lines.isEmpty,
-               let activeIndex = lyrics.activeLineIndex(at: elapsed) {
-                // 当前歌词行（超长时自动滚动）
-                MarqueeText(
-                    text: lyrics.lines[activeIndex].text,
-                    font: .system(size: Theme.FontSize.caption, weight: .semibold),
-                    color: .white.opacity(0.9)
-                )
-                .id(activeIndex)
-            } else {
-                // Fallback: show song title + artist
-                HStack(spacing: Theme.Spacing.xs) {
+                    if let activeIndex = lyrics.activeLineIndex(at: elapsed) {
+                        Text(lyrics.lines[activeIndex].text)
+                            .font(.system(size: Theme.FontSize.caption, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.9))
+                            .lineLimit(1)
+                            .id(activeIndex)
+                    }
+                }
+                .frame(minWidth: 0, maxWidth: .infinity)
+            } else if isPlaying {
+                HStack(spacing: 4) {
+                    Image(systemName: "music.note")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.white.opacity(0.4))
+
                     Text(musicService.info.title)
                         .font(.system(size: Theme.FontSize.caption, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.9))
-                        .lineLimit(1)
-
-                    Text("-")
-                        .font(.system(size: Theme.FontSize.caption2))
-                        .foregroundColor(.textQuaternary)
-
-                    Text(musicService.info.artist)
-                        .font(.system(size: Theme.FontSize.caption2, weight: .medium))
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.7))
                         .lineLimit(1)
                 }
+                .frame(minWidth: 0, maxWidth: .infinity)
+            } else if isPaused {
+                HStack(spacing: 4) {
+                    Image(systemName: "pause.circle")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(.white.opacity(0.4))
+
+                    Text(musicService.info.title)
+                        .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                        .lineLimit(1)
+                }
+                .frame(minWidth: 0, maxWidth: .infinity)
             }
-        } else {
-            Text(L10n.musicNoPlayback)
-                .font(.system(size: Theme.FontSize.caption, weight: .medium))
+
+            Spacer(minLength: 0)
+
+            // 4. 倒计时徽章
+            if cdRunning {
+                HStack(spacing: 3) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 7, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                    Text(timerService.countdown.formattedRemaining)
+                        .font(.system(size: Theme.FontSize.caption, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.9))
+                        .monospacedDigit()
+                }
+                .fixedSize()
+            }
+
+            // 5. 日期
+            Text(dateString)
+                .font(.system(size: Theme.FontSize.caption, weight: .medium, design: .rounded))
                 .foregroundColor(.textSecondary)
+                .lineLimit(1)
+                .fixedSize()
+        }
+        .padding(.horizontal, Theme.Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .animation(.easeInOut(duration: 0.3), value: hasLyrics)
+        .animation(.easeInOut(duration: 0.3), value: isPlaying)
+        .animation(.easeInOut(duration: 0.3), value: isPaused)
+        .onReceive(timer) { currentTime = $0 }
+    }
+
+    private var pomodoroPhaseColor: Color {
+        switch timerService.pomodoro.phase {
+        case .work: return .red
+        case .shortBreak: return .green
+        case .longBreak: return .blue
         }
     }
 
-    // MARK: - Right Section
+    // MARK: - Private Properties
 
-    private var rightSection: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            if musicService.hasMedia && musicService.info.duration > 0 {
-                MiniProgressDot(progress: musicService.info.progress)
-            }
-
-            if musicService.info.isPlaying {
-                AudioVisualizer()
-            }
-        }
+    private var timeString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: currentTime)
     }
 
-}
-
-// MARK: - Mini Progress Dot
-
-struct MiniProgressDot: View {
-    let progress: Double
-
-    private let trackWidth: CGFloat = 16
-    private let dotSize: CGFloat = 3
-
-    var body: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 1)
-                .fill(.white.opacity(0.12))
-                .frame(width: trackWidth, height: 2)
-
-            Circle()
-                .fill(.white.opacity(0.7))
-                .frame(width: dotSize, height: dotSize)
-                .offset(x: max(0, min(trackWidth - dotSize, CGFloat(progress) * (trackWidth - dotSize))))
-        }
-        .frame(width: trackWidth, height: max(2, dotSize))
-    }
-}
-
-// MARK: - Audio Visualizer
-
-struct AudioVisualizer: View {
-    @State private var phases: [Bool] = [false, false, false, false]
-
-    private let delays: [Double] = [0.0, 0.12, 0.24, 0.08]
-    private let baseHeight: CGFloat = 3
-    private let maxHeight: CGFloat = 14
-    private let barWidth: CGFloat = 2
-    private let spacing: CGFloat = 2
-
-    var body: some View {
-        HStack(spacing: spacing) {
-            ForEach(0..<4, id: \.self) { index in
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(.white.opacity(0.55))
-                    .frame(width: barWidth, height: phases[index] ? maxHeight : baseHeight)
-                    .animation(
-                        .easeInOut(duration: 0.35 + Double(index) * 0.05)
-                        .repeatForever(autoreverses: true)
-                        .delay(delays[index]),
-                        value: phases[index]
-                    )
-            }
-        }
-        .frame(height: maxHeight)
-        .onAppear {
-            for i in 0..<4 {
-                phases[i] = true
-            }
-        }
+    private var dateString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: L10n.localeIdentifier)
+        formatter.dateFormat = L10n.dateFormatShort
+        return formatter.string(from: currentTime)
     }
 }

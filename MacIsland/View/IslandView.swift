@@ -12,11 +12,11 @@ import SwiftUI
 /// 灵动岛主视图
 struct IslandView: View {
     @StateObject private var store = IslandStore()
-    @EnvironmentObject var musicService: SystemMusicService
-    @EnvironmentObject var lyricsService: LyricsService
     @EnvironmentObject var timerService: TimerService
     @EnvironmentObject var clipboardService: ClipboardService
     @EnvironmentObject var hotkeyService: HotkeyService
+    @EnvironmentObject var musicService: MusicService
+    @EnvironmentObject var lyricsService: LyricsService
     @State private var lastReportedHeight: CGFloat = 0
 
     var body: some View {
@@ -47,10 +47,10 @@ struct IslandView: View {
                 IslandWindowManager.shared.setOpacity(newValue)
             }
             .onAppear {
-                store.bindLyricsService(lyricsService)
-                store.bindMusicService(musicService)
                 store.bindTimerService(timerService)
                 store.bindClipboardService(clipboardService)
+                store.bindMusicService(musicService)
+                store.bindLyricsService(lyricsService)
                 store.listenForNotifications()
                 IslandWindowManager.shared.onCollapse = { store.setIdle() }
 

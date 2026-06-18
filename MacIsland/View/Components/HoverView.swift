@@ -9,19 +9,20 @@ import SwiftUI
 
 /// Hover state view — shows music controls when playing, weather when not
 struct HoverView: View {
-    @ObservedObject var store: IslandStore
     @EnvironmentObject var weatherService: QWeatherService
-    @EnvironmentObject var musicService: SystemMusicService
+    @EnvironmentObject var musicService: MusicService
 
     var body: some View {
         HStack(spacing: Theme.Spacing.lg) {
             if musicService.hasMedia {
                 musicSection
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                    .layoutPriority(1)
             } else {
                 weatherSection
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                    .layoutPriority(1)
             }
-
-            Spacer(minLength: Theme.Spacing.sm)
 
             controlButtons
         }
@@ -33,36 +34,42 @@ struct HoverView: View {
 
     private var musicSection: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            // Album art
+            // 封面
             if let artwork = musicService.info.artwork {
                 Image(nsImage: artwork)
                     .resizable()
+                    .aspectRatio(contentMode: .fill)
                     .frame(width: 44, height: 44)
-                    .cornerRadius(Theme.Radius.sm)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
                     .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
             } else {
-                RoundedRectangle(cornerRadius: Theme.Radius.sm)
-                    .fill(Color.fillSubtle)
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.white.opacity(0.1))
                     .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: "music.note")
-                            .font(.system(size: 18))
-                            .foregroundColor(.textQuaternary)
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.4))
                     )
             }
 
-            // Song info
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            // 歌曲信息
+            VStack(alignment: .leading, spacing: 2) {
                 Text(musicService.info.title)
                     .font(.system(size: Theme.FontSize.body, weight: .semibold))
                     .foregroundColor(.textPrimary)
                     .lineLimit(1)
+                    .truncationMode(.tail)
 
-                Text(musicService.info.artist)
-                    .font(.system(size: Theme.FontSize.caption, weight: .medium))
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(1)
+                if !musicService.info.artist.isEmpty {
+                    Text(musicService.info.artist)
+                        .font(.system(size: Theme.FontSize.caption, weight: .medium))
+                        .foregroundColor(.textSecondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
             }
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -83,11 +90,13 @@ struct HoverView: View {
             Text("\(weatherService.weather.description) · \(weatherService.weather.windDir)")
                 .font(.system(size: Theme.FontSize.caption, weight: .medium))
                 .foregroundColor(.textSecondary)
+                .lineLimit(1)
 
             if !weatherService.weather.locationDisplay.isEmpty {
                 Text(weatherService.weather.locationDisplay)
                     .font(.system(size: Theme.FontSize.caption2, weight: .regular))
                     .foregroundColor(.textTertiary)
+                    .lineLimit(1)
             }
         }
     }
@@ -96,84 +105,44 @@ struct HoverView: View {
 
     private var controlButtons: some View {
         HStack(spacing: 8) {
-            // Previous track
-            MusicIconButton(
-                systemName: "backward.fill",
-                size: 11,
-                action: { musicService.previousTrack() }
-            )
+            if musicService.hasMedia {
+                controlButton(icon: "backward.fill", size: 13) {
+                    musicService.previousTrack()
+                }
 
-            // Play/Pause (larger)
-            MusicIconButton(
-                systemName: musicService.info.isPlaying ? "pause.fill" : "play.fill",
-                size: 14,
-                isActive: true,
-                action: { musicService.togglePlay() }
-            )
+                controlButton(icon: musicService.info.isPlaying ? "pause.fill" : "play.fill", size: 16, emphasized: true) {
+                    musicService.togglePlay()
+                }
 
-            // Next track
-            MusicIconButton(
-                systemName: "forward.fill",
-                size: 11,
-                action: { musicService.nextTrack() }
-            )
-        }
-    }
-}
-
-// MARK: - Music Icon Button
-
-/// Polished music control button with hover effect
-struct MusicIconButton: View {
-    let systemName: String
-    var size: CGFloat = 12
-    var isActive: Bool = false
-    let action: () -> Void
-
-    @State private var isHovering = false
-    @State private var isPressed = false
-
-    var body: some View {
-        Button(action: {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isPressed = false
+                controlButton(icon: "forward.fill", size: 13) {
+                    musicService.nextTrack()
                 }
             }
-            action()
-        }) {
-            Image(systemName: systemName)
-                .font(.system(size: size, weight: .medium))
-                .foregroundColor(foregroundColor)
-                .frame(width: isActive ? 32 : 28, height: isActive ? 32 : 28)
+        }
+        .frame(minWidth: musicService.hasMedia ? 100 : 0, alignment: .trailing)
+    }
+
+    private func controlButton(
+        icon: String,
+        size: CGFloat,
+        emphasized: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: size, weight: .semibold))
+                .foregroundColor(emphasized ? .black.opacity(0.88) : .textPrimary)
+                .frame(width: 28, height: 28)
                 .background(
                     Circle()
-                        .fill(backgroundFill)
+                        .fill(emphasized ? Color.white.opacity(0.92) : Color.white.opacity(0.10))
                 )
-                .scaleEffect(isPressed ? 0.9 : 1.0)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(emphasized ? 0.24 : 0.12), lineWidth: 0.5)
+                )
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isHovering = hovering
-            }
-        }
-    }
-
-    private var foregroundColor: Color {
-        if isActive {
-            return .white
-        }
-        return .white.opacity(isHovering ? 0.9 : 0.65)
-    }
-
-    private var backgroundFill: Color {
-        if isActive {
-            return .white.opacity(isHovering ? 0.25 : 0.15)
-        }
-        return .white.opacity(isHovering ? 0.15 : 0.08)
     }
 }

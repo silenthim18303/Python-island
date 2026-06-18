@@ -80,18 +80,6 @@ final class WidgetDataManager {
         flush("WeatherWidget")
     }
 
-    // MARK: - Music
-
-    func updateMusic(hasMedia: Bool, title: String, artist: String, isPlaying: Bool, progress: Double) {
-        set("widget_music_hasMedia", hasMedia)
-        set("widget_music_title", title)
-        set("widget_music_artist", artist)
-        set("widget_music_isPlaying", isPlaying)
-        set("widget_music_progress", progress)
-        set("widget_music_updated_at", Date().timeIntervalSince1970)
-        flush("MusicWidget")
-    }
-
     // MARK: - Timer
 
     func updateTimer(

@@ -33,7 +33,6 @@ struct NotificationRecord: Identifiable, Codable {
 enum NotificationSource: String, Codable {
     case timer      = "timer"       // 番茄钟/倒计时
     case clipboard  = "clipboard"   // 剪贴板链接
-    case music      = "music"       // 音乐变化
     case system     = "system"      // 系统通知
     case other      = "other"
 
@@ -41,7 +40,6 @@ enum NotificationSource: String, Codable {
         switch self {
         case .timer: return "计时器"
         case .clipboard: return "剪贴板"
-        case .music: return "音乐"
         case .system: return "系统"
         case .other: return "其他"
         }
@@ -51,7 +49,6 @@ enum NotificationSource: String, Codable {
         switch self {
         case .timer: return "timer"
         case .clipboard: return "doc.on.clipboard"
-        case .music: return "music.note"
         case .system: return "gear"
         case .other: return "bell"
         }

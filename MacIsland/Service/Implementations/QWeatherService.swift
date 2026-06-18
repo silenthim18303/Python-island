@@ -280,9 +280,11 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
         }
 
         return await withCheckedContinuation { continuation in
+            let hasResumed = LocationContinuation(continuation: continuation)
+
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else {
-                    continuation.resume(returning: nil)
+                    hasResumed.resume(returning: nil)
                     return
                 }
 
@@ -290,19 +292,38 @@ final class QWeatherService: WeatherServiceProtocol, ObservableObject {
                     if let location = location {
                         self?.currentLocation = location
                     }
-                    continuation.resume(returning: location)
+                    hasResumed.resume(returning: location)
                 }
                 self.locationDelegate = delegate
                 self.locationManager.delegate = delegate
                 self.locationManager.requestLocation()
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
-                    if self?.currentLocation == nil {
-                        continuation.resume(returning: nil)
-                    }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                    hasResumed.resume(returning: nil)
                 }
             }
         }
+    }
+}
+
+// MARK: - Location Continuation Guard
+
+/// 确保 continuation 只恢复一次
+private final class LocationContinuation<T> {
+    private let continuation: CheckedContinuation<T, Never>
+    private let hasResumed = NSLock()
+    private var resumed = false
+
+    init(continuation: CheckedContinuation<T, Never>) {
+        self.continuation = continuation
+    }
+
+    func resume(returning value: T) {
+        hasResumed.lock()
+        defer { hasResumed.unlock() }
+        guard !resumed else { return }
+        resumed = true
+        continuation.resume(returning: value)
     }
 }
 

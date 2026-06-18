@@ -39,6 +39,10 @@ enum StockDataSource: String, CaseIterable {
 
 /// 股票数据提供者 - 全部使用 REST API
 final class StockDataProvider {
+    static let shared = StockDataProvider()
+
+    private init() {}
+
     private let session: URLSession = {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15

@@ -20,9 +20,8 @@ struct AIChatView: View {
             statusBar
             Divider().background(Color.white.opacity(0.1))
 
-            // 聊天区域 — 唯一可滚动的部分
+            // 聊天区域 — 唯一可滚动的部分，占据所有剩余空间
             chatArea
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Divider().background(Color.white.opacity(0.1))
             inputBar
@@ -89,8 +88,10 @@ struct AIChatView: View {
     private var chatArea: some View {
         if ai.messages.isEmpty {
             emptyState
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             messageList
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
