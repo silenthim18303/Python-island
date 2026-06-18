@@ -1,0 +1,112 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+pyisland_sideV/node_modules
+.DS_Store
+dist-ssr
+coverage
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+*.tsbuildinfo
+
+.eslintcache
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
+
+# Vitest
+__screenshots__/
+
+# Vite
+*.timestamp-*-*.mjs
+
+# ====================
+# Python 相关忽略规则
+# ====================
+
+# Python 编译产物
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python 分发产物
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# PyInstaller 打包临时文件与输出
+# 注意：根目录下的 dist/ 是项目源码（侧边面板内容），此处仅忽略 Vue 子项目的构建目录
+#pyisland_sideV/dist/
+pyisland_sideV/build/
+*.spec
+# PyInstaller 生成的可执行文件（Windows 常见后缀）
+*.exe
+*.manifest
+
+# 虚拟环境（多种常见命名）
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# 测试与覆盖率
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+*.cover
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+.profile_default/
+.ipython/
+
+# 环境变量与本地配置
+.env
+.env.*
+!.env.example
+local_settings.py
+
+# PEP 582 本地包目录
+__pypackages__/
+
+# mypy 静态分析缓存
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre 类型检查器
+.pyre/
+.pyre/
+
+# Rope 重构工具
+.ropeproject/
+
+# 系统相关（补充）
+Thumbs.db
+*.bak
+*.tmp
