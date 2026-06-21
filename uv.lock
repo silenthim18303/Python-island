@@ -3,6 +3,12 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
+name = "nuitka"
+version = "4.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/2e/9ea398ca1a4fc458958fdf477ae18d3395bee8c9f8950ca6f0f039ea2585/nuitka-4.1.2.tar.gz", hash = "sha256:efc2359b171d7b63046ca8ec8dee57015c3466a9df74b68a049c2c1a7e93ecee", size = 4561050, upload-time = "2026-05-28T08:26:07.947Z" }
+
+[[package]]
 name = "psutil"
 version = "7.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -35,6 +41,7 @@ name = "pyisland2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "nuitka" },
     { name = "psutil" },
     { name = "pyside6" },
     { name = "pywin32" },
@@ -44,6 +51,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "nuitka", specifier = ">=4.1.2" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyside6", specifier = ">=6.11.1" },
     { name = "pywin32", specifier = ">=312" },

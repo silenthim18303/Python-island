@@ -61,9 +61,7 @@ REM --- 构建参数 ---
 set "NUITKA_ARGS="
 set "NUITKA_ARGS=%NUITKA_ARGS% --standalone"
 set "NUITKA_ARGS=%NUITKA_ARGS% --enable-plugin=pyside6"
-set "NUITKA_ARGS=%NUITKA_ARGS% --output-filename=%OUTPUT_NAME%.exe"
 set "NUITKA_ARGS=%NUITKA_ARGS% --output-dir=."
-set "NUITKA_ARGS=%NUITKA_ARGS% --no-onefile"
 set "NUITKA_ARGS=%NUITKA_ARGS% --windows-console-mode=disable"
 set "NUITKA_ARGS=%NUITKA_ARGS% --windows-disable-console"
 set "NUITKA_ARGS=%NUITKA_ARGS% --assume-yes-for-downloads"
@@ -77,6 +75,9 @@ set "NUITKA_ARGS=%NUITKA_ARGS% --jobs=%NUMBER_OF_PROCESSORS%"
 if not "%ICON_FILE%"=="" (
     set "NUITKA_ARGS=%NUITKA_ARGS% --windows-icon-from-ico=%ICON_FILE%"
 )
+
+REM --- 产物 exe 文件名（Nuitka standalone 默认以入口脚本命名，这里用 --output-name 控制） ---
+set "NUITKA_ARGS=%NUITKA_ARGS% --output-name=%OUTPUT_NAME%.exe"
 
 REM --- 可选：清理旧的打包产物，避免混淆 ---
 if exist "%OUTPUT_NAME%.dist" (
