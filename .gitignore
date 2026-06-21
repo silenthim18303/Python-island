@@ -62,6 +62,24 @@ pyisland_sideV/build/
 *.exe
 *.manifest
 
+# Nuitka 打包产物与缓存
+*.dist/
+*.build/
+*.onefile-build/
+*.onefile-dist/
+*.debug/
+*.release/
+*.pyd
+*.lib
+*.def
+*.exp
+
+# PyIsland 打包产物（本项目特定）
+/Pyisland_sideV.dist/
+/Pyisland_sideV.build/
+Pyisland_sideV.tmp
+Pyisland_sideV.py.bak
+
 # 虚拟环境（多种常见命名）
 .venv/
 venv/
