@@ -1,0 +1,153 @@
+一、前置规则（必看）
+
+核心分工
+Conda：创建全局虚拟环境、安装 CUDA / 底层 C 库、科学计算包（numpy/pytorch 等）
+uv/uvx：完全替代 pip，管理纯 Python 包、项目本地虚拟环境、临时工具运行
+绝对禁忌（和 Conda 不能混用的操作）
+
+❌ 禁止行为
+不要在同一个环境中反复交替使用 conda install + uv add/uv pip install，极易造成动态库错乱、版本冲突、ABI 不兼容。
+不要用 uv venv 在已激活的 Conda 环境内创建嵌套虚拟环境，会出现路径劫持、环境隔离失效。
+不要用 uv python pin/uv python install 管理 Conda 环境的 Python 版本，两者 Python 版本体系独立。
+不要用 uv init 生成的 .python-version 文件约束 Conda 环境，会导致环境识别异常。
+
+✅ 允许的混合用法
+先通过 Conda 完成环境创建 + 底层依赖安装，之后全程只用 uv 管理新增的纯 Python 包，不再执行 conda install。
+
+二、uv 核心命令（分模块）
+
+1. 项目初始化 & 虚拟环境
+
+uv init	初始化 Python 项目（生成 pyproject.toml 等）	
+⚠️ 谨慎使用	Conda 环境下执行后，建议删除自动生成的 .python-version 文件
+
+uv venv	在当前目录创建本地虚拟环境 .venv	
+❌ 禁止混用	不要在 conda activate 状态下执行，会造成路径污染
+
+uv venv --python 3.11	指定 Python 版本创建本地虚拟环境	
+❌ 禁止混用	同上，uv 本地 venv 与 Conda 环境相互独立
+
+source .venv/bin/activate（Linux/Mac）
+.venv\Scripts\activate（Windows）	激活 uv 本地虚拟环境	
+❌ 禁止混用	激活后不再操作 Conda 命令
+
+2. 依赖包管理（替代 pip 主力命令）
+
+uv add 包名	安装项目依赖（写入 pyproject.toml）	
+✅ 推荐混用	Conda 环境激活后优先使用此命令，替代 pip install
+
+uv add 包名==版本	安装指定版本包	
+✅ 推荐混用	用于统一 Conda 已有包的版本
+
+uv remove 包名	卸载项目依赖	
+✅ 推荐混用	替代 pip uninstall
+
+uv sync	根据锁文件同步环境（安装 / 卸载缺失包）	
+✅ 推荐混用	团队协作、环境复刻常用
+
+uv lock	生成 / 更新依赖锁文件 uv.lock	
+✅ 推荐混用	锁定依赖版本，保证环境一致性
+
+uv tree	查看依赖树	
+✅ 可以混用	排查依赖冲突
+
+3. Pip 兼容命令（兼容旧脚本）
+
+uv pip install 包名	兼容 pip 安装语法	
+✅ 可以混用	效果同 uv add，旧项目迁移可用
+
+uv pip uninstall 包名	兼容 pip 卸载语法	
+✅ 可以混用	-
+
+uv pip freeze	导出依赖列表（同 pip freeze）	
+✅ 可以混用	导出 requirements.txt
+
+uv pip compile	编译依赖生成锁文件	
+✅ 可以混用	多用于传统依赖管理流程
+
+4. Python 版本管理
+
+uv python list	查看本地已安装的 Python 版本	
+⚠️ 仅查看可用	仅做查询，不要用 uv 命令修改 Conda 环境 Python
+
+uv python install 3.11	安装指定版本 Python	
+❌ 禁止混用	uv 管理的 Python 和 Conda Python 相互独立
+
+uv python pin 3.11	固定项目 Python 版本	
+❌ 禁止混用	会生成 .python-version，干扰 Conda 环境识别
+
+5. 运行脚本 & 命令
+
+uv run 脚本.py	在当前项目环境运行脚本	
+✅ 推荐混用	Conda 环境下直接使用，自动加载依赖
+
+uv run pytest	运行项目内命令（如测试）	
+✅ 推荐混用	-
+
+uv run --with 包名 脚本.py	临时安装依赖并运行脚本
+✅ 可以混用	一次性依赖，不写入项目配置
+
+6. 缓存 & 自身管理
+
+uv cache clean	
+清理 uv 包缓存	✅ 完全兼容	定期清理，释放磁盘空间
+
+uv self update	
+升级 uv 自身	✅ 完全兼容	-
+
+三、uvx 专用命令（临时工具运行，等价于 uv tool run
+
+uvx 工具名	临时运行工具（最常用）	
+✅ 完全兼容	例：uvx ruff check .，不影响 Conda 环境
+
+uvx 工具名@版本	指定版本临时运行工具	
+✅ 完全兼容	例：uvx black@24.0
+
+uvx python -c "代码"	临时启动隔离 Python 解释器	
+✅ 完全兼容	独立环境，和 Conda 无关
+
+配套：uv tool 长期工具管理（全局安装工具）
+
+uv tool install 工具名	全局长期安装工具	
+✅ 完全兼容	安装后可直接执行 工具名，无需 uvx
+
+uv tool uninstall 工具名	卸载全局工具	
+✅ 完全兼容	-
+
+uv tool list	查看已安装全局工具	
+✅ 完全兼容	-
+
+四、分场景标准工作流（避坑版）
+===================================
+场景 1：纯 Python 项目（不用 Conda）
+
+# 1. 初始化项目
+uv init my_project
+cd my_project
+# 2. 创建本地虚拟环境
+uv venv
+# 3. 激活环境
+source .venv/bin/activate  # Linux/Mac
+# 4. 安装依赖
+uv add flask requests
+# 5. 运行脚本
+uv run app.py
+============================================
+场景 2：Conda + uv 混合（深度学习 / 科学计算，推荐）
+
+# 1. Conda 创建环境 + 安装底层库（只做这一步用 conda）
+conda create -n dl_env python=3.11
+conda activate dl_env
+conda install pytorch numpy scipy
+
+# 2. 后续全部使用 uv（不再执行 conda install）
+uv add fastapi pandas  # 安装纯 Python 包
+uv run train.py         # 运行代码
+=============================================
+场景 3：临时运行工具（任意环境通用）
+
+# 无论是否激活 Conda，都可以直接用 uvx
+uvx ruff check .
+uvx pycowsay "Hello UV"
+
+

@@ -1,16 +1,57 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { computed, ref } from 'vue'
 
-// 待办事项数据
+const STORAGE_KEY = 'pyisland.todo.tasks'
+
 const newTask = ref('')
-const tasks = reactive([
-  { id: 1, text: '待办事项可为你记录和管理任务组织和效率。组织和效率。', completed: false },
-  { id: 2, text: '待办事项支持离线语音录入，无需网络连接。', completed: false },
-  { id: 3, text: '你可以直接将照片放置在待办事项中，方便查看。', completed: false }
-])
+const saveMessage = ref('本地自动保存')
+const tasks = ref(loadTasks())
 
-// HTML转义工具函数
-const sanitizeHtml = (text) => {
+const pendingCount = computed(function () {
+  return tasks.value.filter(function (task) {
+    return !task.completed
+  }).length
+})
+
+function loadTasks() {
+  try {
+    const payload = window.localStorage.getItem(STORAGE_KEY)
+    const parsed = JSON.parse(payload || '[]')
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed
+      .filter(function (entry) {
+        return entry && typeof entry === 'object'
+      })
+      .map(function (entry) {
+        return {
+          id: Number(entry.id) || Date.now(),
+          text: typeof entry.text === 'string' ? entry.text : '',
+          completed: Boolean(entry.completed)
+        }
+      })
+      .filter(function (entry) {
+        return entry.text.trim().length > 0
+      })
+  } catch (error) {
+    console.error('[todo] 读取本地数据失败:', error)
+    saveMessage.value = '读取失败，已使用空列表'
+    return []
+  }
+}
+
+function persistTasks() {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks.value))
+    saveMessage.value = '已自动保存'
+  } catch (error) {
+    console.error('[todo] 保存到本地失败:', error)
+    saveMessage.value = '保存失败'
+  }
+}
+
+function sanitizeHtml(text) {
   if (!text) return ''
   return text
     .replace(/&/g, '&amp;')
@@ -20,31 +61,31 @@ const sanitizeHtml = (text) => {
     .replace(/'/g, '&#039;')
 }
 
-// 添加新任务 - 包含XSS防护
-const addTask = () => {
+function addTask() {
   if (newTask.value.trim()) {
-    tasks.push({
+    tasks.value.unshift({
       id: Date.now(),
       text: sanitizeHtml(newTask.value.trim()),
       completed: false
     })
     newTask.value = ''
+    persistTasks()
   }
 }
 
-// 切换完成状态
-const toggleComplete = (taskId) => {
-  const task = tasks.find(t => t.id === taskId)
+function toggleComplete(taskId) {
+  const task = tasks.value.find(function (t) { return t.id === taskId })
   if (task) {
     task.completed = !task.completed
+    persistTasks()
   }
 }
 
-// 删除任务
-const deleteTask = (taskId) => {
-  const index = tasks.findIndex(t => t.id === taskId)
+function deleteTask(taskId) {
+  const index = tasks.value.findIndex(function (t) { return t.id === taskId })
   if (index !== -1) {
-    tasks.splice(index, 1)
+    tasks.value.splice(index, 1)
+    persistTasks()
   }
 }
 </script>
@@ -53,41 +94,42 @@ const deleteTask = (taskId) => {
   <div class="todo-container">
     <div class="todo-header">
       <h2 class="todo-title">待办事项</h2>
-      <span class="task-count">{{ tasks.filter(t => !t.completed).length }} 项待完成</span>
+      <span class="task-count">{{ pendingCount }} 项待完成</span>
     </div>
-    
+
     <div class="add-task">
-      <input 
+      <input
         v-model="newTask"
-        type="text" 
-        placeholder="添加新任务..."
+        type="text"
+        placeholder="输入新任务..."
         class="task-input"
         @keyup.enter="addTask"
       />
-      <button @click="addTask" class="add-btn">➕</button>
+      <button @click="addTask" class="add-btn">+</button>
     </div>
-    
+    <div class="save-status">{{ saveMessage }}</div>
+
     <div class="task-list">
-      <div 
-        v-for="task in tasks" 
+      <div
+        v-for="task in tasks"
         :key="task.id"
         class="task-item"
         :class="{ completed: task.completed }"
       >
         <div class="task-content">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             :checked="task.completed"
             @change="toggleComplete(task.id)"
             class="task-checkbox"
           />
           <span class="task-text">{{ task.text }}</span>
         </div>
-        <button @click="deleteTask(task.id)" class="delete-btn">🗑️</button>
+        <button @click="deleteTask(task.id)" class="delete-btn">x</button>
       </div>
-      
+
       <div v-if="tasks.length === 0" class="empty-state">
-        <p>🎉 暂无待办事项，添加一个新任务吧！</p>
+        <p>暂无待办事项，添加一个新任务吧！</p>
       </div>
     </div>
   </div>
@@ -98,9 +140,8 @@ const deleteTask = (taskId) => {
   background: rgb(0 0 0 / 0.8);
   backdrop-filter: blur(12px);
   border-radius: 20px;
-  padding: 24px;
+  padding: 18px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
 }
 
@@ -108,14 +149,14 @@ const deleteTask = (taskId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .todo-title {
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -132,18 +173,18 @@ const deleteTask = (taskId) => {
 
 .add-task {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .task-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.9);
   color: #333;
-  font-size: 1rem;
+  font-size: 0.9rem;
   outline: none;
   transition: all 0.3s ease;
 }
@@ -154,12 +195,12 @@ const deleteTask = (taskId) => {
 }
 
 .add-btn {
-  padding: 12px 20px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: white;
   color: black;
-  font-size: 1.2rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -172,18 +213,24 @@ const deleteTask = (taskId) => {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.save-status {
+  margin-bottom: 10px;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.8rem;
+}
+
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 50vh;
+  gap: 6px;
+  max-height: 28vh;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
   box-sizing: border-box;
 }
 
-/* 自定义滚动条 - 与整体设计风格一致 */
 .task-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -203,7 +250,6 @@ const deleteTask = (taskId) => {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Firefox 滚动条 */
 .task-list {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
@@ -213,9 +259,9 @@ const deleteTask = (taskId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -232,20 +278,20 @@ const deleteTask = (taskId) => {
 .task-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
 }
 
 .task-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   accent-color: #667eea;
 }
 
 .task-text {
   color: white;
-  font-size: 1rem;
+  font-size: 0.9rem;
   flex: 1;
   word-break: break-all;
 }
@@ -256,12 +302,12 @@ const deleteTask = (taskId) => {
 }
 
 .delete-btn {
-  padding: 6px 10px;
+  padding: 4px 8px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(255, 107, 107, 0.2);
   color: rgba(255, 107, 107, 0.8);
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
   opacity: 0;
@@ -279,33 +325,32 @@ const deleteTask = (taskId) => {
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 20px 12px;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .empty-state p {
   margin: 0;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .todo-container {
-    padding: 16px;
+    padding: 14px;
   }
-  
+
   .todo-title {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
   }
-  
+
   .task-input {
-    padding: 10px 14px;
-    font-size: 0.9rem;
+    padding: 8px 12px;
+    font-size: 0.85rem;
   }
-  
+
   .add-btn {
-    padding: 10px 16px;
-    font-size: 1rem;
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
 }
 </style>

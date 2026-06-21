@@ -5,4 +5,7 @@ requires-python = ">=3.13"
 dependencies = [
     "psutil>=7.2.2",
     "pyside6>=6.11.1",
+    "pywin32>=312",
+    "win10toast>=0.9",
+    "win11toast>=0.36.3",
 ]

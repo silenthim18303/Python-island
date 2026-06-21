@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import Todo from './views/to_do.vue'
-import 'magic.css/dist/magic.css'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import TodoPanel from './features/todo/TodoPanel.vue'
+import FileTransfer from './features/transfer/FileTransfer.vue'
 
 // 球体位置和大小数据
 const spheres = ref([
@@ -12,11 +12,53 @@ const spheres = ref([
   { top: '40%', right: '35%', size: '50px', color: 'rgba(144, 238, 144, 0.2)', animation: 'float 7s ease-in-out infinite' },
   { bottom: '25%', left: '30%', size: '70px', color: 'rgba(255, 192, 203, 0.25)', animation: 'float 9s ease-in-out infinite reverse' }
 ])
+const mouseX = ref(0)
+const mouseY = ref(0)
+const appContainer = ref(null)
+const contentLayer = ref(null)
+
+function getEntranceElements() {
+  return [appContainer.value, contentLayer.value].filter(Boolean)
+}
+
+function prepareEntranceAnimation() {
+  getEntranceElements().forEach(function (element) {
+    element.classList.add('entrance-ready')
+    element.classList.remove('entrance-active')
+  })
+}
+
+function playEntranceAnimation() {
+  prepareEntranceAnimation()
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      getEntranceElements().forEach(function (element) {
+        element.classList.add('entrance-active')
+        element.classList.remove('entrance-ready')
+      })
+    })
+  })
+}
+
+onMounted(function () {
+  window.prepareEntranceAnimation = prepareEntranceAnimation
+  window.playEntranceAnimation = playEntranceAnimation
+  playEntranceAnimation()
+})
+
+onBeforeUnmount(function () {
+  if (window.prepareEntranceAnimation === prepareEntranceAnimation) {
+    delete window.prepareEntranceAnimation
+  }
+  if (window.playEntranceAnimation === playEntranceAnimation) {
+    delete window.playEntranceAnimation
+  }
+})
 
 </script>
 
 <template>
-  <div class="app-container magictime swap">
+  <div ref="appContainer" class="app-container entrance-target">
     <!-- 背景层 -->
     <div class="background-layer" :style="{ transform: `translate(${mouseX}px, ${mouseY}px)` }">
       <!-- 渐变背景 -->
@@ -41,18 +83,15 @@ const spheres = ref([
     </div>
     
     <!-- 内容层 -->
-    <div class="content-layer magictime swap">
+    <div ref="contentLayer" class="content-layer entrance-target entrance-delay">
       <!-- 待办事项模块 -->
       <div class="module-wrapper">
-        <Todo />
+        <TodoPanel />
       </div>
-      
-<!--      <h1 class="app-title">PyIsland 工作台</h1>-->
-<!--      <p class="app-subtitle">待办事项 + 文件中转站</p>-->
-      
-      <!-- 这里可以添加后续的功能组件 -->
-      <div class="feature-placeholder">
-        <p>其他组件正在开发中...</p>
+
+      <!-- 文件中转模块 -->
+      <div class="module-wrapper">
+        <FileTransfer />
       </div>
     </div>
   </div>
@@ -71,7 +110,6 @@ const spheres = ref([
   box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 1);
 }
 
 /* 背景层 */
@@ -126,7 +164,7 @@ const spheres = ref([
   align-items: center;
   color: white;
   text-align: center;
-  padding: 20px 20px;
+  padding: 8px 8px;
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -151,7 +189,7 @@ const spheres = ref([
 .module-wrapper {
   width: 100%;
   max-width: 600px;
-  margin-bottom: 30px;
+  margin-bottom: 14px;
   box-sizing: border-box;
 }
 
@@ -172,9 +210,24 @@ const spheres = ref([
   margin: 0;
 }
 
-/* 动画时长统一配置 */
-.magictime {
-  animation-duration: 0.8s;
+.entrance-target {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  will-change: opacity, transform;
 }
 
+.entrance-delay {
+  transition-delay: 0.06s;
+}
+
+.entrance-ready {
+  opacity: 0;
+  transform: translateX(-18px);
+}
+
+.entrance-active {
+  opacity: 1;
+  transform: translateX(0);
+}
 </style>
