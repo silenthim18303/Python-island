@@ -3,8 +3,8 @@ chcp 65001 >nul
 REM ================================================================
 REM PyIsland SideV - Nuitka 打包脚本
 REM 说明：打包为多文件目录模式，无黑窗、无弹窗、无 UAC 提示
-REM 图标：img/PyislandLogo.ico  (如果不存在则尝试 img/icon.ico)
-REM 产物：./Pyisland_sideV.dist/
+REM 图标：img/PyislandLogo.ico
+REM 产物：./Pyisland_sideV.dist/Pyisland_sideV.exe
 REM ================================================================
 
 setlocal
@@ -13,6 +13,7 @@ REM --- 基础配置 ---
 set "ENTRY_SCRIPT=small_capsule.py"
 set "OUTPUT_NAME=Pyisland_sideV"
 set "ICON_FILE=img\PyislandLogo.ico"
+set "TEMP_ENTRY=%OUTPUT_NAME%.py"
 
 REM --- 图标回退：如果主图标不存在则尝试 img/icon.ico ---
 if not exist "%ICON_FILE%" (
@@ -57,29 +58,7 @@ echo  模式：多文件目录模式 / 无控制台 / 无 UAC
 echo ================================================================
 echo.
 
-REM --- 构建参数 ---
-set "NUITKA_ARGS="
-set "NUITKA_ARGS=%NUITKA_ARGS% --standalone"
-set "NUITKA_ARGS=%NUITKA_ARGS% --enable-plugin=pyside6"
-set "NUITKA_ARGS=%NUITKA_ARGS% --output-dir=."
-set "NUITKA_ARGS=%NUITKA_ARGS% --windows-console-mode=disable"
-set "NUITKA_ARGS=%NUITKA_ARGS% --windows-disable-console"
-set "NUITKA_ARGS=%NUITKA_ARGS% --assume-yes-for-downloads"
-set "NUITKA_ARGS=%NUITKA_ARGS% --follow-imports"
-set "NUITKA_ARGS=%NUITKA_ARGS% --include-package=capsule_app"
-set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-dir=pyisland_sideV\dist=pyisland_sideV\dist"
-set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-dir=img=img"
-set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-files=widget.html=widget.html"
-set "NUITKA_ARGS=%NUITKA_ARGS% --remove-output"
-set "NUITKA_ARGS=%NUITKA_ARGS% --jobs=%NUMBER_OF_PROCESSORS%"
-if not "%ICON_FILE%"=="" (
-    set "NUITKA_ARGS=%NUITKA_ARGS% --windows-icon-from-ico=%ICON_FILE%"
-)
-
-REM --- 产物 exe 文件名（Nuitka standalone 默认以入口脚本命名，这里用 --output-name 控制） ---
-set "NUITKA_ARGS=%NUITKA_ARGS% --output-name=%OUTPUT_NAME%.exe"
-
-REM --- 可选：清理旧的打包产物，避免混淆 ---
+REM --- 清理旧产物 ---
 if exist "%OUTPUT_NAME%.dist" (
     echo [信息] 发现旧打包目录，清理中...
     rmdir /s /q "%OUTPUT_NAME%.dist"
@@ -88,13 +67,45 @@ if exist "%OUTPUT_NAME%.build" (
     rmdir /s /q "%OUTPUT_NAME%.build"
 )
 
+REM --- 生成临时入口文件（以产物名命名，Nuitka 默认以入口文件名生成 exe） ---
+echo [信息] 准备临时入口文件...
+copy /y "%ENTRY_SCRIPT%" "%TEMP_ENTRY%" >nul
+if errorlevel 1 (
+    echo [错误] 无法创建临时入口文件。
+    pause
+    exit /b 1
+)
+
+REM --- 构建参数（只用 Nuitka 明确支持的参数） ---
+set "NUITKA_ARGS="
+set "NUITKA_ARGS=%NUITKA_ARGS% --standalone"
+set "NUITKA_ARGS=%NUITKA_ARGS% --enable-plugin=pyside6"
+set "NUITKA_ARGS=%NUITKA_ARGS% --windows-console-mode=disable"
+set "NUITKA_ARGS=%NUITKA_ARGS% --assume-yes-for-downloads"
+set "NUITKA_ARGS=%NUITKA_ARGS% --follow-imports"
+set "NUITKA_ARGS=%NUITKA_ARGS% --include-package=capsule_app"
+set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-dir=pyisland_sideV\dist=pyisland_sideV\dist"
+set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-dir=img=img"
+set "NUITKA_ARGS=%NUITKA_ARGS% --include-data-files=widget.html=widget.html"
+set "NUITKA_ARGS=%NUITKA_ARGS% --jobs=%NUMBER_OF_PROCESSORS%"
+if not "%ICON_FILE%"=="" (
+    set "NUITKA_ARGS=%NUITKA_ARGS% --windows-icon-from-ico=%ICON_FILE%"
+)
+
 REM --- 执行打包 ---
 echo [信息] 正在执行 Nuitka 打包，请耐心等待（首次执行可能耗时较长）...
+echo [信息] 命令：python -m nuitka %NUITKA_ARGS% %TEMP_ENTRY%
 echo.
 
-python -m nuitka %NUITKA_ARGS% %ENTRY_SCRIPT%
+python -m nuitka %NUITKA_ARGS% %TEMP_ENTRY%
+set BUILD_STATUS=%errorlevel%
 
-if errorlevel 1 (
+REM --- 清理临时入口文件 ---
+if exist "%TEMP_ENTRY%" (
+    del /q "%TEMP_ENTRY%"
+)
+
+if %BUILD_STATUS% neq 0 (
     echo.
     echo [错误] 打包失败，请查看上方日志。
     pause
@@ -106,6 +117,7 @@ echo ================================================================
 echo  打包完成！
 echo  可执行文件：.\%OUTPUT_NAME%.dist\%OUTPUT_NAME%.exe
 echo  运行时双击 exe 即可，不会出现命令行黑窗。
+echo  如需分发，压缩整个 %OUTPUT_NAME%.dist 目录即可。
 echo ================================================================
 echo.
 pause
