@@ -2,6 +2,8 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import TodoPanel from './features/todo/TodoPanel.vue'
 import FileTransfer from './features/transfer/FileTransfer.vue'
+import About from './features/about/about.vue'
+import WaitPanel from './features/wait/wait.vue'
 
 // 球体位置和大小数据
 const spheres = ref([
@@ -84,6 +86,10 @@ onBeforeUnmount(function () {
     
     <!-- 内容层 -->
     <div ref="contentLayer" class="content-layer entrance-target entrance-delay">
+
+      <div class="module-wrapper">
+        <About />
+      </div>
       <!-- 待办事项模块 -->
       <div class="module-wrapper">
         <TodoPanel />
@@ -92,6 +98,10 @@ onBeforeUnmount(function () {
       <!-- 文件中转模块 -->
       <div class="module-wrapper">
         <FileTransfer />
+      </div>
+
+      <div class="module-wrapper">
+        <WaitPanel />
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QApplication, QMainWindow
 
+from capsule_app.browser_backend import BrowserBackend
 from capsule_app.file_transfer_backend import FileTransferBackend
 
 
@@ -41,6 +42,7 @@ class SidePanelWidget(QMainWindow):
         self.web_profile = None
         self.web_page = None
         self.web_channel = None
+        self.browser_backend = None
         self.file_transfer_backend = None
 
         self._init_window()
@@ -89,7 +91,9 @@ class SidePanelWidget(QMainWindow):
         self.web_view.resize(self.size())
 
         self.web_channel = QWebChannel(self.web_view.page())
+        self.browser_backend = BrowserBackend(self)
         self.file_transfer_backend = FileTransferBackend(self)
+        self.web_channel.registerObject("browserBackend", self.browser_backend)
         self.web_channel.registerObject("fileTransferBackend", self.file_transfer_backend)
         self.web_view.page().setWebChannel(self.web_channel)
 

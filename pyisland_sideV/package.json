@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@icon-park/vue-next": "^1.4.2",
     "http-server": "^14.1.1",
     "httpserver": "^0.3.0",
     "magic.css": "^1.4.8",
+    "uapi-browser-sdk": "^0.1.17",
     "vue": "^3.5.38"
   },
   "devDependencies": {

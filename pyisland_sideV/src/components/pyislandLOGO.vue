@@ -36,31 +36,31 @@ import pyislandImg from '../assets/PyislandLogo单胶囊.png'
 .logo {
   width: 100%;  /* 改为100% */
   height: 100%; /* 改为100% */
-  animation: rotate 5s ease-in-out 0.5s infinite normal forwards;
+  animation: rotate 3s ease-in-out 0.5s infinite normal forwards;
 }
 
 .logo1 {
   width: 100%;  /* 改为100% */
   height: 100%; /* 改为100% */
-  animation: rotate1 5s ease-in-out 0.5s infinite normal forwards;
+  animation: rotate1 3s ease-in-out 0.5s infinite normal forwards;
 }
 
 .logo2 {
   width: 100%;  /* 改为100% */
   height: 100%; /* 改为100% */
-  animation: rotate2 5s ease-in-out 0.5s infinite normal forwards;
+  animation: rotate2 3s ease-in-out 0.5s infinite normal forwards;
 }
 
 .logo3 {
   width: 100%;  /* 改为100% */
   height: 100%; /* 改为100% */
-  animation: rotate3 5s ease-in-out 0.5s infinite normal forwards;
+  animation: rotate3 3s ease-in-out 0.5s infinite normal forwards;
 }
 
 .logo4 {
   width: 100%;  /* 改为100% */
   height: 100%; /* 改为100% */
-  animation: rotate4 5s ease-in-out 0.5s infinite normal forwards;
+  animation: rotate4 3s ease-in-out 0.5s infinite normal forwards;
 }
 
 
