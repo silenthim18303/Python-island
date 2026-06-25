@@ -1,17 +1,56 @@
 import json
+import base64
+import binascii
+import mimetypes
+import os
+import shutil
+import subprocess
+import uuid
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt, QUrl
 from PySide6.QtGui import QColor
+from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QApplication, QMainWindow
 
-from capsule_app.browser_backend import BrowserBackend
-from capsule_app.file_transfer_backend import FileTransferBackend
-
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 FRONTEND_DIST_INDEX = PROJECT_ROOT / "pyisland_sideV" / "dist" / "index.html"
+MAX_IMAGE_SIZE_BYTES = 50 * 1024 * 1024
+
+
+class CustomWebEnginePage(QWebEnginePage):
+    """自定义 WebEnginePage，用于拦截前端的自定义协议请求，实现极简通信。"""
+    def __init__(self, profile, parent=None):
+        super().__init__(profile, parent)
+        self.window = parent
+
+    def acceptNavigationRequest(self, url, _type, isMainFrame):
+        scheme = url.scheme()
+        if scheme == "pyisland":
+            host = url.host()
+            query = url.query()
+            
+            # 解析 query 参数 (例如: path=C:/test.txt)
+            params = {}
+            for pair in query.split('&'):
+                if '=' in pair:
+                    k, v = pair.split('=', 1)
+                    params[k] = QUrl.fromPercentEncoding(v.encode('utf-8'))
+
+            if host == "open_file":
+                path = params.get("path")
+                if path:
+                    self.window.open_file_location(path)
+            elif host == "open_image":
+                src = params.get("src")
+                if src:
+                    self.window.open_image_source(src)
+            
+            # 拦截请求，不进行实际跳转
+            return False
+            
+        return super().acceptNavigationRequest(url, _type, isMainFrame)
 
 
 class SidePanelWebView(QWebEngineView):
@@ -27,7 +66,15 @@ class SidePanelWebView(QWebEngineView):
         local_paths = [url.toLocalFile() for url in urls if url.isLocalFile()]
         super().dropEvent(event)
         if local_paths and self.on_files_dropped is not None:
-            self.on_files_dropped(local_paths)
+            non_image_paths = []
+            for path in local_paths:
+                lower = path.lower()
+                if lower.endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp")):
+                    continue
+                non_image_paths.append(path)
+
+            if non_image_paths:
+                self.on_files_dropped(non_image_paths)
 
 
 class SidePanelWidget(QMainWindow):
@@ -36,23 +83,26 @@ class SidePanelWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         self.storage_dir = Path.home() / "pyisland_side"
-        self.storage_dir.mkdir(parents=True, exist_ok=True)
+        self.images_dir = self.storage_dir / "images"
+        self.todo_text_file = self.storage_dir / "todos.txt"
+        
+        self._ensure_storage()
 
         self.web_view = None
         self.web_profile = None
         self.web_page = None
-        self.web_channel = None
-        self.browser_backend = None
-        self.file_transfer_backend = None
 
         self._init_window()
         self._init_web_engine()
+
+    def _ensure_storage(self):
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
+        self.images_dir.mkdir(parents=True, exist_ok=True)
 
     def _init_window(self):
         """初始化窗口属性和尺寸位置。"""
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        # 确保窗口显示在最前面
         self.raise_()
         self.activateWindow()
 
@@ -68,9 +118,6 @@ class SidePanelWidget(QMainWindow):
 
     def _init_web_engine(self):
         """初始化 WebEngineView，并启用本地持久化存储。"""
-        from PySide6.QtWebChannel import QWebChannel
-        from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngineSettings
-
         self.web_view = SidePanelWebView(self._handle_native_file_drop, self)
         profile_dir = self.storage_dir / "webengine_profile"
         cache_dir = profile_dir / "cache"
@@ -81,7 +128,8 @@ class SidePanelWidget(QMainWindow):
         self.web_profile.setCachePath(str(cache_dir))
         self.web_profile.setPersistentCookiesPolicy(QWebEngineProfile.ForcePersistentCookies)
 
-        self.web_page = QWebEnginePage(self.web_profile, self.web_view)
+        # 使用自定义的 Page 类
+        self.web_page = CustomWebEnginePage(self.web_profile, self)
         self.web_view.setPage(self.web_page)
         self.web_view.setAttribute(Qt.WA_TranslucentBackground)
         self.web_view.setContextMenuPolicy(Qt.NoContextMenu)
@@ -90,17 +138,9 @@ class SidePanelWidget(QMainWindow):
         self.setCentralWidget(self.web_view)
         self.web_view.resize(self.size())
 
-        self.web_channel = QWebChannel(self.web_view.page())
-        self.browser_backend = BrowserBackend(self)
-        self.file_transfer_backend = FileTransferBackend(self)
-        self.web_channel.registerObject("browserBackend", self.browser_backend)
-        self.web_channel.registerObject("fileTransferBackend", self.file_transfer_backend)
-        self.web_view.page().setWebChannel(self.web_channel)
-
         self.web_view.loadFinished.connect(self._play_frontend_entrance_animation)
         self.web_view.load(QUrl.fromLocalFile(str(FRONTEND_DIST_INDEX)))
         print(f"[SidePanelWidget] 使用本地持久化目录：{profile_dir}")
-        print(f"[SidePanelWidget] 文件中转目录：{self.file_transfer_backend.transferDirectory()}")
 
     def _configure_webengine_for_low_memory(self, profile_cls, settings_cls):
         """关闭当前侧边栏不需要的 WebEngine 功能，降低资源占用。"""
@@ -121,6 +161,8 @@ class SidePanelWidget(QMainWindow):
                 settings.setAttribute(attr, value)
 
         set_attr("LocalStorageEnabled", True)
+        set_attr("LocalContentCanAccessFileUrls", True)
+        set_attr("LocalContentCanAccessRemoteUrls", True)
         set_attr("PluginsEnabled", False)
         set_attr("FullScreenSupportEnabled", False)
         set_attr("PdfViewerEnabled", False)
@@ -168,3 +210,74 @@ class SidePanelWidget(QMainWindow):
         self.web_view.page().runJavaScript(
             f"window.handleNativeFileDrop && window.handleNativeFileDrop({payload});"
         )
+
+    # --- 系统交互逻辑 ---
+
+    def _decode_data_url(self, data_url: str):
+        if not data_url.startswith("data:image/") or "," not in data_url:
+            return None, None
+
+        header, encoded = data_url.split(",", 1)
+        if ";base64" not in header:
+            return None, None
+
+        mime = header.split(";")[0].replace("data:", "", 1)
+        ext = mimetypes.guess_extension(mime) or ".png"
+        if ext == ".jpe":
+            ext = ".jpg"
+
+        try:
+            raw = base64.b64decode(encoded)
+        except (ValueError, binascii.Error):
+            return None, None
+
+        if len(raw) > MAX_IMAGE_SIZE_BYTES:
+            return None, None
+
+        return ext, raw
+
+    def open_image_source(self, source: str) -> None:
+        if not source:
+            return
+
+        file_path = None
+
+        if source.startswith("file://"):
+            file_path = Path(QUrl(source).toLocalFile())
+        elif source.startswith("data:image/"):
+            ext, raw = self._decode_data_url(source)
+            if raw is not None:
+                file_name = f"preview_{uuid.uuid4().hex}{ext}"
+                target = self.images_dir / file_name
+                target.write_bytes(raw)
+                file_path = target
+
+        if file_path is None or not file_path.exists():
+            return
+
+        try:
+            os.startfile(str(file_path))
+        except Exception:
+            pass
+
+    def open_file_location(self, file_path: str) -> None:
+        if not file_path:
+            return
+
+        normalized = file_path.strip().strip('"')
+        if normalized.startswith("file://"):
+            normalized = QUrl(normalized).toLocalFile()
+
+        target = Path(normalized)
+        if target.is_file():
+            try:
+                subprocess.Popen(["explorer", "/select,", str(target)])
+            except Exception:
+                pass
+            return
+
+        if target.is_dir():
+            try:
+                subprocess.Popen(["explorer", str(target)])
+            except Exception:
+                pass

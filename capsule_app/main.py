@@ -1,4 +1,5 @@
 import sys
+import threading
 from pathlib import Path
 
 from PySide6.QtCore import QTimer
@@ -73,9 +74,13 @@ def run():
     widget.show()
 
     # 延迟发送启动通知，避免窗口初始化冲突
-    QTimer.singleShot(500, lambda: _show_toast(
-        "Pyisland_sideV",
-        "Pyisland_sideV正在启动，当屏幕左侧出现蓝色胶囊时，单击或拖动蓝色胶囊可打开侧边栏"
-    ))
+    # 使用 threading.Thread 确保 toast 不会阻塞 Qt 主事件循环
+    def show_toast_thread():
+        _show_toast(
+            "Pyisland_sideV",
+            "Pyisland_sideV正在启动，当屏幕左侧出现蓝色胶囊时，单击或拖动蓝色胶囊可打开侧边栏"
+        )
+
+    QTimer.singleShot(500, lambda: threading.Thread(target=show_toast_thread, daemon=True).start())
 
     return app.exec()
