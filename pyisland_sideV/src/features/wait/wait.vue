@@ -17,34 +17,36 @@ function openLink(url) {
 
 <template>
   <div class="wait-container">
-    <div class="wait-logo">
-      <PyislandLOGO />
+    <div class="wait-upper-section">
+      <div class="wait-logo">
+        <PyislandLOGO />
+      </div>
+
+      <div class="wait-content">
+        <h3 class="wait-title">更多功能正在开发中</h3>
+        <p class="wait-description">
+          PyIsland_SideV 正在持续完善中。您可以通过下面的方式支持我们
+        </p>
+      </div>
     </div>
 
-    <div class="wait-content">
-      <h3 class="wait-title">更多功能正在开发中</h3>
-      <p class="wait-description">
-        PyIsland_SideV 正在持续完善中。您可以通过下面的方式支持我们
-      </p>
-
-      <div class="wait-actions">
-        <button class="wait-button wait-button-text" type="button" @click="openLink(websiteUrl)" aria-label="打开官网">
-            <div class="wait-logo2">
-                <PyislandLOGO />P
-            </div>
-        </button>
-        <button class="wait-button wait-button-text" type="button" @click="openLink(websiteUrl2)" aria-label="打开官网">
-            <div class="wait-logo2">
-                <PyislandLOGO />E
-            </div>
-        </button>
-        <button class="wait-button" type="button" @click="openLink(githubUrl)" aria-label="打开 GitHub">
-          <Github theme="outline" size="22" fill="currentColor" />
-        </button>
-        <button class="wait-button" type="button" @click="openLink(douyinUrl)" aria-label="打开抖音">
-          <Tiktok theme="outline" size="22" fill="currentColor" />
-        </button>
-      </div>
+    <div class="wait-actions">
+      <button class="wait-button wait-button-text" type="button" @click="openLink(websiteUrl)" aria-label="打开官网">
+          <div class="wait-logo2">
+              <PyislandLOGO />P
+          </div>
+      </button>
+      <button class="wait-button wait-button-text" type="button" @click="openLink(websiteUrl2)" aria-label="打开官网">
+          <div class="wait-logo2">
+              <PyislandLOGO />E
+          </div>
+      </button>
+      <button class="wait-button" type="button" @click="openLink(githubUrl)" aria-label="打开 GitHub">
+        <Github theme="outline" size="22" fill="currentColor" />
+      </button>
+      <button class="wait-button" type="button" @click="openLink(douyinUrl)" aria-label="打开抖音">
+        <Tiktok theme="outline" size="22" fill="currentColor" />
+      </button>
     </div>
   </div>
 </template>
@@ -52,9 +54,9 @@ function openLink(url) {
 <style scoped>
 .wait-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 14px;
-  align-items: center;
   background: rgb(0 0 0 / 0.8);
   backdrop-filter: blur(12px);
   border-radius: 20px;
@@ -62,6 +64,13 @@ function openLink(url) {
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-sizing: border-box;
   min-height: 154px;
+}
+
+.wait-upper-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
 }
 
 .wait-logo {
@@ -119,7 +128,8 @@ function openLink(url) {
 .wait-actions {
   display: flex;
   gap: 10px;
-  margin-top: 14px;
+  justify-content: center;
+  width: 100%;
 }
 
 .wait-button {

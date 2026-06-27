@@ -15,6 +15,16 @@ APP_ICON_CANDIDATES = [
 ]
 
 
+def show_toast(title, message, duration=3):
+    """
+    显示一个非阻塞的 Toast 通知。
+    这是从外部模块触发通知的公共接口。
+    """
+    # 在单独的线程中运行 _show_toast 以避免阻塞
+    thread = threading.Thread(target=_show_toast, args=(title, message, duration), daemon=True)
+    thread.start()
+
+
 def _show_toast(title, message, duration=3):
     """显示系统 Toast 通知。"""
     icon_path = None
