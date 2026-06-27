@@ -46,6 +46,11 @@ class CustomWebEnginePage(QWebEnginePage):
                 src = params.get("src")
                 if src:
                     self.window.open_image_source(src)
+            elif host == "open_url":
+                url_to_open = params.get("url")
+                if url_to_open:
+                    from PySide6.QtGui import QDesktopServices
+                    QDesktopServices.openUrl(QUrl(url_to_open))
             
             # 拦截请求，不进行实际跳转
             return False

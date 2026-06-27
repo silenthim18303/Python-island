@@ -10,49 +10,9 @@ const websiteUrl2 = 'https://pyisland.com/'
 const githubUrl = 'https://github.com/Python-island/Python-island'
 const douyinUrl = 'https://www.douyin.com/video/7653817032713981220'
 
-const browserBackend = ref(null)
-
-function parseJsonPayload(payload, fallback) {
-  try {
-    return JSON.parse(payload || 'null')
-  } catch (_error) {
-    return fallback
-  }
-}
-
 function openLink(url) {
-  const backend = browserBackend.value
-  if (backend && typeof backend.openUrl === 'function') {
-    backend.openUrl(url, function (payload) {
-      const result = parseJsonPayload(payload, { ok: false })
-      if (!result || !result.ok) {
-        console.warn('[wait] failed to open url via backend:', url, result && result.error)
-      }
-    })
-    return
-  }
-  try {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  } catch (error) {
-    console.warn('[wait] window.open failed:', error)
-  }
+  window.location.href = `pyisland://open_url?url=${encodeURIComponent(url)}`
 }
-
-function initBridge() {
-  if (typeof qt === 'undefined' || !qt.webChannelTransport || typeof QWebChannel !== 'function') {
-    return
-  }
-  new QWebChannel(qt.webChannelTransport, function (channel) {
-    const backend = channel.objects && channel.objects.browserBackend
-    if (backend) {
-      browserBackend.value = backend
-    }
-  })
-}
-
-onMounted(function () {
-  initBridge()
-})
 </script>
 
 <template>

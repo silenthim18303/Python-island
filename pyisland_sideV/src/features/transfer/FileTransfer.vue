@@ -443,7 +443,7 @@ const totalCount = computed(() => items.value.length)
 
 .item-image {
   max-width: 100%;
-  max-height: 120px;
+  max-height: 60px;
   object-fit: contain;
   cursor: grab;
 }
