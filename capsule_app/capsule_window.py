@@ -17,17 +17,23 @@ def set_startup_on_boot(enable: bool) -> bool:
         # 1. Nuitka打包后 sys.executable 就是生成的exe文件路径
         # 2. 开发环境下使用 python small_capsule.py 启动
         if getattr(sys, 'frozen', False):
-            # 打包后的exe，直接启动自身
+            # 打包后的exe，直接启动自身，路径加引号防止空格问题
             command = f'"{sys.executable}"'
         else:
-            # 开发环境，启动small_capsule.py
+            # 开发环境，启动small_capsule.py，确保路径正确解析
             small_capsule_path = Path(__file__).parent.parent / "small_capsule.py"
-            command = f'"{sys.executable}" "{str(small_capsule_path)}"'
+            # Windows注册表启动项中，整个命令需要用双引号包裹，如果路径含空格，内部路径也要用双引号包裹
+            # 正确格式："C:\Path with space\python.exe" "C:\Path with space\script.py"
+            python_path = str(sys.executable)
+            script_path = str(small_capsule_path.resolve())
+            command = f'"{python_path}" "{script_path}"'
+        
+        print(f"[Startup] 写入注册表的启动命令: {command}")
         
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_ALL_ACCESS)
         if enable:
             winreg.SetValueEx(key, "PyIsland", 0, winreg.REG_SZ, command)
-            print("[Startup] 已开启开机自启")
+            print(f"[Startup] 已开启开机自启，命令: {command}")
         else:
             try:
                 winreg.DeleteValue(key, "PyIsland")
@@ -38,6 +44,8 @@ def set_startup_on_boot(enable: bool) -> bool:
         return True
     except Exception as e:
         print(f"[Startup] 设置开机自启失败: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def is_startup_enabled() -> bool:
@@ -154,11 +162,11 @@ class CapsuleWidget(QMainWindow):
         startup_action = QAction("开机自启", self)
         startup_action.setCheckable(True)
         startup_action.setChecked(is_startup_enabled())
-        def toggle_startup():
-            new_state = not is_startup_enabled()
-            if set_startup_on_boot(new_state):
-                startup_action.setChecked(new_state)
-                show_toast("PyIsland", f"开机自启已{'开启' if new_state else '关闭'}")
+        def toggle_startup(checked):
+            # Qt的triggered信号会传入当前的勾选状态，直接使用这个状态
+            if set_startup_on_boot(checked):
+                startup_action.setChecked(checked)
+                show_toast("PyIsland", f"开机自启已{'开启' if checked else '关闭'}")
         startup_action.triggered.connect(toggle_startup)
         tray_menu.addAction(startup_action)
         
