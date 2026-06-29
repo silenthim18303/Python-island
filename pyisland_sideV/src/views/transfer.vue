@@ -1,6 +1,7 @@
 <script setup>
 import TodoPanel from '../features/todo/TodoPanel.vue'
 import FileTransfer from '../features/transfer/FileTransfer.vue'
+import BluetoothList from '../features/bluetooth/BluetoothList.vue'
 </script>
 
 <template>
@@ -10,6 +11,9 @@ import FileTransfer from '../features/transfer/FileTransfer.vue'
     </div>
     <div class="module-wrapper">
       <FileTransfer />
+    </div>
+    <div class="module-wrapper">
+      <BluetoothList />
     </div>
   </div>
 </template>

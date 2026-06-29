@@ -4,6 +4,7 @@ import TodoPanel from './features/todo/TodoPanel.vue'
 import FileTransfer from './features/transfer/FileTransfer.vue'
 import About from './features/about/about.vue'
 import WaitPanel from './features/wait/wait.vue'
+import BluetoothList from './features/bluetooth/BluetoothList.vue'
 
 // 球体位置和大小数据
 const spheres = ref([
@@ -98,6 +99,11 @@ onBeforeUnmount(function () {
       <!-- 文件中转模块 -->
       <div class="module-wrapper">
         <FileTransfer />
+      </div>
+
+      <!-- 蓝牙设备模块 -->
+      <div class="module-wrapper">
+        <BluetoothList />
       </div>
 
       <div class="module-wrapper">

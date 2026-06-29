@@ -14,6 +14,11 @@ from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngin
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QApplication, QMainWindow
 
+# 导入蓝牙后端
+from capsule_app.bluetooth_backend import BluetoothBackend
+# 导入进程监控后端
+from capsule_app.process_monitor_backend import ProcessMonitorBackend
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 FRONTEND_DIST_INDEX = PROJECT_ROOT / "pyisland_sideV" / "dist" / "index.html"
 MAX_IMAGE_SIZE_BYTES = 50 * 1024 * 1024
@@ -143,9 +148,14 @@ class SidePanelWidget(QMainWindow):
         self.setCentralWidget(self.web_view)
         self.web_view.resize(self.size())
 
-        self.web_view.loadFinished.connect(self._play_frontend_entrance_animation)
+        self.web_view.loadFinished.connect(self._on_web_view_load_finished)
         self.web_view.load(QUrl.fromLocalFile(str(FRONTEND_DIST_INDEX)))
         print(f"[SidePanelWidget] 使用本地持久化目录：{profile_dir}")
+        
+        # 初始化蓝牙后端
+        self.bluetooth_backend = BluetoothBackend()
+        # 初始化进程监控后端
+        self.process_monitor = ProcessMonitorBackend()
 
     def _configure_webengine_for_low_memory(self, profile_cls, settings_cls):
         """关闭当前侧边栏不需要的 WebEngine 功能，降低资源占用。"""
@@ -199,6 +209,16 @@ class SidePanelWidget(QMainWindow):
             "window.prepareEntranceAnimation && window.prepareEntranceAnimation();"
         )
 
+    def _on_web_view_load_finished(self, success):
+        """web_view加载完成后的回调"""
+        if success:
+            # 播放入场动画
+            self._play_frontend_entrance_animation()
+            # 给蓝牙后端设置web_view，开始推送数据
+            self.bluetooth_backend.set_web_view(self.web_view)
+            # 给进程监控后端设置web_view，开始推送状态
+            self.process_monitor.set_web_view(self.web_view)
+    
     def _play_frontend_entrance_animation(self, *_args):
         """通知前端播放入场动画。"""
         if self.web_view is None:
@@ -286,3 +306,11 @@ class SidePanelWidget(QMainWindow):
                 subprocess.Popen(["explorer", str(target)])
             except Exception:
                 pass
+
+    def closeEvent(self, event):
+        """窗口关闭时清理资源"""
+        if hasattr(self, 'bluetooth_backend'):
+            self.bluetooth_backend.stop()
+        if hasattr(self, 'process_monitor'):
+            self.process_monitor.stop()
+        super().closeEvent(event)

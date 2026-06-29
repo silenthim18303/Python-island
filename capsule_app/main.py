@@ -69,6 +69,8 @@ def _load_app_icon():
     return QIcon()
 
 
+
+
 def run():
     from capsule_app.capsule_window import CapsuleWidget
 

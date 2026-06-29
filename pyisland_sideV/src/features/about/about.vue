@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const now = ref(new Date())
+const eisland_connected = ref(false)
 let clockTimerId = null
 
 const timeText = computed(function () {
@@ -30,6 +31,12 @@ const greetingText = computed(function () {
   return '晚上好，记得整理今天的事项'
 })
 
+// 处理后端推送的eIsland状态更新
+function handleEIslandStatusUpdate(is_running) {
+  console.log('[ProcessMonitor] 收到eIsland状态更新:', is_running)
+  eisland_connected.value = is_running
+}
+
 function tickNow() {
   now.value = new Date()
 }
@@ -37,12 +44,18 @@ function tickNow() {
 onMounted(function () {
   tickNow()
   clockTimerId = window.setInterval(tickNow, 1000)
+  // 注册全局函数，接收后端推送的状态
+  window.handleEIslandStatusUpdate = handleEIslandStatusUpdate
 })
 
 onBeforeUnmount(function () {
   if (clockTimerId !== null) {
     window.clearInterval(clockTimerId)
     clockTimerId = null
+  }
+  // 清理全局函数
+  if (window.handleEIslandStatusUpdate === handleEIslandStatusUpdate) {
+    delete window.handleEIslandStatusUpdate
   }
 })
 </script>
@@ -54,7 +67,9 @@ onBeforeUnmount(function () {
         <h2 class="status-title">Hello！</h2>
         <div class="status-subtitle">{{ greetingText }}</div>
       </div>
-      <span class="status-chip">实时</span>
+      <span class="status-chip" :class="{ connected: eisland_connected }">
+        {{ eisland_connected ? '已连接到Eisland' : '实时' }}
+      </span>
     </div>
 
     <div class="status-panel time-panel">
@@ -106,6 +121,13 @@ onBeforeUnmount(function () {
   padding: 4px 12px;
   border-radius: 12px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.status-chip.connected {
+  background: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
 }
 
 .status-panel {

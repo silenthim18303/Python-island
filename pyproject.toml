@@ -3,10 +3,13 @@ name = "pyisland2"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
+    "bleak>=3.0.2",
     "nuitka>=4.1.2",
+    "pipreqsnb>=0.2.4",
     "psutil>=7.2.2",
     "pyside6>=6.11.1",
     "pywin32>=312",
     "win10toast>=0.9",
     "win11toast>=0.36.3",
+    "windows>=0.1.1",
 ]

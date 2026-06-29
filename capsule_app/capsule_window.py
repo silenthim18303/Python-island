@@ -1,8 +1,61 @@
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QTimer, Qt, QUrl
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
+
+# 导入show_toast用于开机自启操作的通知
+from capsule_app.main import show_toast
+
+def set_startup_on_boot(enable: bool) -> bool:
+    """设置开机自启，通过写入Windows注册表实现，兼容Nuitka打包后的exe"""
+    try:
+        import winreg
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
+        # 处理打包场景：
+        # 1. Nuitka打包后 sys.executable 就是生成的exe文件路径
+        # 2. 开发环境下使用 python small_capsule.py 启动
+        if getattr(sys, 'frozen', False):
+            # 打包后的exe，直接启动自身
+            command = f'"{sys.executable}"'
+        else:
+            # 开发环境，启动small_capsule.py
+            small_capsule_path = Path(__file__).parent.parent / "small_capsule.py"
+            command = f'"{sys.executable}" "{str(small_capsule_path)}"'
+        
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_ALL_ACCESS)
+        if enable:
+            winreg.SetValueEx(key, "PyIsland", 0, winreg.REG_SZ, command)
+            print("[Startup] 已开启开机自启")
+        else:
+            try:
+                winreg.DeleteValue(key, "PyIsland")
+                print("[Startup] 已关闭开机自启")
+            except FileNotFoundError:
+                pass
+        winreg.CloseKey(key)
+        return True
+    except Exception as e:
+        print(f"[Startup] 设置开机自启失败: {e}")
+        return False
+
+def is_startup_enabled() -> bool:
+    """检查开机自启是否已开启"""
+    try:
+        import winreg
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_READ)
+        try:
+            value, _ = winreg.QueryValueEx(key, "PyIsland")
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            winreg.CloseKey(key)
+            return False
+    except Exception as e:
+        print(f"[Startup] 检查开机自启状态失败: {e}")
+        return False
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -95,6 +148,20 @@ class CapsuleWidget(QMainWindow):
 
         tray_menu.addAction(show_action)
         tray_menu.addAction(hide_action)
+        tray_menu.addSeparator()
+        
+        # 开机自启选项
+        startup_action = QAction("开机自启", self)
+        startup_action.setCheckable(True)
+        startup_action.setChecked(is_startup_enabled())
+        def toggle_startup():
+            new_state = not is_startup_enabled()
+            if set_startup_on_boot(new_state):
+                startup_action.setChecked(new_state)
+                show_toast("PyIsland", f"开机自启已{'开启' if new_state else '关闭'}")
+        startup_action.triggered.connect(toggle_startup)
+        tray_menu.addAction(startup_action)
+        
         tray_menu.addSeparator()
         tray_menu.addAction(exit_action)
 
