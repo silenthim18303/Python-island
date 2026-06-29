@@ -67,13 +67,19 @@ class BluetoothBackend(QObject):
             powershell_command = """
             Get-PnpDevice -Class Bluetooth | Where-Object { $_.Status -eq 'OK' } | Select-Object FriendlyName, DeviceId | ConvertTo-Json
             """
+            # 在Windows上隐藏PowerShell窗口，避免弹出黑框
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+            
             # subprocess.run本身是阻塞的，但我们已经在独立线程中运行，不会阻塞主线程
             result = subprocess.run(
                 ["powershell", "-Command", powershell_command],
                 capture_output=True,
                 text=True,
                 encoding='gbk',
-                errors='replace'
+                errors='replace',
+                startupinfo=startupinfo
             )
             
             if result.returncode != 0:

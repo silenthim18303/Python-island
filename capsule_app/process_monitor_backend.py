@@ -60,12 +60,18 @@ class ProcessMonitorBackend(QObject):
             powershell_command = """
             Get-Process | Where-Object { $_.Name -match 'eIsland|cisland' } | Select-Object -First 1 | ConvertTo-Json
             """
+            # 在Windows上隐藏PowerShell窗口，避免弹出黑框
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+            
             result = subprocess.run(
                 ["powershell", "-Command", powershell_command],
                 capture_output=True,
                 text=True,
                 encoding='gbk',
-                errors='replace'
+                errors='replace',
+                startupinfo=startupinfo
             )
             
             # 如果命令执行成功且有输出，说明进程存在
