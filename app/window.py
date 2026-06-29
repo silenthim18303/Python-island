@@ -140,8 +140,8 @@ class CapsuleWindow(QWidget):
         self.collapsed_width_ratio = 0.11
         self.collapsed_height_ratio = 0.065
         self.expanded_height_ratio = 0.62
-        self.collapsed_size = (260, 78)
-        self.expanded_size = (260, 560)
+        self.collapsed_size = (300, 78)
+        self.expanded_size = (300, 560)
         self.expanded = False
         self._toggle_locked = False
         self.snap_distance = 24

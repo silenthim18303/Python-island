@@ -1,0 +1,10 @@
+[project]
+name = "python-island"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pyaudio>=0.2.14",
+    "pyinstaller>=6.21.0",
+    "pyside6>=6.11.1",
+    "vosk>=0.3.45",
+]
