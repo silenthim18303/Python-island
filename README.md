@@ -10,7 +10,7 @@
 - **文件中转**：从桌面拖文件到面板，或点击面板内的上传区域导入，支持大文件
 - **蓝牙设备**：自动扫描系统已连接的蓝牙设备，显示设备名称和电量圆环
 - **eIsland联动**：检测系统中是否运行eIsland进程，在about页面显示连接状态
-- **系统托盘**：最小化到系统托盘，支持开机自启
+- **系统托盘**：最小化到系统托盘，支持显示/隐藏主界面
 - **单实例保护**：通过QLockFile防止多实例启动，重复启动会弹出Toast提示
 - **外链跳转**：面板底部的官网 / GitHub / 抖音按钮，会调用系统默认浏览器打开链接
 - **本地持久化**：所有数据保存在 `~/.pyisland_side/` 目录下，独立profile不污染系统
@@ -24,7 +24,7 @@ pyisland2/
 ├── build_nuitka.bat          # Nuitka打包脚本，编译为Windows单exe
 ├── capsule_app/              # PySide6 后端核心
 │   ├── main.py               # 应用入口：初始化全局资源 + Toast通知公共接口
-│   ├── capsule_window.py     # 胶囊悬浮窗(CapsuleWidget)：拖动、点击、空闲减淡 + 系统托盘 + 开机自启
+│   ├── capsule_window.py     # 胶囊悬浮窗(CapsuleWidget)：拖动、点击、空闲减淡 + 系统托盘
 │   ├── side_panel_window.py  # 侧边栏面板(SidePanelWidget)：承载Vue前端，初始化所有后端模块
 │   ├── bluetooth_backend.py  # 蓝牙扫描后端：PowerShell获取已连接蓝牙设备，推送给前端
 │   └── process_monitor_backend.py # 进程监控后端：检测eIsland进程状态，联动前端显示
@@ -82,7 +82,7 @@ python small_capsule.py
 2. 右下角会弹出 Toast 通知提示"PyIsland SideV 已启动"
 3. **点击胶囊** → 展开侧边栏面板
 4. 再次点击（或拖到屏幕右半部分释放）→ 关闭侧边栏面板
-5. 系统托盘中会出现程序图标，右键可配置开机自启
+5. 系统托盘中会出现程序图标，右键可显示/隐藏主界面或退出程序
 
 ## 使用说明
 
@@ -95,7 +95,7 @@ python small_capsule.py
 | 在侧边栏中编辑待办 | 自动保存到本地localStorage |
 | 拖入文件到侧边栏的文件中转区 | 文件信息存入IndexedDB，支持拖拽出到桌面 |
 | 点击底部的官网 / GitHub / 抖音按钮 | 调用系统默认浏览器打开链接 |
-| 右键系统托盘图标 → 开机自启 | 勾选后开机自动启动程序 |
+
 
 ## 打包部署
 
@@ -106,7 +106,6 @@ python small_capsule.py
 ```
 
 打包完成后会在`./Pyisland_sideV.dist/`目录生成可执行文件，支持：
-- 开机自启（打包后的exe路径会自动写入注册表）
 - 无黑窗运行，完全桌面应用体验
 - 整个目录可复制迁移，绿色运行
 
