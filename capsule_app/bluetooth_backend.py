@@ -151,10 +151,10 @@ class BluetoothBackend(QObject):
         """返回模拟数据，用于蓝牙不可用的情况"""
         mock_devices = [
             {
-                "id": "mock_2",
-                "name": "华为Watch GT4",
-                "battery": "92%",
-                "batteryValue": 92
+                "id": "test1",
+                "name": "Pyisland_sideV似乎没能找到已连接的设备",
+                "battery": "66%",
+                "batteryValue": 66
             }
         ]
         self._update_devices(mock_devices)
