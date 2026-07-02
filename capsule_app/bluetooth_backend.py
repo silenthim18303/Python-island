@@ -109,7 +109,12 @@ class BluetoothBackend(QObject):
                 r'Avrcp',
                 r'传输',
                 r'Device',
-                r'无线'
+                r'无线',
+                r'通用属性',
+                r'通用访问',
+                r'区域网',
+                r'推送',
+                r'访问'
             ]
             combined_filter = re.compile('|'.join(filter_patterns), re.IGNORECASE)
             
