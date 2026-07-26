@@ -12,14 +12,14 @@ MacIsland 是一个常驻菜单栏的浮动「灵动岛」应用。它停靠在�
 
 | 平台 | macOS 15.0+ |
 | --- | --- |
-| 版本 | v2.4.4 |
+| 版本 | v2.5.1 |
 | 技术栈 | Swift 5.0 / SwiftUI / AppKit / Combine / Speech |
 | 依赖 | QWeatherSDK（和风天气，SPM 引入） |
 | Bundle ID | `geminimortal.MacIsland` |
 
 ## 下载
 
-[📥 下载最新版本 (v2.4.4)](https://github.com/MacIsland/MacIsland/releases/download/v2.4.4/MacIsland_v2.4.4.dmg)
+[📥 下载最新版本 (v2.5.1)](https://github.com/MacIsland/MacIsland/releases/download/v2.5.1/MacIsland_v2.5.1.dmg)
 
 ---
 
@@ -52,7 +52,7 @@ MacIsland/
 
 | 文件 | 作用 |
 |------|------|
-| `AppSettings.swift` | 全局用户偏好设置（动画/快捷键/番茄钟/剪贴板/壁纸/外观/语音，UserDefaults 持久化） |
+| `AppSettings.swift` | 全局用户偏好设置（动画/快捷键/番茄钟/剪贴板/壁纸/外观/语音/手势，UserDefaults 持久化） |
 | `IslandState.swift` | 形态枚举（idle/hover/expanded/maxExpand/notification/lyrics/countdown）+ 动画速度配置 |
 | `IslandLayout.swift` | 各形态窗口尺寸/圆角 + 刘海信息（NotchInfo） |
 | `IslandStore.swift` | 形态状态机、空闲计时、服务绑定与自动切换 |
@@ -108,7 +108,7 @@ MacIsland/
 | `AIChatView.swift` | AI 对话（Ollama / OpenAI） |
 | `AIVoiceChatView.swift` | AI 语音对话（本地 AI + 语音输入/输出） |
 | `ToolboxView.swift` | 工具箱（剪贴板历史/编码转换/文件哈希/文件搜索/翻译） |
-| `InlineSettingsView.swift` | 灵动岛内嵌设置面板 |
+| `InlineSettingsView.swift` | 灵动岛内嵌设置面板（含手势开关） |
 | `TodoListView.swift` | 待办事项列表 |
 | `MemoListView.swift` | 便签列表 |
 | `EventListView.swift` | 倒数日列表 |
@@ -131,6 +131,8 @@ MacIsland/
 | `VoiceConfigView.swift` | TTS/STT 配置页面 |
 | `MarqueeText.swift` | 跑马灯滚动文本 |
 | `OnboardingView.swift` | 新手引导 |
+| `GestureOverlayWindow.swift` | 手势视觉反馈（全屏透明窗口 + 屏幕中央手势图标） |
+| `GestureTutorialView.swift` | 手势教程（触控板/隔空/鼠标三种手势使用引导） |
 
 #### 组件与配置 (Components/)
 
@@ -160,6 +162,8 @@ MacIsland/
 | `HotkeyServiceProtocol.swift` | 快捷键服务协议（全局快捷键） |
 | `VoiceServiceProtocol.swift` | 语音服务协议 + VoiceCommand/VoiceState 枚举 |
 | `StockServiceProtocol.swift` | 股票服务协议（行情/搜索/K线/自动刷新） |
+| `AirGestureServiceProtocol.swift` | 隔空手势协议（摄像头手势识别：握拳/张开手掌） |
+| `MouseGestureServiceProtocol.swift` | 鼠标手势协议（右键拖拽轨迹识别） |
 
 #### 实现 (Implementations/)
 
@@ -181,6 +185,9 @@ MacIsland/
 | `LaunchAtLoginManager.swift` | 开机自启管理（SMAppService API） |
 | `StockServiceImpl.swift` | 股票服务实现（自动刷新、小组件数据同步） |
 | `StockDataProvider.swift` | 股票数据源（新浪财经 A股/美股/港股 + 东方财富搜索/K线） |
+| `AirGestureService.swift` | 隔空手势服务（AVCaptureSession + VNDetectHumanHandPose） |
+| `MouseGestureService.swift` | 鼠标手势服务（右键拖拽轨迹识别 + 方向序列匹配） |
+| `GestureActionExecutor.swift` | 手势动作执行器（展开/折叠/切歌/播放暂停，三种手势共享） |
 
 ### 🧩 小组件扩展 (MacIslandWidgets/)
 
@@ -202,13 +209,14 @@ MacIsland/
 
 ## 架构要点
 
-- **形态状态机**：`IslandStore` 管理 7 种形态，通过 spring 动画切换，并由空闲计时器自动回退。
+- **形态状态机**：`IslandStore` 管理 7 种形态（`compact(music:pomodoro:countdown:)` 联合体 + hover/expanded/maxExpand/notification），通过 spring 动画切换，并由空闲计时器自动回退。
 - **空闲态自适应布局**：无内容时紧凑（时间+日期），有计时器/歌词时自动扩展宽度。
 - **缩小态布局**：歌词态与倒计时态采用横向「绕开刘海」布局（由 `WideNotchLayout` 统一封装）。
 - **窗口管理**：`IslandWindowManager` 使用 `.borderless + .nonactivatingPanel` 的 `NSPanel`，层级置于 `.statusBar`。
 - **输入防误收起**：鼠标点击 + 键盘输入追踪，面板/Sheet/文件选择器打开时均不自动收起。
 - **依赖注入**：`ServiceContainer` 集中创建并启停所有服务，通过 `@EnvironmentObject` 注入视图。
 - **响应式数据流**：服务以 `ObservableObject` 暴露 `@Published` 状态，`IslandStore` 订阅音乐/计时器状态自动触发形态切换。
+- **手势控制架构**：三种手势服务（触控板/隔空/鼠标）通过 `GestureActionExecutor` 统一执行动作，共享同一套展开/折叠/切歌逻辑。
 - **小组件数据共享**：通过 JSON 文件（`widget_data.json`）在 App Group 容器中共享数据。
 
 ---
@@ -221,6 +229,14 @@ MacIsland/
 - ✅ **全局快捷键**：`⌥⌘I` 显隐、`⌥⌘P` 播放/暂停、`⌥⌘←/→` 上/下一首
 - ✅ **自动更新**：基于 GitHub API 的应用内检查更新
 - ✅ **开机自启**：支持 macOS 13+ SMAppService API
+
+### 手势控制
+- ✅ **触控板手势**：多指滑动控制展开/折叠/切歌
+- ✅ **隔空手势**：摄像头 + Vision 框架手势识别（握拳折叠/张手展开）
+- ✅ **鼠标手势**：右键拖拽轨迹识别（方向序列匹配）
+- ✅ **手势教程**：首次使用时展示操作引导
+- ✅ **手势视觉反馈**：屏幕中央显示手势图标动画
+- ✅ **灵敏度调节**：隔空手势识别灵敏度可配置
 
 ### 音乐与歌词
 - ✅ **音乐控制**：基于分布式通知 + CGWindowList + AppleScript 检测系统播放器
@@ -303,6 +319,16 @@ MacIsland/
 ---
 
 ## 更新日志
+
+### v2.5.1 (2026-07-26) — 手势控制系统
+- ✅ **隔空手势**：摄像头 + Vision 手势识别（握拳折叠/张手展开）
+- ✅ **鼠标手势**：右键拖拽轨迹识别（方向序列匹配触发动作）
+- ✅ **触控板手势**：多指滑动控制灵动岛
+- ✅ 手势教程视图（首次使用引导）
+- ✅ 手势视觉反馈（全屏透明窗口 + 手势图标动画）
+- ✅ 手势灵敏度调节（隔空手势 0.0~1.0）
+- ✅ 统一动作执行器（展开/折叠/切歌/播放暂停）
+- ✅ 形态状态机重构（8 个 idle 枚举 → `compact(music:pomodoro:countdown:)` 联合体）
 
 ### v2.4.4 (2026-06-11) — 便签优化 + 运行持久化
 - ✅ 便签新建/编辑改为 Sheet 弹窗（标题+内容）
